@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connect_screen_msg">Provide your Photo Pixels Server address</string>
+    <string name="connect_server_address">Server Address</string>
+    <string name="connect_screen_next_btn">Next</string>
+
+    <!-- Login Screen -->
+    <string name="login_username">username</string>
+    <string name="login_password">password</string>
+    <string name="login_btn">LOGIN</string>
+    <string name="register_btn">REGISTER</string>
+    <string name="login_go_back_msg">Go back to server setup screen</string>
+    <string name="login_hint_text">Login using your account details</string>
+    <string name="login_error_title">Error Login</string>
+    <string name="login_error_msg">Error while Login. Please try again.</string>
+
+    <!-- Connect to Server Screen -->
+    <string name="connect_ok_btn">OK</string>
+    <string name="connect_server_error_title">Connect Server Error</string>
+    <string name="connect_error_msg">Server is not accessible, please check the address of the server.</string>
+    <string name="connect_incorrect_address_msg">Please type correct server address(server.domain)</string>
+
+    <!-- Register Screen -->
+    <string name="register_title">Register</string>
+    <string name="register_name">name</string>
+    <string name="register_email">email</string>
+    <string name="register_password">password</string>
+    <string name="register_error_title">Error Register</string>
+    <string name="register_error_msg">Error while register. Please try again</string>
+    <string name="register_hint_text">Create Photo Pixels account</string>
+
+    <!-- Misc -->
+    <string name="button_ok">OK</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="home_screen_title">Home</string>
+    <string name="sync_screen_title">Sync</string>
+    <string name="settings_screen_title">Settings</string>
+    <string name="home_screen_empty_msg">Your Photo Pixels library is empty, go to sync screen to start uploading!</string>
+    <string name="home_screen_go_to_sync">Go to Sync screen</string>
+    <string name="error_title">Error</string>
+    <string name="error_permission_denied">Photos permissions are denied. Please provide PhotoPixels storage permissions.</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_screen_heading_title">Application Settings</string>
+    <string name="settings_screen_app_details">App Details</string>
+    <string name="settings_screen_version">Version: %1$s</string>
+    <string name="settings_screen_server_version">Server version: %1$s</string>
+    <string name="settings_screen_active_user">Active User</string>
+    <string name="settings_screen_server_address">Server Address</string>
+    <string name="settings_screen_background_activity">Background Activity</string>
+    <string name="settings_screen_require_power_for_sync">Require Power for Sync</string>
+    <string name="settings_screen_require_wifi_for_sync">Require WIFI for Sync</string>
+    <string name="settings_screen_logout">Logout</string>
+    <string name="settings_screen_logout_success">Logout success</string>
+    <string name="settings_screen_google_photos">Google Photos</string>
+    <string name="settings_screen_google_photos_msg">Sync Google Photos</string>
+    <string name="settings_screen_google_login_success">Login with Google was Successful</string>
+    <string name="settings_screen_google_login_error">Error while Login with Google, try again later</string>
+    <string name="settings_screen_google_no_acc_error">No Google account found on the device. Please login with your Google account first.</string>
+</resources>

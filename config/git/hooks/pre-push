@@ -1,0 +1,16 @@
+#!/bin/bash
+
+printf "[%s] Running static analysis...\n" "$PWD"
+
+HOOK_PATH=.git/hooks/pre-push.d
+
+for hook in "$HOOK_PATH"/*; do
+  bash "$hook"
+  RESULT=$?
+  if [ $RESULT != 0 ]; then
+    echo "[$hook] returned error code [$RESULT], aborting push now."
+    exit $RESULT
+  fi
+done
+
+exit 0

@@ -1,0 +1,38 @@
+plugins {
+    id("plugin.application")
+    id("plugin.application.signing")
+    id("plugin.compose.application")
+    id("plugin.jvm")
+    id("plugin.hilt")
+    id("plugin.test")
+    id("plugin.test.android")
+}
+
+android {
+    namespace = "com.scalefocus.photopixels"
+
+    defaultConfig {
+        applicationId = "com.scalefocus.photopixels"
+
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.scalefocus.photopixels"
+    }
+
+    buildTypes {
+        release {
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+}
+
+dependencies {
+    implementation(project(":presentation"))
+    implementation(project(":domain"))
+    implementation(project(":data"))
+    implementation(project(":workers"))
+
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+
+    // Play services
+    implementation(libs.play.services.auth)
+}

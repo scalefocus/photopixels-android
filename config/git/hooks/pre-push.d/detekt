@@ -1,0 +1,4 @@
+#!/bin/bash
+
+printf "[%s] Running [detekt]...\n" "$PWD"
+./gradlew detekt

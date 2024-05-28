@@ -1,0 +1,16 @@
+#!/bin/bash
+
+printf "[%s] Verifying and (auto) fix code quality...\n" "$PWD"
+
+HOOK_PATH=.git/hooks/pre-commit.d
+
+for hook in "$HOOK_PATH"/*; do
+  bash "$hook"
+  RESULT=$?
+  if [ $RESULT != 0 ]; then
+    echo "[$hook] returned error code [$RESULT], aborting commit now."
+    exit $RESULT
+  fi
+done
+
+exit 0

@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>MagicNumber:PhotosPreviewContent.kt$0.5f</ID>
+    <ID>MagicNumber:SFSwitch.kt$0.5f</ID>
+    <ID>UnusedParameter:HomeScreen.kt$onNavigateToSettingsScreen: () -&gt; Unit</ID>
+    <ID>UnusedParameter:PhotosPreviewContent.kt$onSubmitActions: (PhotosPreviewActions) -&gt; Unit</ID>
+    <ID>UnusedParameter:SplashScreenContent.kt$screenState: SplashScreenState</ID>
+  </CurrentIssues>
+</SmellBaseline>
