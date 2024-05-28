@@ -24,12 +24,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.scalefocus.presentation.R
 import com.scalefocus.presentation.base.composeviews.CircularIndicator
 import com.scalefocus.presentation.base.composeviews.SFButton
+import com.scalefocus.presentation.base.composeviews.SFPasswordTextField
 import com.scalefocus.presentation.base.composeviews.ShowAlertDialog
 import com.scalefocus.presentation.theme.AppTypography
 import com.scalefocus.presentation.theme.PhotoPixelsTheme
@@ -96,14 +96,9 @@ fun LoginScreenContent(
                     label = { Text(stringResource(R.string.login_username)) }
                 )
 
-                TextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = password,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    onValueChange = { password = it },
-                    label = { Text(stringResource(R.string.login_password)) },
-                    visualTransformation = PasswordVisualTransformation()
-                )
+                SFPasswordTextField(password = password, onValueChange = {
+                    password = it
+                })
 
                 Spacer(Modifier.height(30.dp))
 

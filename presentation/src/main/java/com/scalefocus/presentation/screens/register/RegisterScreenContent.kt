@@ -8,26 +8,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.scalefocus.presentation.R
 import com.scalefocus.presentation.base.composeviews.CircularIndicator
 import com.scalefocus.presentation.base.composeviews.SFButton
+import com.scalefocus.presentation.base.composeviews.SFDefaultTextField
+import com.scalefocus.presentation.base.composeviews.SFPasswordTextField
 import com.scalefocus.presentation.base.composeviews.ShowAlertDialog
 import com.scalefocus.presentation.theme.PhotoPixelsTheme
 
@@ -37,10 +31,6 @@ fun RegisterScreenContent(
     state: RegisterScreenState,
     onSubmitActions: (RegisterScreenActions) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
     if (state.isLoading) {
         CircularIndicator()
     }
@@ -79,47 +69,54 @@ fun RegisterScreenContent(
 
                 Spacer(Modifier.height(5.dp))
 
-                TextField(
+                SFDefaultTextField(
+                    value = state.name.value,
+                    label = stringResource(R.string.register_name),
+                    isError = state.name.errorMsgId != null,
+                    errorText = state.name.errorMsgId,
                     modifier = Modifier.fillMaxWidth(),
-                    value = name,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    onValueChange = { name = it },
-                    label = { Text(stringResource(R.string.register_name)) }
+                    onValueChange = {
+                        onSubmitActions(RegisterScreenActions.OnNameValueChanged(it))
+                    }
                 )
 
-                TextField(
+                SFDefaultTextField(
+                    value = state.email.value,
+                    label = stringResource(R.string.register_email),
+                    isError = state.email.errorMsgId != null,
+                    errorText = state.email.errorMsgId,
                     modifier = Modifier.fillMaxWidth(),
-                    value = email,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    onValueChange = { email = it },
-                    label = { Text(stringResource(R.string.register_email)) }
+                    onValueChange = {
+                        onSubmitActions(RegisterScreenActions.OnEmailValueChanged(it))
+                    }
                 )
 
-                TextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = password,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    onValueChange = { password = it },
-                    label = { Text(stringResource(R.string.register_password)) },
-                    visualTransformation = PasswordVisualTransformation()
+                SFPasswordTextField(
+                    password = state.password.value,
+                    isError = state.password.errorMsgId != null,
+                    errorText = state.password.errorMsgId,
+                    onValueChange = {
+                        onSubmitActions(RegisterScreenActions.OnPasswordValueChanged(it))
+                    }
+                )
+
+                SFPasswordTextField(
+                    password = state.confirmPassword.value,
+                    label = stringResource(id = R.string.register_confirm_password),
+                    onValueChange = {
+                        onSubmitActions(RegisterScreenActions.OnConfirmPasswordValueChanged(it))
+                    }
                 )
 
                 Spacer(Modifier.height(30.dp))
 
-                // TODO validate fields - name, email and password
-                // before executing the request
+                val areFieldsNotEmpty = state.name.value.isNotEmpty() && state.password.value.isNotEmpty() &&
+                    state.email.value.isNotEmpty() && state.confirmPassword.value.isNotEmpty()
+
                 SFButton(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onSubmitActions(
-                            RegisterScreenActions.RegisterAction(
-                                name,
-                                email,
-                                password
-                            )
-                        )
-                    },
-                    enabled = true, // TODO
+                    onClick = { onSubmitActions(RegisterScreenActions.RegisterAction) },
+                    enabled = areFieldsNotEmpty,
                     text = stringResource(id = R.string.register_title).uppercase()
                 )
 
