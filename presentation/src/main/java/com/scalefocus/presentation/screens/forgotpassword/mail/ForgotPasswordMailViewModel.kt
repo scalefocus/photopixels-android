@@ -6,7 +6,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ForgotPasswordMailViewModel @Inject constructor() :
-    BaseViewModel<ForgotPasswordMailState, ForgotPasswordMailActions, Unit>(ForgotPasswordMailState()) {
+    BaseViewModel<ForgotPasswordMailState, ForgotPasswordMailActions, Unit>(
+        ForgotPasswordMailState()
+    ) {
 
         // TODO: Implement business logic
 
