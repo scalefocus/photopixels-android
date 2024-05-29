@@ -8,7 +8,10 @@ internal object PixelsFieldValidator {
 }
 
 enum class ValidationRules(private val regex: Regex) {
-    SERVER_ADDRESS(HOSTNAME_REGEX);
+    SERVER_ADDRESS(HOSTNAME_REGEX),
+    NAME(NAME_REGEX),
+    EMAIL(EMAIL_REGEX),
+    PASSWORD(PASSWORD_REGEX);
 
     fun getRegex() = regex
 }
