@@ -12,6 +12,7 @@ fun LoginScreen(
     onNavigateToRegisterScreen: () -> Unit,
     onNavigateToHomeScreen: () -> Unit,
     onNavigateBack: () -> Unit,
+    onNavigateToForgotPassScreen: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val viewState = viewModel.state.collectAsStateWithLifecycle().value
@@ -30,6 +31,7 @@ fun LoginScreen(
         state = viewState,
         onNavigateToRegisterScreen = onNavigateToRegisterScreen,
         onSubmitActions = { viewModel.submitAction(it) },
+        onNavigateToForgotPassScreen = onNavigateToForgotPassScreen,
         onNavigateBack = onNavigateBack
     )
 }
