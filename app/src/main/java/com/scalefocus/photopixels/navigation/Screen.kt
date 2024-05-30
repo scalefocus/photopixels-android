@@ -10,6 +10,8 @@ sealed class Screen(val route: String) {
     data object Register : Screen("register")
 
     data object ForgotPasswordMail : Screen("forgot_pass_mail")
+
+    data object ForgotPasswordCode : Screen("forgot_pass_code")
 }
 
 sealed class HomeScreens(val route: String) {

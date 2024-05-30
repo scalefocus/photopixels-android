@@ -67,5 +67,10 @@
     <!-- Forgot password Screen -->
     <string name="forgot_pass_title">Forgot Password?</string>
     <string name="forgot_pass_screen_hint">Please enter your email address</string>
+    <string name="forgot_pass_code_msg">Please enter the verification code that was sent to your email address</string>
+    <string name="forgot_pass_ver_code">Verification code</string>
+    <string name="forgot_pass_code_hint">Code</string>
+    <string name="forgot_pass_new">New password</string>
+    <string name="forgot_pass_confirm">Confirm new password</string>
 
 </resources>
