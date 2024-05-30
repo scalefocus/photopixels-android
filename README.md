@@ -2,6 +2,7 @@
 
 ## Releases
  The latest release is available in the *Releases* section.
+
  **TODO: add link to Releases section / latest release **
 
 ## Build Instructions
