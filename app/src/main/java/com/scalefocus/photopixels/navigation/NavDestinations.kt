@@ -71,9 +71,11 @@ internal fun NavGraphBuilder.registerScreen(navController: NavHostController) {
     }
 }
 
-@Suppress("UnusedParameter")
 internal fun NavGraphBuilder.forgotPassScreenMail(navController: NavHostController) {
     composable(route = Screen.ForgotPasswordMail.route) {
-        ForgotPasswordMailScreen()
+        ForgotPasswordMailScreen(onNavigateToVerificationCodeScreen = {
+            navController.popBackStack()
+            navController.navigate(Screen.ForgotPasswordCode.route)
+        })
     }
 }
