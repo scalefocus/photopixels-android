@@ -35,6 +35,7 @@
     <string name="register_email_incorrect">Please type correct email address</string>
 
     <!-- Misc -->
+    <string name="button_submit">Submit</string>
     <string name="button_ok">OK</string>
     <string name="button_cancel">Cancel</string>
     <string name="home_screen_title">Home</string>
@@ -62,4 +63,9 @@
     <string name="settings_screen_google_login_success">Login with Google was Successful</string>
     <string name="settings_screen_google_login_error">Error while Login with Google, try again later</string>
     <string name="settings_screen_google_no_acc_error">No Google account found on the device. Please login with your Google account first.</string>
+
+    <!-- Forgot password Screen -->
+    <string name="forgot_pass_title">Forgot Password?</string>
+    <string name="forgot_pass_screen_hint">Please enter your email address</string>
+
 </resources>

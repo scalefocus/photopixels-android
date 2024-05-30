@@ -9,6 +9,7 @@ import com.scalefocus.presentation.base.Constants
 import com.scalefocus.presentation.base.addNullableArguments
 import com.scalefocus.presentation.base.addNullableArgumentsLabels
 import com.scalefocus.presentation.screens.connect.ConnectServerScreen
+import com.scalefocus.presentation.screens.forgotpassword.mail.ForgotPasswordMailScreen
 import com.scalefocus.presentation.screens.login.LoginScreen
 import com.scalefocus.presentation.screens.register.RegisterScreen
 import com.scalefocus.presentation.screens.splash.SplashScreen
@@ -55,6 +56,7 @@ internal fun NavGraphBuilder.loginScreen(navController: NavHostController) {
         LoginScreen(
             onNavigateToRegisterScreen = { navController.navigate(Screen.Register.route) },
             onNavigateToHomeScreen = { navigateToHomeScreen(navController) },
+            onNavigateToForgotPassScreen = { navController.navigate(Screen.ForgotPasswordMail.route) },
             onNavigateBack = { navController.popBackStack() }
         )
     }
@@ -66,5 +68,12 @@ internal fun NavGraphBuilder.registerScreen(navController: NavHostController) {
             val arguments = mapOf(Constants.EMAIL_ARGUMENT_NAME to email, Constants.PASSWORD_ARGUMENT_NAME to password)
             navController.navigate(Screen.Login.route.addNullableArguments(arguments))
         })
+    }
+}
+
+@Suppress("UnusedParameter")
+internal fun NavGraphBuilder.forgotPassScreenMail(navController: NavHostController) {
+    composable(route = Screen.ForgotPasswordMail.route) {
+        ForgotPasswordMailScreen()
     }
 }
