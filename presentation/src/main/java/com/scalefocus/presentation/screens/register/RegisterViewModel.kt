@@ -2,8 +2,8 @@ package com.scalefocus.presentation.screens.register
 
 import androidx.lifecycle.viewModelScope
 import com.scalefocus.domain.base.Response
-import com.scalefocus.domain.usecases.RegisterUserUseCase
 import com.scalefocus.domain.usecases.ValidateFieldUseCase
+import com.scalefocus.domain.usecases.auth.RegisterUserUseCase
 import com.scalefocus.domain.validation.ValidationRules
 import com.scalefocus.presentation.R
 import com.scalefocus.presentation.base.BaseViewModel

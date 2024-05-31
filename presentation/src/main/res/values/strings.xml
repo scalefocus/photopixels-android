@@ -45,6 +45,7 @@
     <string name="home_screen_go_to_sync">Go to Sync screen</string>
     <string name="error_title">Error</string>
     <string name="error_permission_denied">Photos permissions are denied. Please provide PhotoPixels storage permissions.</string>
+    <string name="error_generic">Something went wrong. Please try again later</string>
 
     <!-- Settings Screen -->
     <string name="settings_screen_heading_title">Application Settings</string>
@@ -72,5 +73,6 @@
     <string name="forgot_pass_code_hint">Code</string>
     <string name="forgot_pass_new">New password</string>
     <string name="forgot_pass_confirm">Confirm new password</string>
+    <string name="forgot_pass_mail_sent_msg">Password reset code sent to your email.</string>
 
 </resources>

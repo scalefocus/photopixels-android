@@ -6,5 +6,6 @@ import com.scalefocus.presentation.base.textfield.SFTextEditField
 data class ForgotPasswordMailState(
     val isLoading: Boolean = false,
     @StringRes val errorMsgId: Int? = null,
+    @StringRes val successMsgId: Int? = null,
     val email: SFTextEditField = SFTextEditField(value = "")
 )

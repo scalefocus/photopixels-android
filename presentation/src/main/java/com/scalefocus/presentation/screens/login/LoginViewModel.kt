@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.scalefocus.domain.base.Response
 import com.scalefocus.domain.usecases.ClearUserDataUseCase
 import com.scalefocus.domain.usecases.GetLoggedUserUseCase
-import com.scalefocus.domain.usecases.LoginUserUseCase
+import com.scalefocus.domain.usecases.auth.LoginUserUseCase
 import com.scalefocus.presentation.R
 import com.scalefocus.presentation.base.BaseViewModel
 import com.scalefocus.presentation.base.Constants

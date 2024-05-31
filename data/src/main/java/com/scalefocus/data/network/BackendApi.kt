@@ -31,4 +31,8 @@ interface BackendApi {
         androidCloudId: String,
         objectHash: String
     ): Response<PhotoUploadData>
+
+    suspend fun forgotPassword(email: String): Response<Unit>
+
+    suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit>
 }

@@ -20,4 +20,8 @@ interface AuthRepository {
     suspend fun getGoogleAuthToken(): String?
 
     suspend fun clearGoogleAuthToken()
+
+    suspend fun forgotPassword(email: String): Response<Unit>
+
+    suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit>
 }

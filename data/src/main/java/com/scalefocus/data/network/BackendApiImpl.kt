@@ -2,9 +2,11 @@ package com.scalefocus.data.network
 
 import com.scalefocus.data.base.request
 import com.scalefocus.data.mappers.toDomain
+import com.scalefocus.data.network.requests.ForgotPasswordRequest
 import com.scalefocus.data.network.requests.LoginRequest
 import com.scalefocus.data.network.requests.ObjectsDataRequest
 import com.scalefocus.data.network.requests.RegisterRequest
+import com.scalefocus.data.network.requests.ResetPasswordRequest
 import com.scalefocus.data.network.requests.UploadPhotoRequest
 import com.scalefocus.data.network.responses.LoginResponse
 import com.scalefocus.data.network.responses.ObjectResponse
@@ -114,5 +116,25 @@ class BackendApiImpl @Inject constructor(private val httpClient: HttpClient) : B
             }.body<ObjectUploadResponse>()
 
             Response.Success(result.toDomain())
+        }
+
+    override suspend fun forgotPassword(email: String): Response<Unit> =
+        request {
+            httpClient.post {
+                url("/api/user/forgotpassword")
+                setBody(ForgotPasswordRequest(email))
+            }.body<Unit>()
+
+            Response.Success(Unit)
+        }
+
+    override suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit> =
+        request {
+            httpClient.post {
+                url("/api/user/resetpassword")
+                setBody(ResetPasswordRequest(email, newPassword, verificationCode))
+            }.body<Unit>()
+
+            Response.Success(Unit)
         }
 }

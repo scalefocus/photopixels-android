@@ -22,6 +22,7 @@ import com.scalefocus.presentation.base.composeviews.CircularIndicator
 import com.scalefocus.presentation.base.composeviews.SFButton
 import com.scalefocus.presentation.base.composeviews.SFDefaultTextField
 import com.scalefocus.presentation.base.composeviews.ShowAlertDialog
+import com.scalefocus.presentation.base.composeviews.ShowToast
 import com.scalefocus.presentation.theme.PhotoPixelsTheme
 
 @Composable
@@ -32,11 +33,15 @@ fun ForgotPasswordMailContent(state: ForgotPasswordMailState, onSubmitActions: (
 
     state.errorMsgId?.let {
         ShowAlertDialog(
-            title = stringResource(id = R.string.login_error_title),
+            title = stringResource(id = R.string.forgot_pass_title),
             negativeButtonText = null,
             description = stringResource(id = it),
             onPositiveClick = { onSubmitActions(ForgotPasswordMailActions.CloseErrorDialog) }
         )
+    }
+
+    state.successMsgId?.let {
+        ShowToast(messageId = it)
     }
 
     Box {
@@ -68,6 +73,8 @@ fun ForgotPasswordMailContent(state: ForgotPasswordMailState, onSubmitActions: (
                     modifier = Modifier.fillMaxWidth(),
                     value = state.email.value,
                     onValueChange = { onSubmitActions(ForgotPasswordMailActions.OnEmailValueChanged(it)) },
+                    isError = state.email.errorMsgId != null,
+                    errorText = state.email.errorMsgId,
                     label = stringResource(R.string.register_email)
                 )
 
