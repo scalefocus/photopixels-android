@@ -52,6 +52,7 @@ fun NavGraphs(navController: NavHostController, modifier: Modifier = Modifier) {
             connectToServerScreen(navController)
             loginScreen(navController)
             registerScreen(navController)
+            forgotPassScreenMail(navController)
             homeScreenNavGraph(navController)
         }
     }

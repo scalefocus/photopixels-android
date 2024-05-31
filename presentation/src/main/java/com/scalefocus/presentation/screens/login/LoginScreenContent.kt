@@ -40,6 +40,7 @@ fun LoginScreenContent(
     state: LoginScreenState,
     onNavigateToRegisterScreen: () -> Unit,
     onNavigateBack: () -> Unit,
+    onNavigateToForgotPassScreen: () -> Unit,
     onSubmitActions: (LoginScreenActions) -> Unit
 ) {
     var username by remember { mutableStateOf("") }
@@ -121,6 +122,14 @@ fun LoginScreenContent(
                 Spacer(Modifier.height(30.dp))
 
                 Text(
+                    text = stringResource(id = R.string.forgot_pass_title),
+                    style = AppTypography.SmallBlue,
+                    modifier = Modifier.clickable { onNavigateToForgotPassScreen() }
+                )
+
+                Spacer(Modifier.height(30.dp))
+
+                Text(
                     text = stringResource(id = R.string.login_go_back_msg),
                     style = AppTypography.SmallBlue,
                     modifier = Modifier.clickable { onNavigateBack() }
@@ -138,6 +147,7 @@ private fun PreviewLoginScreenContent() {
             state = LoginScreenState(),
             onNavigateToRegisterScreen = {},
             onSubmitActions = {},
+            onNavigateToForgotPassScreen = {},
             onNavigateBack = {}
         )
     }

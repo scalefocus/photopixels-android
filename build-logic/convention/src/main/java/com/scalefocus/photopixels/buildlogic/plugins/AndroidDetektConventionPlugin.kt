@@ -42,7 +42,7 @@ class AndroidDetektConventionPlugin : Plugin<Project> {
 private fun Project.configureDetekt(extension: DetektExtension) = extension.apply {
     buildUponDefaultConfig = true
     allRules = false
-    autoCorrect = true
+    autoCorrect = false
     config.setFrom("$rootDir/config/detekt/detekt-config.yml")
 
     // TODO There are many requests for consolidated baseline files. Let's monitor this so one day we can have
@@ -51,7 +51,7 @@ private fun Project.configureDetekt(extension: DetektExtension) = extension.appl
     baseline = file("$rootDir/config/detekt/detekt-baseline-${project.name}.xml")
 
     dependencies {
-        "detektPlugins"(libs.findLibrary("detekt-formatting").get())
+        // "detektPlugins"(libs.findLibrary("detekt-formatting").get())
         "detektPlugins"(libs.findLibrary("detekt-cli").get())
         "detektPlugins"(libs.findLibrary("detekt-compose").get())
         "detektPlugins"(libs.findLibrary("detekt-rules-compose").get())
