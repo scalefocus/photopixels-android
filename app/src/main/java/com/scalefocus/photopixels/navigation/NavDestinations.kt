@@ -10,6 +10,7 @@ import com.scalefocus.presentation.base.addNullableArguments
 import com.scalefocus.presentation.base.addNullableArgumentsLabels
 import com.scalefocus.presentation.screens.connect.ConnectServerScreen
 import com.scalefocus.presentation.screens.forgotpassword.mail.ForgotPasswordMailScreen
+import com.scalefocus.presentation.screens.forgotpassword.resset.ForgotPasswordCodeScreen
 import com.scalefocus.presentation.screens.login.LoginScreen
 import com.scalefocus.presentation.screens.register.RegisterScreen
 import com.scalefocus.presentation.screens.splash.SplashScreen
@@ -71,9 +72,18 @@ internal fun NavGraphBuilder.registerScreen(navController: NavHostController) {
     }
 }
 
-@Suppress("UnusedParameter")
 internal fun NavGraphBuilder.forgotPassScreenMail(navController: NavHostController) {
     composable(route = Screen.ForgotPasswordMail.route) {
-        ForgotPasswordMailScreen()
+        ForgotPasswordMailScreen(onNavigateToVerificationCodeScreen = {
+            navController.popBackStack()
+            navController.navigate(Screen.ForgotPasswordCode.route)
+        })
+    }
+}
+
+@Suppress("UnusedParameter")
+internal fun NavGraphBuilder.forgotPassCodeScreen(navController: NavHostController) {
+    composable(route = Screen.ForgotPasswordCode.route) {
+        ForgotPasswordCodeScreen()
     }
 }
