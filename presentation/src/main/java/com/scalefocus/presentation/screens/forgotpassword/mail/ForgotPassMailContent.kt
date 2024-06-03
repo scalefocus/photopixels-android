@@ -26,7 +26,7 @@ import com.scalefocus.presentation.base.composeviews.ShowToast
 import com.scalefocus.presentation.theme.PhotoPixelsTheme
 
 @Composable
-fun ForgotPasswordMailContent(state: ForgotPasswordMailState, onSubmitActions: (ForgotPasswordMailActions) -> Unit) {
+fun ForgotPassMailContent(state: ForgotPassMailState, onSubmitActions: (ForgotPassMailActions) -> Unit) {
     if (state.isLoading) {
         CircularIndicator()
     }
@@ -36,7 +36,7 @@ fun ForgotPasswordMailContent(state: ForgotPasswordMailState, onSubmitActions: (
             title = stringResource(id = R.string.forgot_pass_title),
             negativeButtonText = null,
             description = stringResource(id = it),
-            onPositiveClick = { onSubmitActions(ForgotPasswordMailActions.CloseErrorDialog) }
+            onPositiveClick = { onSubmitActions(ForgotPassMailActions.CloseErrorDialog) }
         )
     }
 
@@ -72,7 +72,7 @@ fun ForgotPasswordMailContent(state: ForgotPasswordMailState, onSubmitActions: (
                 SFDefaultTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = state.email.value,
-                    onValueChange = { onSubmitActions(ForgotPasswordMailActions.OnEmailValueChanged(it)) },
+                    onValueChange = { onSubmitActions(ForgotPassMailActions.OnEmailValueChanged(it)) },
                     isError = state.email.errorMsgId != null,
                     errorText = state.email.errorMsgId,
                     label = stringResource(R.string.register_email)
@@ -82,7 +82,7 @@ fun ForgotPasswordMailContent(state: ForgotPasswordMailState, onSubmitActions: (
 
                 SFButton(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { onSubmitActions(ForgotPasswordMailActions.OnSubmitClicked) },
+                    onClick = { onSubmitActions(ForgotPassMailActions.OnSubmitClicked) },
                     enabled = state.email.value.isNotEmpty(),
                     text = stringResource(id = R.string.button_submit)
                 )
@@ -93,9 +93,9 @@ fun ForgotPasswordMailContent(state: ForgotPasswordMailState, onSubmitActions: (
 
 @Preview(showBackground = true)
 @Composable
-private fun PreviewForgotPasswordMailContent() {
+private fun PreviewForgotPassMailContent() {
     PhotoPixelsTheme {
-        ForgotPasswordMailContent(state = ForgotPasswordMailState()) {
+        ForgotPassMailContent(state = ForgotPassMailState()) {
         }
     }
 }

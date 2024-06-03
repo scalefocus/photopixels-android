@@ -57,7 +57,7 @@ complexity:
     ignoreAnnotatedFunctions: [ 'Preview' ]
   LongMethod:
     active: true
-    threshold: 75
+    threshold: 70
 
 style:
   UnusedPrivateMember:

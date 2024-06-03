@@ -13,13 +13,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class ForgotPasswordCodeViewModel @Inject constructor(
+class ForgotPassCodeViewModel @Inject constructor(
     private val forgotPasswordUseCase: ForgotPasswordUseCase,
     private val validateFieldUseCase: ValidateFieldUseCase,
     savedState: SavedStateHandle
 ) :
-    BaseViewModel<ForgotPasswordCodeState, ForgotPasswordCodeActions, ForgotPasswordCodeEvents>(
-            ForgotPasswordCodeState()
+    BaseViewModel<ForgotPassCodeState, ForgotPassCodeActions, ForgotPassCodeEvents>(
+            ForgotPassCodeState()
         ) {
         private lateinit var email: String
 
@@ -29,23 +29,23 @@ class ForgotPasswordCodeViewModel @Inject constructor(
             }
         }
 
-        override suspend fun handleActions(action: ForgotPasswordCodeActions) {
+        override suspend fun handleActions(action: ForgotPassCodeActions) {
             when (action) {
-                is ForgotPasswordCodeActions.OnSubmitClicked -> {
+                is ForgotPassCodeActions.OnSubmitClicked -> {
                     if (validatePassword(state.value.password.value, state.value.confirmPassword.value)) {
                         resetPassword(email = email, verificationCode = action.verificationCode)
                     }
                 }
 
-                ForgotPasswordCodeActions.CloseErrorDialog -> {
+                ForgotPassCodeActions.CloseErrorDialog -> {
                     updateState { copy(errorMsgId = null) }
                 }
 
-                is ForgotPasswordCodeActions.OnPasswordChange -> {
+                is ForgotPassCodeActions.OnPassChange -> {
                     updateState { copy(password = password.copy(value = action.password)) }
                 }
 
-                is ForgotPasswordCodeActions.OnConfirmPasswordChange -> {
+                is ForgotPassCodeActions.OnConfirmPassChange -> {
                     updateState { copy(confirmPassword = confirmPassword.copy(value = action.confirmPassword)) }
                 }
             }
@@ -58,15 +58,13 @@ class ForgotPasswordCodeViewModel @Inject constructor(
 
             if (result is Response.Success) {
                 updateState { copy(isLoading = false, successMsgId = R.string.forgot_pass_success_msg) }
-                submitEvent(ForgotPasswordCodeEvents.NavigateToLoginScreen)
+                submitEvent(ForgotPassCodeEvents.NavigateToLoginScreen)
             } else if (result is Response.Failure) {
                 if (result.error is PhotoPixelError.VerificationCodeIncorrect) {
                     updateState { copy(isLoading = false, errorMsgId = R.string.forgot_pass_error_incorrect_code) }
                 } else {
                     updateState { copy(isLoading = false, errorMsgId = R.string.error_generic) }
                 }
-
-                submitEvent(ForgotPasswordCodeEvents.NavigateToLoginScreen)
             }
         }
 

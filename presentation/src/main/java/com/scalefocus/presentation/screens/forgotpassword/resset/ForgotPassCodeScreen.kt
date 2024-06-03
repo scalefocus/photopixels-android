@@ -1,4 +1,4 @@
-package com.scalefocus.presentation.screens.forgotpassword.mail
+package com.scalefocus.presentation.screens.forgotpassword.resset
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -8,23 +8,21 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Suppress("LambdaParameterInRestartableEffect")
 @Composable
-fun ForgotPasswordMailScreen(
-    onNavigateToVerificationCodeScreen: (String) -> Unit,
-    viewModel: ForgotPasswordMailViewModel = hiltViewModel()
+fun ForgotPassCodeScreen(
+    onNavigateToLoginScreen: () -> Unit,
+    viewModel: ForgotPassCodeViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
 
     LaunchedEffect(Unit) {
         viewModel.events.collectLatest { event ->
             when (event) {
-                is ForgotPasswordMailEvents.NavigateToResetPasswordScreen -> onNavigateToVerificationCodeScreen(
-                    event.email
-                )
+                ForgotPassCodeEvents.NavigateToLoginScreen -> onNavigateToLoginScreen()
             }
         }
     }
 
-    ForgotPasswordMailContent(state, onSubmitActions = {
+    ForgotPassCodeContent(state = state, onSubmitActions = {
         viewModel.submitAction(it)
     })
 }

@@ -37,7 +37,7 @@ suspend fun <T> request(block: suspend () -> Response<T>): Response<T> {
 suspend fun <T> handleThrowableResponse(throwable: Throwable): Response<T> {
     return when (throwable) {
         is ResponseException -> throwable.response.body<HttpResponse>().let {
-            Response.Failure(translateServerError(it, it.bodyAsText()))
+            Response.Failure(translateServerError(it))
         }
 
         is IOException,
@@ -52,7 +52,8 @@ suspend fun <T> handleThrowableResponse(throwable: Throwable): Response<T> {
 }
 
 // TODO: Add more BE errors here
-private fun translateServerError(httpResponse: HttpResponse, bodyAsText: String? = null): PhotoPixelError {
+private suspend fun translateServerError(httpResponse: HttpResponse): PhotoPixelError {
+    val bodyText = httpResponse.bodyAsText()
     return when (httpResponse.status.value) {
         HTTP_409_CONFLICT, CUSTOM_BE_ERROR -> { // Duplicate photo error while uploading
             PhotoPixelError.DuplicatePhotoError
@@ -60,10 +61,8 @@ private fun translateServerError(httpResponse: HttpResponse, bodyAsText: String?
 
         HTTP_400_BAD_REQUEST -> {
             var error: PhotoPixelError = PhotoPixelError.GenericError
-            bodyAsText?.let {
-                if (it.contains(PhotoPixelsErrorResponses.INCORRECT_VERIFICATION_CODE)) {
-                    error = PhotoPixelError.VerificationCodeIncorrect
-                }
+            if (bodyText.contains(PhotoPixelsErrorResponses.INCORRECT_VERIFICATION_CODE)) {
+                error = PhotoPixelError.VerificationCodeIncorrect
             }
             error
         }

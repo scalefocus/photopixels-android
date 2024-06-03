@@ -11,8 +11,8 @@ import com.scalefocus.presentation.base.addArguments
 import com.scalefocus.presentation.base.addNullableArguments
 import com.scalefocus.presentation.base.addNullableArgumentsLabels
 import com.scalefocus.presentation.screens.connect.ConnectServerScreen
-import com.scalefocus.presentation.screens.forgotpassword.mail.ForgotPasswordMailScreen
-import com.scalefocus.presentation.screens.forgotpassword.resset.ForgotPasswordCodeScreen
+import com.scalefocus.presentation.screens.forgotpassword.mail.ForgotPassMailScreen
+import com.scalefocus.presentation.screens.forgotpassword.resset.ForgotPassCodeScreen
 import com.scalefocus.presentation.screens.login.LoginScreen
 import com.scalefocus.presentation.screens.register.RegisterScreen
 import com.scalefocus.presentation.screens.splash.SplashScreen
@@ -74,9 +74,9 @@ internal fun NavGraphBuilder.registerScreen(navController: NavHostController) {
     }
 }
 
-internal fun NavGraphBuilder.forgotPassScreenMail(navController: NavHostController) {
+internal fun NavGraphBuilder.forgotPassMailScreen(navController: NavHostController) {
     composable(route = Screen.ForgotPasswordMail.route) {
-        ForgotPasswordMailScreen(onNavigateToVerificationCodeScreen = { email ->
+        ForgotPassMailScreen(onNavigateToVerificationCodeScreen = { email ->
             navController.popBackStack()
             navController.navigate(Screen.ForgotPasswordCode.route.addArguments(listOf(email)))
         })
@@ -93,7 +93,7 @@ internal fun NavGraphBuilder.forgotPassCodeScreen(navController: NavHostControll
             }
         )
     ) {
-        ForgotPasswordCodeScreen(onNavigateToLoginScreen = {
+        ForgotPassCodeScreen(onNavigateToLoginScreen = {
             navController.popBackStack()
             navController.navigate(Screen.Login.route) {
                 launchSingleTop = true

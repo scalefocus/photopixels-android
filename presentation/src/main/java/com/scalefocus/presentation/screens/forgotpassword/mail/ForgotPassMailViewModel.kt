@@ -12,27 +12,27 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ForgotPasswordMailViewModel @Inject constructor(
+class ForgotPassMailViewModel @Inject constructor(
     private val forgotPasswordUseCase: ForgotPasswordUseCase,
     private val validateFieldUseCase: ValidateFieldUseCase
 ) :
-    BaseViewModel<ForgotPasswordMailState, ForgotPasswordMailActions, ForgotPasswordMailEvents>(
-            ForgotPasswordMailState()
+    BaseViewModel<ForgotPassMailState, ForgotPassMailActions, ForgotPassMailEvents>(
+            ForgotPassMailState()
         ) {
 
-        override suspend fun handleActions(action: ForgotPasswordMailActions) {
+        override suspend fun handleActions(action: ForgotPassMailActions) {
             when (action) {
-                is ForgotPasswordMailActions.OnSubmitClicked -> {
+                is ForgotPassMailActions.OnSubmitClicked -> {
                     if (validateEmail(state.value.email.value)) {
                         requestPasswordReset(state.value.email.value)
                     }
                 }
 
-                ForgotPasswordMailActions.CloseErrorDialog -> {
+                ForgotPassMailActions.CloseErrorDialog -> {
                     updateState { copy(errorMsgId = null) }
                 }
 
-                is ForgotPasswordMailActions.OnEmailValueChanged -> {
+                is ForgotPassMailActions.OnEmailValueChanged -> {
                     updateState { copy(email = email.copy(value = action.email)) }
                 }
             }
@@ -53,7 +53,7 @@ class ForgotPasswordMailViewModel @Inject constructor(
                 val result = forgotPasswordUseCase.forgotPassword(email)
                 if (result is Response.Success) {
                     updateState { copy(isLoading = false, successMsgId = R.string.forgot_pass_mail_sent_msg) }
-                    submitEvent(ForgotPasswordMailEvents.NavigateToResetPasswordScreen(email))
+                    submitEvent(ForgotPassMailEvents.NavigateToResetPassScreen(email))
                 } else if (result is Response.Failure) {
                     // NOTE: When email is not found, WEB app is showing generic error, probably for security reasons
                     updateState { copy(isLoading = false, errorMsgId = R.string.error_generic) }
