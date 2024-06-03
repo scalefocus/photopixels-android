@@ -37,12 +37,6 @@ jobs:
             - name: Grant execute permissions for gradlew
               run: chmod +x ./gradlew
 
-            - name: Build with Gradle
-              run: ./gradlew build
-
-            - name: Run tests
-              run: ./gradlew test
-
             - name: Prepare release signing configuration
               env:
                   ENCODED_STRING: ${{ secrets.KEYSTORE_BASE_64 }}
@@ -59,9 +53,17 @@ jobs:
                   
                   # Create property file with signing configuration values
                   echo "keystorePath=keystore.jks" > keystore.properties
-                  echo "keystorePassword=$RELEASE_KEYSTORE_PASSWORD" > keystore.properties
-                  echo "keyAlias=$RELEASE_KEY_ALIAS" > keystore.properties
-                  echo "keyPassword=$RELEASE_KEY_PASSWORD" > keystore.properties
+                  echo "keystorePassword=$RELEASE_KEYSTORE_PASSWORD" >> keystore.properties
+                  echo "keyAlias=$RELEASE_KEY_ALIAS" >> keystore.properties
+                  echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties
+
+                  ls -la
+
+            - name: Build with Gradle
+              run: ./gradlew build
+
+            - name: Run tests
+              run: ./gradlew test
 
             - name: Create APK release
               run: ./gradlew assembleRelease
