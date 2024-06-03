@@ -1,3 +1,5 @@
+import dev.android.buildlogic.util.OS
+import dev.android.buildlogic.util.getOsName
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
@@ -36,9 +38,21 @@ internal fun Project.installGitHooksTasks() {
         doFirst {
             print("Installing git hooks...")
         }
-        workingDir(rootDir)
-        commandLine("chmod")
-        setArgs(listOf("-R", "+x", ".git/hooks"))
+
+        when (getOsName()) {
+            OS.LINUX, OS.MAC, OS.OTHER -> {
+                // Make git hooks scripts executable
+                workingDir(rootDir)
+                commandLine("chmod")
+                setArgs(listOf("-R", "+x", ".git/hooks"))
+            }
+
+            else -> {
+                // At least one command needs to be executed for the Exec task to succeed. "cmd" is the obvious
+                // choice for builds done on Windows. Replace as needed.
+                commandLine("cmd")
+            }
+        }
 
         doLast {
             println(" done.")
