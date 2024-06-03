@@ -6,6 +6,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.scalefocus.presentation.base.Constants
+import com.scalefocus.presentation.base.addArgumentLabels
+import com.scalefocus.presentation.base.addArguments
 import com.scalefocus.presentation.base.addNullableArguments
 import com.scalefocus.presentation.base.addNullableArgumentsLabels
 import com.scalefocus.presentation.screens.connect.ConnectServerScreen
@@ -74,16 +76,28 @@ internal fun NavGraphBuilder.registerScreen(navController: NavHostController) {
 
 internal fun NavGraphBuilder.forgotPassScreenMail(navController: NavHostController) {
     composable(route = Screen.ForgotPasswordMail.route) {
-        ForgotPasswordMailScreen(onNavigateToVerificationCodeScreen = {
+        ForgotPasswordMailScreen(onNavigateToVerificationCodeScreen = { email ->
             navController.popBackStack()
-            navController.navigate(Screen.ForgotPasswordCode.route)
+            navController.navigate(Screen.ForgotPasswordCode.route.addArguments(listOf(email)))
         })
     }
 }
 
-@Suppress("UnusedParameter")
 internal fun NavGraphBuilder.forgotPassCodeScreen(navController: NavHostController) {
-    composable(route = Screen.ForgotPasswordCode.route) {
-        ForgotPasswordCodeScreen()
+    composable(
+        route = Screen.ForgotPasswordCode.route.addArgumentLabels(listOf(Constants.EMAIL_ARGUMENT_NAME)),
+        arguments = listOf(
+            navArgument(name = Constants.EMAIL_ARGUMENT_NAME) {
+                type = NavType.StringType
+                nullable = false
+            }
+        )
+    ) {
+        ForgotPasswordCodeScreen(onNavigateToLoginScreen = {
+            navController.popBackStack()
+            navController.navigate(Screen.Login.route) {
+                launchSingleTop = true
+            }
+        })
     }
 }

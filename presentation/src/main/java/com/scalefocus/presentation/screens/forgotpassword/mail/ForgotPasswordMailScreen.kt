@@ -9,15 +9,17 @@ import kotlinx.coroutines.flow.collectLatest
 @Suppress("LambdaParameterInRestartableEffect")
 @Composable
 fun ForgotPasswordMailScreen(
-    onNavigateToVerificationCodeScreen: () -> Unit,
+    onNavigateToVerificationCodeScreen: (String) -> Unit,
     viewModel: ForgotPasswordMailViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
 
     LaunchedEffect(Unit) {
-        viewModel.events.collectLatest { events ->
-            when (events) {
-                is ForgotPasswordMailEvents.NavigateToResetPasswordScreen -> onNavigateToVerificationCodeScreen()
+        viewModel.events.collectLatest { event ->
+            when (event) {
+                is ForgotPasswordMailEvents.NavigateToResetPasswordScreen -> onNavigateToVerificationCodeScreen(
+                    event.email
+                )
             }
         }
     }

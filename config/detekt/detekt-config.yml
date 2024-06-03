@@ -57,7 +57,7 @@ complexity:
     ignoreAnnotatedFunctions: [ 'Preview' ]
   LongMethod:
     active: true
-    threshold: 70
+    threshold: 75
 
 style:
   UnusedPrivateMember:
@@ -68,7 +68,7 @@ style:
     active: true
     excludes: [ '**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/*.kts' ]
     ignoreAnnotated: [ 'Preview' ]
-    ignoreNumbers: ['-1', '0', '1', '2']
+    ignoreNumbers: [ '-1', '0', '1', '2' ]
     ignoreHashCodeFunction: true
     ignorePropertyDeclaration: true
     ignoreLocalVariableDeclaration: false

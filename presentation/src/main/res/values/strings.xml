@@ -74,5 +74,8 @@
     <string name="forgot_pass_new">New password</string>
     <string name="forgot_pass_confirm">Confirm new password</string>
     <string name="forgot_pass_mail_sent_msg">Password reset code sent to your email.</string>
+    <string name="forgot_pass_success_msg">Your password has been successfully reset.</string>
+    <string name="forgot_pass_error_incorrect_code">Verification code is incorrect. Please check the code from email carefully.</string>
+    <string name="reset_password_title">Reset Password</string>
 
 </resources>

@@ -53,7 +53,7 @@ class ForgotPasswordMailViewModel @Inject constructor(
                 val result = forgotPasswordUseCase.forgotPassword(email)
                 if (result is Response.Success) {
                     updateState { copy(isLoading = false, successMsgId = R.string.forgot_pass_mail_sent_msg) }
-                    submitEvent(ForgotPasswordMailEvents.NavigateToResetPasswordScreen)
+                    submitEvent(ForgotPasswordMailEvents.NavigateToResetPasswordScreen(email))
                 } else if (result is Response.Failure) {
                     // NOTE: When email is not found, WEB app is showing generic error, probably for security reasons
                     updateState { copy(isLoading = false, errorMsgId = R.string.error_generic) }

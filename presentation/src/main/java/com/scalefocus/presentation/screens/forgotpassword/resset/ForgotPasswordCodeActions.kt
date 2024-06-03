@@ -5,7 +5,7 @@ sealed class ForgotPasswordCodeActions {
 
     data class OnConfirmPasswordChange(val confirmPassword: String) : ForgotPasswordCodeActions()
 
-    data object OnSubmitClicked : ForgotPasswordCodeActions()
+    data class OnSubmitClicked(val verificationCode: String) : ForgotPasswordCodeActions()
 
     data object CloseErrorDialog : ForgotPasswordCodeActions()
 }

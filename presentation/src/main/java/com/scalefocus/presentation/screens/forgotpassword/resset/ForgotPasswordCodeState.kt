@@ -7,5 +7,6 @@ data class ForgotPasswordCodeState(
     val password: SFTextEditField = SFTextEditField(value = ""),
     val confirmPassword: SFTextEditField = SFTextEditField(value = ""),
     val isLoading: Boolean = false,
-    @StringRes val errorMsgId: Int? = null
+    @StringRes val errorMsgId: Int? = null,
+    @StringRes val successMsgId: Int? = null,
 )

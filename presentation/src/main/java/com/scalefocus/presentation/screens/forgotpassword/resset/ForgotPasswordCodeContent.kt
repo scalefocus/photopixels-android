@@ -31,7 +31,10 @@ import com.scalefocus.presentation.base.composeviews.ShowAlertDialog
 import com.scalefocus.presentation.theme.PhotoPixelsTheme
 
 @Composable
-fun ForgotPasswordCodeContent(state: ForgotPasswordCodeState, onSubmitActions: (ForgotPasswordCodeActions) -> Unit) {
+fun ForgotPasswordCodeContent(
+    state: ForgotPasswordCodeState,
+    onSubmitActions: (ForgotPasswordCodeActions) -> Unit
+) {
     var verificationCode by remember { mutableStateOf("") }
 
     if (state.isLoading) {
@@ -40,7 +43,7 @@ fun ForgotPasswordCodeContent(state: ForgotPasswordCodeState, onSubmitActions: (
 
     state.errorMsgId?.let {
         ShowAlertDialog(
-            title = stringResource(id = R.string.login_error_title),
+            title = stringResource(id = R.string.reset_password_title),
             negativeButtonText = null,
             description = stringResource(id = it),
             onPositiveClick = { onSubmitActions(ForgotPasswordCodeActions.CloseErrorDialog) }
@@ -82,6 +85,8 @@ fun ForgotPasswordCodeContent(state: ForgotPasswordCodeState, onSubmitActions: (
                 SFPasswordTextField(
                     password = state.password.value,
                     label = stringResource(id = R.string.forgot_pass_new),
+                    isError = state.password.errorMsgId != null,
+                    errorText = state.password.errorMsgId,
                     onValueChange = {
                         onSubmitActions(ForgotPasswordCodeActions.OnPasswordChange(it))
                     }
@@ -92,6 +97,8 @@ fun ForgotPasswordCodeContent(state: ForgotPasswordCodeState, onSubmitActions: (
                     label = stringResource(
                         id = R.string.forgot_pass_confirm
                     ),
+                    isError = state.confirmPassword.errorMsgId != null,
+                    errorText = state.confirmPassword.errorMsgId,
                     onValueChange = {
                         onSubmitActions(ForgotPasswordCodeActions.OnConfirmPasswordChange(it))
                     }
@@ -103,7 +110,7 @@ fun ForgotPasswordCodeContent(state: ForgotPasswordCodeState, onSubmitActions: (
                     state.confirmPassword.value.isEmpty()
                 SFButton(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { onSubmitActions(ForgotPasswordCodeActions.OnSubmitClicked) },
+                    onClick = { onSubmitActions(ForgotPasswordCodeActions.OnSubmitClicked(verificationCode)) },
                     enabled = !areFieldsEmpty,
                     text = stringResource(id = R.string.button_submit)
                 )
