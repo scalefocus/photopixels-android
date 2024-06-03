@@ -55,11 +55,11 @@ suspend fun <T> handleThrowableResponse(throwable: Throwable): Response<T> {
 private suspend fun translateServerError(httpResponse: HttpResponse): PhotoPixelError {
     val bodyText = httpResponse.bodyAsText()
     return when (httpResponse.status.value) {
-        HTTP_409_CONFLICT, CUSTOM_BE_ERROR -> { // Duplicate photo error while uploading
+        HttpStatusCode.Conflict.value, CUSTOM_BE_ERROR -> { // Duplicate photo error while uploading
             PhotoPixelError.DuplicatePhotoError
         }
 
-        HTTP_400_BAD_REQUEST -> {
+        HttpStatusCode.BadRequest.value -> {
             var error: PhotoPixelError = PhotoPixelError.GenericError
             if (bodyText.contains(PhotoPixelsErrorResponses.INCORRECT_VERIFICATION_CODE)) {
                 error = PhotoPixelError.VerificationCodeIncorrect
@@ -73,7 +73,5 @@ private suspend fun translateServerError(httpResponse: HttpResponse): PhotoPixel
     }
 }
 
-private val HTTP_409_CONFLICT = HttpStatusCode.Conflict.value
-private val HTTP_400_BAD_REQUEST = HttpStatusCode.BadRequest.value
 private const val CUSTOM_BE_ERROR = -1
 private const val HTTP_ERROR_TAG = "network_error"
