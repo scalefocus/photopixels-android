@@ -19,9 +19,3 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
-
-# Keep all classes from the javax.naming package
--keep class javax.naming.** { *; }
-
-# Keep all classes from the org.ietf.jgss package
--keep class org.ietf.jgss.** { *; }
