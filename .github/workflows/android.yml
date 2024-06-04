@@ -75,7 +75,4 @@ jobs:
                     overwrite: false
 
             -   name: Publish via Firebase AppDistribution
-                run: echo "TODO"
-
-    mytestjob:
-        runs-on: ubuntu-latest
+                run: echo "TODO appDistributionUploadRelease"
