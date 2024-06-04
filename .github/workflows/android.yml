@@ -41,7 +41,7 @@ jobs:
               env:
                   ENCODED_STRING: ${{ secrets.KEYSTORE_BASE_64 }}
                   RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-                  RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEYSTORE_ALIAS }}
+                  RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
                   RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
               run: |
