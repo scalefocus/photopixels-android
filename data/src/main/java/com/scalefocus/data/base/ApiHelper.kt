@@ -5,6 +5,7 @@ import com.scalefocus.domain.base.Response
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import timber.log.Timber
 import java.io.IOException
@@ -51,10 +52,19 @@ suspend fun <T> handleThrowableResponse(throwable: Throwable): Response<T> {
 }
 
 // TODO: Add more BE errors here
-private fun translateServerError(httpResponse: HttpResponse): PhotoPixelError {
+private suspend fun translateServerError(httpResponse: HttpResponse): PhotoPixelError {
+    val bodyText = httpResponse.bodyAsText()
     return when (httpResponse.status.value) {
-        HTTP_409_CONFLICT, CUSTOM_BE_ERROR -> { // Duplicate photo error while uploading
+        HttpStatusCode.Conflict.value, CUSTOM_BE_ERROR -> { // Duplicate photo error while uploading
             PhotoPixelError.DuplicatePhotoError
+        }
+
+        HttpStatusCode.BadRequest.value -> {
+            var error: PhotoPixelError = PhotoPixelError.GenericError
+            if (bodyText.contains(PhotoPixelsErrorResponses.INCORRECT_VERIFICATION_CODE)) {
+                error = PhotoPixelError.VerificationCodeIncorrect
+            }
+            error
         }
 
         else -> {
@@ -63,6 +73,5 @@ private fun translateServerError(httpResponse: HttpResponse): PhotoPixelError {
     }
 }
 
-private val HTTP_409_CONFLICT = HttpStatusCode.Conflict.value
 private const val CUSTOM_BE_ERROR = -1
 private const val HTTP_ERROR_TAG = "network_error"

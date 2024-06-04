@@ -1,4 +1,4 @@
-package com.scalefocus.domain.usecases
+package com.scalefocus.domain.usecases.auth
 
 import com.scalefocus.domain.base.Response
 import com.scalefocus.domain.repository.AuthRepository

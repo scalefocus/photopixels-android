@@ -10,4 +10,6 @@ sealed class PhotoPixelError {
     data object InvalidUsernameOrPassword : PhotoPixelError()
 
     data object NoInternetConnection : PhotoPixelError()
+
+    data object VerificationCodeIncorrect : PhotoPixelError()
 }

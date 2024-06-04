@@ -58,4 +58,12 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun clearGoogleAuthToken() {
         authDataStore.clearGoogleAuthToken()
     }
+
+    override suspend fun forgotPassword(email: String): Response<Unit> {
+        return backendApi.forgotPassword(email)
+    }
+
+    override suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit> {
+        return backendApi.resetPassword(email, newPassword, verificationCode)
+    }
 }
