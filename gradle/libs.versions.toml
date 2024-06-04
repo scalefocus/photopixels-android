@@ -48,6 +48,8 @@ playServicesAuth = "21.1.1"
 googlePhotosLibraryClient = "1.7.3"
 appauth = "0.11.1"
 jwtdecode = "2.0.0"
+grpcNetty = "1.57.0"
+grpcOkhttp = "1.50.0"
 
 [libraries]
 
@@ -119,6 +121,12 @@ ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlin
 ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 ktor-client-encoding = { group = "io.ktor", name = "ktor-client-encoding", version.ref = "ktor" }
 ktor-client-gson = { group = "io.ktor", name = "ktor-client-gson", version.ref = "ktor" }
+grpc-core = { module = "io.grpc:grpc-core", version.ref = "grpcNetty" }
+grpc-netty = { module = "io.grpc:grpc-netty", version.ref = "grpcNetty" }
+grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpcOkhttp" }
+grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpcNetty" }
+grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpcNetty" }
+
 
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work-runtime-ktx" }
 
@@ -145,6 +153,11 @@ compose = [
 ktor = [
     "ktor-core", "ktor-android", "ktor-logging", "ktor-client-negotation",
     "ktor-serialization-json", "ktor-client-auth", "ktor-client-encoding", "ktor-client-gson"
+]
+
+google-photos = [
+    "google-photos-library-client", "grpc-core", "grpc-netty",
+    "grpc-okhttp", "grpc-protobuf", "grpc-stub"
 ]
 
 [plugins]

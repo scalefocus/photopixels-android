@@ -23,3 +23,13 @@
 ##---------------Begin: proguard configuration for Pusher Java Client  ----------
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 ##---------------End: proguard configuration for Pusher Java Client  -----
+
+-dontwarn org.apache.http.conn.ssl.DefaultHostnameVerifier
+-dontwarn autovalue.shaded.com.squareup.javapoet.**
+-dontwarn com.google.auto.value.processor.**
+-dontwarn com.google.auto.value.extension.toprettystring.processor.**
+-dontwarn org.apache.http.impl.auth.GGSSchemeBase
+-dontwarn org.apache.http.auth.KerberosCredentials
+-dontwarn org.apache.http.impl.auth.KerberosScheme
+-dontwarn org.apache.http.**
+
