@@ -10,7 +10,7 @@ on:
             - bugfix/**
             - release/**
         tags:
-            - 'v*'
+            - 'v*.*.*'
 
     pull_request:
         branches:
@@ -102,8 +102,8 @@ jobs:
                     overwrite: false
 
             -   name: Temp - Prepare a Release
-                id: create_release
                 uses: softprops/action-gh-release@v2
+                if: startsWith(github.ref, 'refs/tags/')
                 with:
                     files: app/build/outputs/apk/release/*release*.apk
 
