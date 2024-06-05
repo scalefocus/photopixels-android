@@ -107,7 +107,7 @@ jobs:
                 with:
                     files: app/build/outputs/apk/release/*release*.apk
 
-    publish:
+    distribute:
         runs-on: ubuntu-latest
         needs: assemble-signed-release
         steps:
@@ -120,6 +120,14 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'gradle'
+
+            -   name: Download APK from artifacts
+                uses: actions/download-artifact@v4
+                with:
+                    name: photopixels-release-apk
+
+            -   name: Unzip APK
+                run: unzip photopixels-release-apk.zip
 
             -   name: Publish via Firebase AppDistribution
                 run: echo "TODO download artifact and do appDistributionUploadRelease"
