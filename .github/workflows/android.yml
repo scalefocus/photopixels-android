@@ -125,7 +125,7 @@ jobs:
                 uses: actions/download-artifact@v4
                 with:
                     name: photopixels-release-apk
-                    path: $GITHUB_WORKSPACE
+                    path: GITHUB_WORKSPACE
 
             # TEMPORARY
             -   name: Temporary stuff
