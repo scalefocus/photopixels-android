@@ -101,6 +101,23 @@ jobs:
                     if-no-files-found: error # error, warn, ignore
                     overwrite: false
 
+            -   name: Upload reports
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-reports
+                    path: |
+                        **/build/reports/*
+
+            - name: Upload test results
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: photopixels-android-test-results
+                  path: |
+                      **/build/test-results/*
+
+            # TEMPORARY
             -   name: Temp - Prepare a Release
                 uses: softprops/action-gh-release@v2
                 if: startsWith(github.ref, 'refs/tags/')
@@ -125,16 +142,17 @@ jobs:
                 uses: actions/download-artifact@v4
                 with:
                     name: photopixels-release-apk
-                    #path: GITHUB_WORKSPACE # Destination path. Supports basic tilde expansion.
+                    path: app/build/outputs/apk/release/
 
             # TEMPORARY
             -   name: Temporary stuff
                 run: |
                     pwd
                     ls -la
+                    ls -la app/build/outputs/apk/release/
 
-            -   name: Unzip APK
-                run: unzip ./photopixels-release-apk.zip
+#            -   name: Unzip APK
+#                run: unzip ./photopixels-release-apk.zip
 
             -   name: Publish via Firebase AppDistribution
                 run: echo "TODO download artifact and do appDistributionUploadRelease"
