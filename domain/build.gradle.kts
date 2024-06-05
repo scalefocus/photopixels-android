@@ -8,10 +8,8 @@ plugins {
 android {
     namespace = "com.scalefocus.domain"
 
-    buildTypes {
-        release {
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
+    defaultConfig {
+        consumerProguardFiles("proguard-rules.pro")
     }
 }
 

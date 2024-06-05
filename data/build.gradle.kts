@@ -20,15 +20,7 @@ android {
     defaultConfig {
         buildConfigField("String", "GOOGLE_OAUTH_WEB_CLIENT_ID", webClientId)
         buildConfigField("String", "GOOGLE_OAUTH_WEB_CLIENT_SECRET", webClientSecret)
-    }
-
-    buildTypes {
-        release {
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
+        consumerProguardFiles("proguard-rules.pro")
     }
 }
 
@@ -52,10 +44,5 @@ dependencies {
     implementation(libs.googleid)
 
     // Google Photos
-    implementation(libs.google.photos.library.client)
-    implementation("io.grpc:grpc-netty:1.57.0")
-    implementation("io.grpc:grpc-protobuf:1.57.0")
-    implementation("io.grpc:grpc-stub:1.57.0")
-    implementation("io.grpc:grpc-okhttp:1.50.0")
-    implementation("io.grpc:grpc-core:1.57.0")
+    implementation(libs.bundles.google.photos)
 }
