@@ -90,8 +90,25 @@ jobs:
                     echo "keyAlias=$RELEASE_KEY_ALIAS" >> keystore.properties
                     echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties 
 
+            -   name: Generate build number
+                id: generate_build_number
+                shell: bash
+                run: |
+                    # Use reference timestamp to reduce the version code value due to Google Play 
+                    # limit of 2100000000. Basically we take the current timestamp and subtract the
+                    # reference timestamp from it.
+                    referenceTimestamp=$(date -d "2024-06-01" +%s)
+                    currentTimestamp=$(date +%s)
+                    timeDifference=$(( currentTimestamp - referenceTimestamp ))
+                    
+                    # We multiply the time difference by a factor (here, 10) to give it more weight 
+                    # and add the GITHUB_RUN_NUMBER for additional uniqueness. We can adjust the 
+                    # multiplier based on how frequently we expect to build.
+                    versionCode=$(( (timeDifference * 10) + GITHUB_RUN_NUMBER ))
+                    #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
+
             -   name: Create release APK
-                run: ./gradlew assembleRelease
+                run: ./gradlew assembleRelease -PversionCode=${{ steps.generate_build_number.outputs.versionCode }}
 
             -   name: Upload release APK to artifacts
                 uses: actions/upload-artifact@v4
