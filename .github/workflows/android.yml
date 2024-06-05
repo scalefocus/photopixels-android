@@ -125,9 +125,16 @@ jobs:
                 uses: actions/download-artifact@v4
                 with:
                     name: photopixels-release-apk
+                    path: $GITHUB_WORKSPACE
+
+            # TEMPORARY
+            -   name: Temporary stuff
+                run: |
+                    pwd
+                    ls -la
 
             -   name: Unzip APK
-                run: unzip photopixels-release-apk.zip
+                run: unzip ./photopixels-release-apk.zip
 
             -   name: Publish via Firebase AppDistribution
                 run: echo "TODO download artifact and do appDistributionUploadRelease"
