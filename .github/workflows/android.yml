@@ -105,6 +105,7 @@ jobs:
                     # and add the GITHUB_RUN_NUMBER for additional uniqueness. We can adjust the 
                     # multiplier based on how frequently we expect to build.
                     versionCode=$(( (timeDifference * 10) + GITHUB_RUN_NUMBER ))
+                    echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
                     #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
 
             -   name: Create release APK
