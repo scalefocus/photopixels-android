@@ -24,9 +24,6 @@ internal fun NavGraphBuilder.homeScreenNavGraph(navHostController: NavHostContro
 internal fun NavGraphBuilder.homeScreen(navHostController: NavHostController) {
     composable(route = HomeScreens.Home.route) {
         HomeScreen(
-            onNavigateToSettingsScreen = {
-                navHostController.navigate(HomeScreens.Settings.route)
-            },
             onNavigateToSyncScreen = {
                 // TODO: implement screens
             },

@@ -9,4 +9,5 @@ package com.scalefocus.data.base
  */
 internal object PhotoPixelsErrorResponses {
     const val INCORRECT_VERIFICATION_CODE = "The provided code is invalid"
+    const val EMAIL_ALREADY_TAKEN = "DuplicateUserName"
 }

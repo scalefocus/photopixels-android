@@ -63,6 +63,8 @@ private suspend fun translateServerError(httpResponse: HttpResponse): PhotoPixel
             var error: PhotoPixelError = PhotoPixelError.GenericError
             if (bodyText.contains(PhotoPixelsErrorResponses.INCORRECT_VERIFICATION_CODE)) {
                 error = PhotoPixelError.VerificationCodeIncorrect
+            } else if (bodyText.contains(PhotoPixelsErrorResponses.EMAIL_ALREADY_TAKEN)) {
+                error = PhotoPixelError.AccountAlreadyTaken
             }
             error
         }
