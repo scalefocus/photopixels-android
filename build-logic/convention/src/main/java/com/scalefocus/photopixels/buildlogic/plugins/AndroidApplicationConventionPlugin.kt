@@ -28,7 +28,9 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 defaultConfig {
                     targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
                     versionCode = (properties["versionCode"] as String?)?.toIntOrNull() ?: 1
-                    versionName = properties["versionName"] as String? ?: "0.0.1"
+                    versionName = (properties["majorVersion"] as String? ?: "0") +
+                        "." + (properties["minorVersion"] as String? ?: "0") +
+                        "." + (properties["patchVersion"] as String? ?: "1-SNAPSHOT")
 
                     vectorDrawables {
                         useSupportLibrary = true
