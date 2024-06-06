@@ -44,7 +44,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <data
-                    android:scheme="com.scalefocus.photopixels"
+                    android:scheme="${appAuthRedirectScheme}"
                     android:path="/oauth2redirect" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

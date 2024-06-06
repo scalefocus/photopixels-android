@@ -21,6 +21,9 @@ import com.scalefocus.domain.model.ServerRevision
 import com.scalefocus.domain.model.ServerStatus
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
+import io.ktor.client.plugins.plugin
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -52,6 +55,11 @@ class BackendApiImpl @Inject constructor(private val httpClient: HttpClient) : B
 
             Response.Success(result)
         }
+
+    override suspend fun clearBearerTokens() {
+        httpClient.plugin(Auth).providers.filterIsInstance<BearerAuthProvider>()
+            .firstOrNull()?.clearToken()
+    }
 
     override suspend fun refreshToken(refreshToken: String): Response<LoginResponse> =
         request {
