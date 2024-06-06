@@ -56,7 +56,7 @@ class BackendApiImpl @Inject constructor(private val httpClient: HttpClient) : B
             Response.Success(result)
         }
 
-    override suspend fun clearKtorTokens() {
+    override suspend fun clearBearerTokens() {
         httpClient.plugin(Auth).providers.filterIsInstance<BearerAuthProvider>()
             .firstOrNull()?.clearToken()
     }

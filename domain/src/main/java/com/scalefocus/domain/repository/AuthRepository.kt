@@ -7,7 +7,7 @@ interface AuthRepository {
 
     suspend fun loginUser(email: String, password: String): Flow<Response<Unit>>
 
-    suspend fun clearKtorTokens()
+    suspend fun clearBearerTokens()
 
     suspend fun registerUser(name: String, email: String, password: String): Flow<Response<Unit>>
 

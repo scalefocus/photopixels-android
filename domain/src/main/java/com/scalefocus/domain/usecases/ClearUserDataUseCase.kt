@@ -17,7 +17,7 @@ class ClearUserDataUseCase @Inject constructor(
 
         if (clearServerData) {
             serverRepository.clearServerData()
-            authRepository.clearKtorTokens()
+            authRepository.clearBearerTokens()
         }
     }
 }
