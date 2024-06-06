@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.scalefocus.domain.model.PhotoUiData
 
 data class HomeScreenState(
+    val isSyncStarted: Boolean = false,
     val isLoading: Boolean = false,
     @StringRes val errorMsgId: Int? = null,
     val photoThumbnails: List<PhotoUiData> = emptyList()

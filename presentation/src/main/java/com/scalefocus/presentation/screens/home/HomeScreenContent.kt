@@ -70,7 +70,10 @@ fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenAction
         }
 
         if (state.photoThumbnails.isEmpty()) {
-            EmptyState(onBtnClick = { onSubmitActions(HomeScreenActions.OnGoToSyncButtonClick) })
+            EmptyState(
+                isSyncStarted = state.isSyncStarted,
+                onBtnClick = { onSubmitActions(HomeScreenActions.OnSyncButtonClick) }
+            )
         } else {
             ThumbnailsGrid(
                 state = state,
@@ -133,8 +136,8 @@ private fun ThumbnailImage(
 }
 
 @Composable
-private fun EmptyState(onBtnClick: () -> Unit) {
-    Column {
+private fun EmptyState(isSyncStarted: Boolean, onBtnClick: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         val icon = painterResource(id = R.drawable.photo_library_24)
         Image(
             modifier = Modifier.size(100.dp),
@@ -155,8 +158,10 @@ private fun EmptyState(onBtnClick: () -> Unit) {
         Spacer(modifier = Modifier.height(30.dp))
 
         SFButton(
-            text = stringResource(R.string.home_screen_go_to_sync),
+            text = stringResource(R.string.button_sync_photos),
             color = SFSecondaryLightBlue,
+            enabled = !isSyncStarted,
+            showLoader = isSyncStarted,
             onClick = onBtnClick
         )
     }
@@ -179,7 +184,7 @@ private fun SmallGreenCircle(modifier: Modifier = Modifier) {
 @Preview(name = "EmptyState", group = "SingleViews", showBackground = true)
 private fun PreviewEmptyState() {
     PhotoPixelsTheme {
-        EmptyState(onBtnClick = {})
+        EmptyState(isSyncStarted = false, onBtnClick = {})
     }
 }
 

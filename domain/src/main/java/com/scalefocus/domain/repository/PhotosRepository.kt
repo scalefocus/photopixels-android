@@ -40,5 +40,7 @@ interface PhotosRepository {
 
     suspend fun getThumbnailsFromDb(): List<PhotoUiData>
 
+    suspend fun getThumbnailsFromDbCount(): Int
+
     suspend fun clearThumbnailsTable()
 }

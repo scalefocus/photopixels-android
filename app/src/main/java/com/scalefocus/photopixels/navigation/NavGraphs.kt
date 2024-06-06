@@ -2,7 +2,6 @@ package com.scalefocus.photopixels.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -68,12 +67,12 @@ private fun NavigationBar(navHostController: NavHostController) {
     NavigationBar {
         val navigationIcons = listOf(
             Icons.Default.Home,
-            Icons.Default.Check,
+            // Icons.Default.Check,
             Icons.Default.Settings
         )
         val labels = listOf(
             stringResource(R.string.home_screen_title),
-            stringResource(R.string.sync_screen_title),
+            // stringResource(R.string.sync_screen_title),
             stringResource(R.string.settings_screen_title)
         )
 
@@ -90,6 +89,7 @@ private fun NavigationBar(navHostController: NavHostController) {
                         }
 
                         HomeScreens.Sync.route -> {
+                            // TODO: Screen TBD
                         }
 
                         HomeScreens.Settings.route -> {

@@ -8,4 +8,8 @@ class GetThumbnailsFromDbUseCase @Inject constructor(private val photosRepositor
     suspend fun invoke(): List<PhotoUiData> {
         return photosRepository.getThumbnailsFromDb()
     }
+
+    suspend fun getThumbnailsCount(): Int {
+        return photosRepository.getThumbnailsFromDbCount()
+    }
 }

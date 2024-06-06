@@ -1,6 +1,7 @@
 package com.scalefocus.presentation.screens.register
 
 import androidx.lifecycle.viewModelScope
+import com.scalefocus.domain.base.PhotoPixelError
 import com.scalefocus.domain.base.Response
 import com.scalefocus.domain.usecases.ValidateFieldUseCase
 import com.scalefocus.domain.usecases.auth.RegisterUserUseCase
@@ -63,10 +64,16 @@ class RegisterViewModel @Inject constructor(
                     updateState { copy(isLoading = false) }
                     submitEvent(RegisterScreenEvents.NavigateToLoginScreen(email, password))
                 } else if (response is Response.Failure) {
+                    val errorMsgId: Int = if (response.error is PhotoPixelError.AccountAlreadyTaken) {
+                        R.string.register_account_taken_error
+                    } else {
+                        R.string.register_error_msg
+                    }
+
                     updateState {
                         copy(
                             isLoading = false,
-                            errorMsgId = R.string.register_error_msg
+                            errorMsgId = errorMsgId
                         )
                     }
                 }

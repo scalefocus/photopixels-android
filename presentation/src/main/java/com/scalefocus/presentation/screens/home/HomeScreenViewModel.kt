@@ -41,7 +41,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     init {
-        submitEvent(HomeScreenEvents.RequestStoragePermissionsEvent)
+        syncLocalPhotos()
         // TODO Thumbnails can be stored locally in DB, and if latest revision from server is equal to local revision
         // equal -> load thumbnails from device
         // not equal -> load thumbnails from server and then store it in device
@@ -60,8 +60,8 @@ class HomeScreenViewModel @Inject constructor(
                 updateState { copy(errorMsgId = null) }
             }
 
-            HomeScreenActions.OnGoToSyncButtonClick -> {
-                submitEvent(HomeScreenEvents.NavigateToSyncScreenEvent)
+            HomeScreenActions.OnSyncButtonClick -> {
+                submitEvent(HomeScreenEvents.RequestStoragePermissionsEvent)
             }
 
             HomeScreenActions.StartSyncWorkers -> startWorkersAndListeners()
@@ -167,6 +167,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     private fun startWorkersAndListeners() {
+        updateState { copy(isSyncStarted = true) }
         workerStarter.startDeviceAndUploadWorkers()
         initUploadPhotosWorkerListener()
     }
@@ -175,6 +176,7 @@ class HomeScreenViewModel @Inject constructor(
         viewModelScope.launch {
             workerStarter.getUploadPhotosWorkerListener().collect {
                 if (it.workerStatus == WorkerStatus.FINISHED) {
+                    updateState { copy(isSyncStarted = false) }
                     // Refresh thumbnails only if photos was uploaded
                     if (it.resultData?.get(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY) as Int > 0) {
                         // Wait if function is already started
@@ -198,5 +200,14 @@ class HomeScreenViewModel @Inject constructor(
     // Suggestion made: we can add latest backend revision to /status or /login endpoints
     private suspend fun getThumbnailsFromDb(): List<PhotoUiData> {
         return getThumbnailsFromDbUseCase.invoke()
+    }
+
+    private fun syncLocalPhotos() {
+        viewModelScope.launch {
+            if (getThumbnailsFromDbUseCase.getThumbnailsCount() > 0) {
+                // Start auto-sync photos flow if device has at least one PP thumbnail photo
+                submitEvent(HomeScreenEvents.RequestStoragePermissionsEvent)
+            }
+        }
     }
 }

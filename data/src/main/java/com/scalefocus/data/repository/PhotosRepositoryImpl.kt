@@ -81,6 +81,10 @@ class PhotosRepositoryImpl @Inject constructor(
         return thumbnailsDao.getAllThumbnails().map { it.toDomain() }
     }
 
+    override suspend fun getThumbnailsFromDbCount(): Int {
+        return thumbnailsDao.getThumbnailsCount()
+    }
+
     override suspend fun clearThumbnailsTable() {
         thumbnailsDao.clearTable()
     }

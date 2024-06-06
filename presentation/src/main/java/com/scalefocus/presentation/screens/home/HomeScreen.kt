@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun HomeScreen(
     onNavigateToSyncScreen: () -> Unit,
-    onNavigateToSettingsScreen: () -> Unit,
     onNavigateToPreviewPhotosScreen: (String) -> Unit,
     viewModel: HomeScreenViewModel = hiltViewModel()
 ) {

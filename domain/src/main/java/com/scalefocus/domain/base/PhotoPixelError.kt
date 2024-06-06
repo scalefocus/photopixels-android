@@ -12,4 +12,6 @@ sealed class PhotoPixelError {
     data object NoInternetConnection : PhotoPixelError()
 
     data object VerificationCodeIncorrect : PhotoPixelError()
+
+    data object AccountAlreadyTaken : PhotoPixelError()
 }
