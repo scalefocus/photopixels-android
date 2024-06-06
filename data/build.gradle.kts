@@ -21,6 +21,16 @@ android {
         buildConfigField("String", "GOOGLE_OAUTH_WEB_CLIENT_ID", webClientId)
         buildConfigField("String", "GOOGLE_OAUTH_WEB_CLIENT_SECRET", webClientSecret)
         consumerProguardFiles("proguard-rules.pro")
+
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.scalefocus.photopixels"
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/io.netty.versions.properties"
+        }
     }
 }
 

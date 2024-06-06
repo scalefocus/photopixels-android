@@ -16,6 +16,8 @@ interface BackendApi {
 
     suspend fun loginUser(email: String, password: String): Response<LoginResponse>
 
+    suspend fun clearKtorTokens()
+
     suspend fun refreshToken(refreshToken: String): Response<LoginResponse>
 
     suspend fun registerUser(name: String, email: String, password: String): Response<Unit>

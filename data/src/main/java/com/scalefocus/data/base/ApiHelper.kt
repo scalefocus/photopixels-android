@@ -24,7 +24,6 @@ import java.io.IOException
  *             Resource.Success(true)
  *         }
  */
-@Suppress("TooGenericExceptionCaught")
 suspend fun <T> request(block: suspend () -> Response<T>): Response<T> {
     return try {
         block.invoke()

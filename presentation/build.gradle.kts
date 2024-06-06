@@ -26,6 +26,7 @@ android {
     defaultConfig {
         buildConfigField("String", "GOOGLE_OAUTH_ANDROID_CLIENT_ID", androidClientId)
         consumerProguardFiles("proguard-rules.pro")
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.scalefocus.photopixels"
     }
 }
 

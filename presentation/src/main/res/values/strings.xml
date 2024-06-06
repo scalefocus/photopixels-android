@@ -34,6 +34,7 @@
     <string name="register_name_incorrect">Please type correct name</string>
     <string name="register_email_incorrect">Please type correct email address</string>
     <string name="register_account_taken_error">Account is already taken. Please choose different account.</string>
+    <string name="register_account_success">Account has been created successfully.</string>
 
     <!-- Misc -->
     <string name="button_submit">Submit</string>

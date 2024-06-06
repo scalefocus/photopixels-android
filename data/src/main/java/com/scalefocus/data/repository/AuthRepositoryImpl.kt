@@ -25,6 +25,10 @@ class AuthRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun clearKtorTokens() {
+        backendApi.clearKtorTokens()
+    }
+
     override suspend fun registerUser(name: String, email: String, password: String): Flow<Response<Unit>> =
         flow {
             val result = backendApi.registerUser(name, email, password)
