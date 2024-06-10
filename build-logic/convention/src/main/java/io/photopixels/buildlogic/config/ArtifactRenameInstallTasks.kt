@@ -65,7 +65,11 @@ private fun Project.generateNewVariantOutputName(variant: ApplicationVariant): S
     val versionName = androidExtension.defaultConfig.versionName ?: "unknown"
     val versionCode = androidExtension.defaultConfig.versionCode
     val buildType = variant.buildType ?: "unknown"
+<<<<<<< HEAD
     // val flavorName = variant.flavorName.orEmpty()
+=======
+    //val flavorName = variant.flavorName.orEmpty()
+>>>>>>> 97cf2e5 (Github workflow in progress.)
     val flavorNameExpanded = variant.productFlavors.joinToString("-") { it.second }
 
     val newNameSuffix = buildString {
