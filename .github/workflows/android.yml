@@ -164,15 +164,5 @@ jobs:
                     name: photopixels-release-apk
                     path: app/build/outputs/apk/release/
 
-            # TEMPORARY
-            -   name: Temporary stuff
-                run: |
-                    pwd
-                    ls -la
-                    ls -la app/build/outputs/apk/release/
-
-#            -   name: Unzip APK
-#                run: unzip ./photopixels-release-apk.zip
-
             -   name: Publish via Firebase AppDistribution
                 run: echo "TODO download artifact and do appDistributionUploadRelease"
