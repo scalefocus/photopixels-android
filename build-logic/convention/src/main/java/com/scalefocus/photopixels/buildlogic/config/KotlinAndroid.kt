@@ -4,9 +4,10 @@ import com.android.build.api.dsl.CommonExtension
 import com.scalefocus.photopixels.buildlogic.extensions.libs
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.provideDelegate
-import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension<*, *, *, *, *, *>) {
     commonExtension.apply {
@@ -22,27 +23,30 @@ internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension<*, 
             targetCompatibility = JavaVersion.valueOf(javaVersion)
         }
 
-        configureKotlin()
+        val extension = extensions.getByType<KotlinAndroidProjectExtension>()
+        configureKotlin(extension)
     }
 }
 
-private fun Project.configureKotlin() {
-    // todo: Use withType as workaround for https://youtrack.jetbrains.com/issue/KT-55947
-    tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            val javaVersion = libs.findVersion("javaVersion").get().toString()
-            jvmTarget = JavaVersion.valueOf(javaVersion).toString()
+private fun Project.configureKotlin(extension: KotlinAndroidProjectExtension) {
+    with(extension) {
+        compilerOptions {
+            val javaVersionName = libs.findVersion("javaVersion").get().toString()
+            val javaVersion = JavaVersion.valueOf(javaVersionName).majorVersion
+
+            jvmTarget.set(JvmTarget.fromTarget(javaVersion))
 
             // Treat all Kotlin warnings as errors (disabled by default)
             // Override by setting warningsAsErrors=true in your ~/.gradle/gradle.properties
-            val warningsAsErrors: String? by project
-            allWarningsAsErrors = warningsAsErrors.toBoolean()
+            val warningsAsErrors: Boolean? by project
+            allWarningsAsErrors.set(warningsAsErrors)
 
-            freeCompilerArgs = freeCompilerArgs +
+            freeCompilerArgs.set(
                 listOf(
                     // Enable experimental coroutines APIs
                     "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 )
+            )
         }
     }
 }
