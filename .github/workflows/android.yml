@@ -129,16 +129,15 @@ jobs:
                     path: |
                         **/build/reports/*
 
-            - name: Upload test results
-              if: always()
-              uses: actions/upload-artifact@v4
-              with:
-                  name: photopixels-android-test-results
-                  path: |
-                      **/build/test-results/*
+            -   name: Upload test results
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-test-results
+                    path: |
+                        **/build/test-results/*
 
-            # TEMPORARY
-            -   name: Temp - Prepare a Release
+            -   name: Publish release APK to Github Releases
                 uses: softprops/action-gh-release@v2
                 if: startsWith(github.ref, 'refs/tags/')
                 with:
