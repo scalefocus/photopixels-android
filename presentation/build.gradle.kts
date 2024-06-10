@@ -28,6 +28,10 @@ android {
         consumerProguardFiles("proguard-rules.pro")
         manifestPlaceholders["appAuthRedirectScheme"] = "com.scalefocus.photopixels"
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {

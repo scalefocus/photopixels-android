@@ -32,6 +32,10 @@ android {
             excludes += "META-INF/io.netty.versions.properties"
         }
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
