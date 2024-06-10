@@ -109,7 +109,8 @@ jobs:
                     #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
 
             -   name: Create release APK
-                run: ./gradlew assembleRelease -PversionCode=${{ steps.generate_build_number.outputs.versionCode }}
+                run: ./gradlew assembleRelease \
+                        -PversionCode=${{ steps.generate_build_number.outputs.versionCode }}
 
             -   name: Upload release APK to artifacts
                 uses: actions/upload-artifact@v4
