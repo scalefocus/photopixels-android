@@ -17,7 +17,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 apply("plugin.ktlint")
 
                 // Uncomment to enable flavors as defined in AppFlavors.kt
-                // apply("plugin.flavors")
+                //apply("plugin.flavors")
             }
 
             extensions.configure<LibraryExtension> {
