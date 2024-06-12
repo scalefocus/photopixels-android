@@ -1,6 +1,5 @@
 *.iml
 .gradle
-/local.properties
 .idea/
 .DS_Store
 /build
@@ -11,4 +10,5 @@
 local.properties
 keystore.properties
 photopixels.properties
+google-services.json
 .kotlin/

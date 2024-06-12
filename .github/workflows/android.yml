@@ -1,0 +1,202 @@
+# --------------------------------------------------------------------------------------------------
+# This GitHub Actions workflow file is used to automate the build process for the PhotoPixels
+# Android project. The workflow includes several jobs to ensure the quality and delivery of the
+# project, such as:
+#
+# - check: Runs static analysis tools to check code quality and style.
+# - test: Executes unit tests to ensure the correctness of the code.
+# - build: Compiles the source code and generates the necessary artifacts.
+# - assemble-signed-release: Builds the application APK and signs it for release.
+# - distribute: Distributes the signed APK to the appropriate channels (e.g., Firebase App
+#       Distribution, Google Play).
+#
+# Note: The specific jobs and steps may evolve over time as the project requirements change.
+# --------------------------------------------------------------------------------------------------
+
+name: Android CI
+run-name: ${{ github.actor }} started the Android CI workflow
+
+on:
+    push:
+        branches:
+            - main
+            - develop
+            - feature/**
+            - bugfix/**
+            - release/**
+        tags:
+            - 'v*.*.*'
+
+    pull_request:
+        branches:
+            - main
+            - develop
+            - release/**
+
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout project code
+                uses: actions/checkout@v4
+
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v4
+                with:
+                    java-version: '17'
+                    distribution: 'adopt'
+                    cache: 'gradle'
+
+            -   name: Grant execute permissions for gradlew
+                run: chmod +x ./gradlew
+
+            -   name: Run Android lint, ktlint, detekt
+                run: ./gradlew lint ktlintCheck detekt
+
+    test:
+        runs-on: ubuntu-latest
+        needs: check
+        steps:
+            -   name: Checkout project code
+                uses: actions/checkout@v4
+
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v4
+                with:
+                    java-version: '17'
+                    distribution: 'adopt'
+                    cache: 'gradle'
+
+            -   name: Run tests
+                run: ./gradlew test
+
+    build:
+        runs-on: ubuntu-latest
+        needs: test
+        steps:
+            -   name: Checkout project code
+                uses: actions/checkout@v4
+
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v4
+                with:
+                    java-version: '17'
+                    distribution: 'adopt'
+                    cache: 'gradle'
+
+            -   name: Grant execute permissions for gradlew
+                run: chmod +x ./gradlew
+
+            -   name: Build with Gradle
+                run: ./gradlew assembleDebug
+
+    assemble-signed-release:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            -   name: Checkout project code
+                uses: actions/checkout@v4
+
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v4
+                with:
+                    java-version: '17'
+                    distribution: 'adopt'
+                    cache: 'gradle'
+
+            -   name: Prepare release signing configuration
+                env:
+                    ENCODED_STRING: ${{ secrets.KEYSTORE_BASE_64 }}
+                    RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+                    RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+                    RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+                run: |
+                    # Base64 decoding of keystore kept in temporary environment variable
+                    echo $ENCODED_STRING > keystore-b64.txt
+                    base64 -d keystore-b64.txt > keystore.jks
+
+                    # Create property file with signing configuration values
+                    echo "keystorePath=../keystore.jks" > keystore.properties
+                    echo "keystorePassword=$RELEASE_KEYSTORE_PASSWORD" >> keystore.properties
+                    echo "keyAlias=$RELEASE_KEY_ALIAS" >> keystore.properties
+                    echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties 
+
+            -   name: Generate build number
+                id: generate_build_number
+                shell: bash
+                run: |
+                    # Use reference timestamp to reduce the version code value due to Google Play 
+                    # limit of 2100000000. Basically we take the current timestamp and subtract the
+                    # reference timestamp from it.
+                    referenceTimestamp=$(date -d "2024-06-01" +%s)
+                    currentTimestamp=$(date +%s)
+                    timeDifference=$(( currentTimestamp - referenceTimestamp ))
+                    
+                    # We multiply the time difference by a factor (here, 10) to give it more weight 
+                    # and add the GITHUB_RUN_NUMBER for additional uniqueness. We can adjust the 
+                    # multiplier based on how frequently we expect to build.
+                    versionCode=$(( (timeDifference * 10) + GITHUB_RUN_NUMBER ))
+                    echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
+                    #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
+
+            -   name: Create release APK
+                run: |
+                    ./gradlew assembleRelease \
+                    -PversionCode=${{ steps.generate_build_number.outputs.versionCode }}
+
+            -   name: Upload release APK to artifacts
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-release-apk
+                    path: app/build/outputs/apk/release/*release*.apk
+                    if-no-files-found: error # error, warn, ignore
+                    overwrite: false
+
+            -   name: Upload reports
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-reports
+                    path: |
+                        **/build/reports/*
+
+            -   name: Upload test results
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-test-results
+                    path: |
+                        **/build/test-results/*
+
+            -   name: Publish release APK to Github Releases
+                uses: softprops/action-gh-release@v2
+                if: startsWith(github.ref, 'refs/tags/')
+                with:
+                    files: app/build/outputs/apk/release/*release*.apk
+
+    distribute:
+        runs-on: ubuntu-latest
+        needs: assemble-signed-release
+        steps:
+            -   name: Checkout project code
+                uses: actions/checkout@v4
+
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v4
+                with:
+                    java-version: '17'
+                    distribution: 'adopt'
+                    cache: 'gradle'
+
+            -   name: Download APK from artifacts
+                uses: actions/download-artifact@v4
+                with:
+                    name: photopixels-release-apk
+                    path: app/build/outputs/apk/release/
+
+            -   name: Publish via Firebase AppDistribution
+                run: echo "TODO download artifact and do appDistributionUploadRelease"
