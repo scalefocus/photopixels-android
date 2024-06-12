@@ -5,6 +5,14 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.getByType
 import java.io.File
 
+/**
+ * This method provides a way to manage the naming of the output artifacts be it an APK or an AAB file. Usually,
+ * artifacts come out as "app-release.apk". With this method, we could manage the final name, e.g.
+ *      <appId>-v<versionName>(<versionCode>)[-<flavor>]-<buildType>.<apk|aab>
+ *
+ * Note: For AAB files, any previously built artifacts are deleted. After a new AAB file is produced, it is being
+ * duplicated with a new name. Unfortunately, renaming at this point renders later assembling tasks broken.
+ */
 internal fun Project.installArtifactRenameTasks() {
     extensions.configure<AndroidComponentsExtension<*, *, *>>("androidComponents") {
         onVariants { variant ->
@@ -32,9 +40,9 @@ internal fun Project.installArtifactRenameTasks() {
 
             // This block is good for AAB files only
             tasks.matching {
-                it.name.startsWith("bundle")
-                    && !it.name.contains("Classes")
-                    && !it.name.contains("Resources")
+                it.name.startsWith("bundle") &&
+                    !it.name.contains("Classes") &&
+                    !it.name.contains("Resources")
             }.configureEach {
                 dependsOn(deleteAabTask)
 
@@ -42,8 +50,8 @@ internal fun Project.installArtifactRenameTasks() {
                     outputDir.listFiles()
                         ?.firstOrNull { it.extension == "aab" }
                         ?.copyTo(File(outputDir, "$newName.aab"), true)
-                        // We use copy (above) since "renameTo" breaks the "bundleXxx" task (AGP 8.4.1, Gradle 8.8)
-                        //?.renameTo(File(outputDir, "$newName.aab"))
+                    // We use copy (above) since "renameTo" breaks the "bundleXxx" task (AGP 8.4.1, Gradle 8.8)
+                    // ?.renameTo(File(outputDir, "$newName.aab"))
                 }
             }
         }
@@ -57,7 +65,7 @@ private fun Project.generateNewVariantOutputName(variant: ApplicationVariant): S
     val versionName = androidExtension.defaultConfig.versionName ?: "unknown"
     val versionCode = androidExtension.defaultConfig.versionCode
     val buildType = variant.buildType ?: "unknown"
-    //val flavorName = variant.flavorName.orEmpty()
+    // val flavorName = variant.flavorName.orEmpty()
     val flavorNameExpanded = variant.productFlavors.joinToString("-") { it.second }
 
     val newNameSuffix = buildString {
