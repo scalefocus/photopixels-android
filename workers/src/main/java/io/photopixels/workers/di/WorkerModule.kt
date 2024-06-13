@@ -5,7 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.photopixels.domain.workers.WorkerStarter
-import io.photopixels.workers.WorkerStarterImpl
+import io.photopixels.workers.workers.WorkerStarterImpl
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
