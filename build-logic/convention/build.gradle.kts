@@ -2,7 +2,7 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "com.scalefocus.photopixels.buildlogic"
+group = "io.photopixels.buildlogic"
 
 java {
     sourceCompatibility = JavaVersion.valueOf(libs.versions.javaVersion.get())

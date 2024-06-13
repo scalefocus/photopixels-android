@@ -1,0 +1,13 @@
+package io.photopixels.domain.usecases
+
+import io.photopixels.domain.base.Response
+import io.photopixels.domain.model.ServerStatus
+import io.photopixels.domain.repository.ServerRepository
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+
+class GetServerStatusUseCase @Inject constructor(private val serverRepository: ServerRepository) {
+    suspend fun invoke(serverAddress: String): Flow<Response<ServerStatus>> {
+        return serverRepository.getServerStatus(serverAddress)
+    }
+}

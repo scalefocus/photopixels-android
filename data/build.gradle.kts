@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.scalefocus.data"
+    namespace = "io.photopixels.data"
 
     val properties = Properties().apply {
         with(rootProject.file("photopixels.properties")) { if (exists()) load(inputStream()) }
@@ -22,7 +22,7 @@ android {
         buildConfigField("String", "GOOGLE_OAUTH_WEB_CLIENT_SECRET", webClientSecret)
         consumerProguardFiles("proguard-rules.pro")
 
-        manifestPlaceholders["appAuthRedirectScheme"] = "com.scalefocus.photopixels"
+        manifestPlaceholders["appAuthRedirectScheme"] = "io.photopixels.app"
     }
 
     packaging {
