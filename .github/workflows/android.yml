@@ -57,6 +57,7 @@ jobs:
 
             -   run: |
                     pwd
+                    ls -la
                     ls -ls ./github/workflows
             -   name: Prepare Firebase services configuration
                 uses: ./.github/actions/firebase-config
