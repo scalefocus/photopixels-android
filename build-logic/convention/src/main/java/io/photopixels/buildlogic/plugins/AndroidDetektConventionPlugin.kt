@@ -1,8 +1,11 @@
-import io.photopixels.buildlogic.extensions.libs
+
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import io.gitlab.arturbosch.detekt.extensions.DetektReports
+import io.photopixels.buildlogic.extensions.findPluginId
+import io.photopixels.buildlogic.extensions.findVersion
+import io.photopixels.buildlogic.extensions.libs
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -16,14 +19,13 @@ class AndroidDetektConventionPlugin : Plugin<Project> {
         with(target) {
             allprojects {
                 with(pluginManager) {
-                    val detektPlugin = libs.findPlugin("detektPlugin").get().get().pluginId
-                    apply(detektPlugin)
+                    apply(findPluginId("detektPlugin"))
                 }
 
                 val extension = extensions.getByType<DetektExtension>()
                 configureDetekt(extension)
 
-                val javaVersionString = libs.findVersion("javaVersion").get().toString()
+                val javaVersionString = findVersion("javaVersion")
                 val javaVersion = JavaVersion.valueOf(javaVersionString).toString()
 
                 tasks.withType<Detekt>().configureEach {

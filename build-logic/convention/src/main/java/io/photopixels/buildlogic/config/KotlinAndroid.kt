@@ -1,7 +1,7 @@
 package io.photopixels.buildlogic.config
 
 import com.android.build.api.dsl.CommonExtension
-import io.photopixels.buildlogic.extensions.libs
+import io.photopixels.buildlogic.extensions.findVersion
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.getByType
@@ -11,14 +11,14 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension<*, *, *, *, *, *>) {
     commonExtension.apply {
-        compileSdk = libs.findVersion("compileSdk").get().toString().toInt()
+        compileSdk = findVersion("compileSdk").toInt()
 
         defaultConfig {
-            minSdk = libs.findVersion("minSdk").get().toString().toInt()
+            minSdk = findVersion("minSdk").toInt()
         }
 
         compileOptions {
-            val javaVersion = libs.findVersion("javaVersion").get().toString()
+            val javaVersion = findVersion("javaVersion")
             sourceCompatibility = JavaVersion.valueOf(javaVersion)
             targetCompatibility = JavaVersion.valueOf(javaVersion)
         }
@@ -31,7 +31,7 @@ internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension<*, 
 private fun Project.configureKotlin(extension: KotlinAndroidProjectExtension) {
     with(extension) {
         compilerOptions {
-            val javaVersionName = libs.findVersion("javaVersion").get().toString()
+            val javaVersionName = findVersion("javaVersion")
             val javaVersion = JavaVersion.valueOf(javaVersionName).majorVersion
 
             jvmTarget.set(JvmTarget.fromTarget(javaVersion))

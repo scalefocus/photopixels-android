@@ -1,5 +1,7 @@
 import com.android.build.gradle.LibraryExtension
 import io.photopixels.buildlogic.config.configureKotlinAndroid
+import io.photopixels.buildlogic.extensions.findPluginId
+import io.photopixels.buildlogic.extensions.findVersion
 import io.photopixels.buildlogic.extensions.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -10,21 +12,21 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply("com.android.library")
-                apply("org.jetbrains.kotlin.android")
-                apply("com.google.devtools.ksp")
+                apply(findPluginId("androidLibrary"))
+                apply(findPluginId("kotlinAndroid"))
+                apply(findPluginId("kspPlugin"))
                 apply("plugin.detekt")
                 apply("plugin.ktlint")
 
                 // Uncomment to enable flavors as defined in AppFlavors.kt
-                //apply("plugin.flavors")
+                // apply("plugin.flavors")
             }
 
             extensions.configure<LibraryExtension> {
                 configureKotlinAndroid(this)
 
                 defaultConfig {
-                    minSdk = libs.findVersion("minSdk").get().toString().toInt()
+                    minSdk = findVersion("minSdk").toInt()
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 }
 

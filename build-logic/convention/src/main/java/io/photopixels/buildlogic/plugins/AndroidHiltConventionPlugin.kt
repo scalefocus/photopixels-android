@@ -1,3 +1,4 @@
+import io.photopixels.buildlogic.extensions.findPluginId
 import io.photopixels.buildlogic.extensions.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -7,8 +8,8 @@ class AndroidHiltConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply("dagger.hilt.android.plugin")
-                apply("com.google.devtools.ksp")
+                apply(findPluginId("hiltAndroidPlugin"))
+                apply(findPluginId("kspPlugin"))
             }
 
             dependencies {

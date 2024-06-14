@@ -1,5 +1,7 @@
 import com.android.build.api.dsl.ApplicationExtension
 import io.photopixels.buildlogic.config.configureKotlinAndroid
+import io.photopixels.buildlogic.extensions.findPluginId
+import io.photopixels.buildlogic.extensions.findVersion
 import io.photopixels.buildlogic.extensions.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -10,14 +12,16 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply("com.android.application")
-                apply("org.jetbrains.kotlin.android")
-                apply("com.google.devtools.ksp")
+                apply(findPluginId("androidApplication"))
+                apply(findPluginId("kotlinAndroid"))
+                apply(findPluginId("kspPlugin"))
+                apply(findPluginId("gmsGoogleServices"))
+                apply(findPluginId("firebaseCrashlytics"))
                 apply("plugin.detekt")
                 apply("plugin.ktlint")
 
                 // Uncomment to enable flavors as defined in AppFlavors.kt
-                //apply("plugin.flavors")
+                // apply("plugin.flavors")
             }
 
             installGitHooksTasks()
@@ -27,7 +31,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 configureKotlinAndroid(this)
 
                 defaultConfig {
-                    targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
+                    targetSdk = findVersion("targetSdk").toInt()
                     versionCode = (properties["versionCode"] as String?)?.toIntOrNull() ?: 1
                     versionName = (properties["majorVersion"] as String? ?: "0") +
                         "." + (properties["minorVersion"] as String? ?: "0") +
@@ -63,6 +67,10 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
                 dependencies {
                     "implementation"(libs.findLibrary("timber").get())
+
+                    // Firebase SDKs
+                    "implementation"(platform(libs.findLibrary("firebase-bom").get()))
+                    "implementation"(libs.findBundle("firebase").get())
                 }
             }
         }

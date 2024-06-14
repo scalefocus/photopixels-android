@@ -1,3 +1,4 @@
+import io.photopixels.buildlogic.extensions.findPluginId
 import io.photopixels.buildlogic.extensions.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -7,9 +8,7 @@ class NetworkingConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                val kotlinSerialization = libs.findPlugin("kotlinSerialization")
-                    .get().get().pluginId
-                apply(kotlinSerialization)
+                apply(findPluginId("kotlinSerialization"))
             }
 
             dependencies {
