@@ -120,7 +120,7 @@ jobs:
                     cache: 'gradle'
 
             -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
+                uses: ./.github/workflows/firebase-config.yml
 
             -   name: Prepare release signing configuration
                 env:
