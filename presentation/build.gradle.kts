@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.glide.compose)
     ksp(libs.glide.compiler)
     ksp(libs.glide.ksp)
+    implementation(libs.zoomable)
 
     // App auth - library
     implementation(libs.appauth)
