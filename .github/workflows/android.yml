@@ -55,6 +55,9 @@ jobs:
             -   name: Grant execute permissions for gradlew
                 run: chmod +x ./gradlew
 
+            -   run: |
+                    pwd
+                    ls -ls ./github/workflows
             -   name: Prepare Firebase services configuration
                 uses: ./.github/workflows/firebase-config.yml
 
