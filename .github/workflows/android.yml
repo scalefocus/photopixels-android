@@ -60,6 +60,7 @@ jobs:
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
+            -   run: echo $google_services_json
             -   run: cat app/google-services.json
 
             -   name: Run Android lint, ktlint, detekt
