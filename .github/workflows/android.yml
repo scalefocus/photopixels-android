@@ -58,7 +58,7 @@ jobs:
             -   run: |
                     ls -l /home/runner/work/photopixels-android/photopixels-android/.github/workflows/firebase-config.yml
             -   name: Prepare Firebase services configuration
-                uses: ./.github/workflows/firebase-config.yml
+                uses: ./.github/actions/firebase-config.yml
 
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
