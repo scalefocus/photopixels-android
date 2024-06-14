@@ -5,6 +5,12 @@
 # --------------------------------------------------------------------------------------------------
 
 name: Firebase Configuration
+description: Prepares Firebase services configuration
+
+inputs:
+    google_services_json:
+        description: The Firebase Google Services JSON content
+        required: true
 
 runs:
     using: "composite"
@@ -12,7 +18,5 @@ runs:
         -   uses: actions/checkout@v4
 
         -   name: Prepare Firebase services configuration
-            env:
-                GOOGLE_SERVICES_JSON: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
             shell: bash
-            run: echo $GOOGLE_SERVICES_JSON > app/google-services.json
+            run: echo "${{ inputs.google_services_json }}" > app/google-services.json

@@ -55,10 +55,10 @@ jobs:
             -   name: Grant execute permissions for gradlew
                 run: chmod +x ./gradlew
 
-            -   run: |
-                    ls -l ./.github/actions/firebase-config/action.yml
             -   name: Prepare Firebase services configuration
                 uses: ./.github/actions/firebase-config
+                with:
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
