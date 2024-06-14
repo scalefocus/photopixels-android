@@ -9,6 +9,8 @@ name: Firebase Configuration
 runs:
     using: "composite"
     steps:
+        -   uses: actions/checkout@v4
+
         -   name: Prepare Firebase services configuration
             env:
                 GOOGLE_SERVICES_JSON: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
