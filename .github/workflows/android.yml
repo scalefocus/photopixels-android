@@ -58,7 +58,7 @@ jobs:
             -   run: |
                     ls -l ./.github/actions/firebase-config/action.yml
             -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config/action.yml
+                uses: ./.github/actions/firebase-config
 
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
