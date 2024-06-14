@@ -56,7 +56,7 @@ jobs:
                 run: chmod +x ./gradlew
 
             -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
+                uses: ./.github/workflows/firebase-config.yml
 
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
@@ -77,7 +77,7 @@ jobs:
                     cache: 'gradle'
 
             -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
+                uses: ./.github/workflows/firebase-config.yml
 
             -   name: Run tests
                 run: ./gradlew test
@@ -100,7 +100,7 @@ jobs:
                 run: chmod +x ./gradlew
 
             -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
+                uses: ./.github/workflows/firebase-config.yml
 
             -   name: Build with Gradle
                 run: ./gradlew assembleDebug
