@@ -106,11 +106,8 @@ jobs:
 
             -   name: Prepare Firebase services configuration
                 uses: ./.github/actions/firebase-config
-<<<<<<< HEAD
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-=======
->>>>>>> 44364fd (CI fix)
 
             -   name: Build with Gradle
                 run: ./gradlew assembleDebug
@@ -131,16 +128,9 @@ jobs:
                     cache: 'gradle'
 
             -   name: Prepare Firebase services configuration
-<<<<<<< HEAD
                 uses: ./.github/actions/firebase-config
-<<<<<<< HEAD
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-=======
->>>>>>> 44364fd (CI fix)
-=======
-                uses: ./.github/workflows/firebase-config.yml
->>>>>>> 4eca268 (CI fix)
 
             -   name: Prepare release signing configuration
                 env:
