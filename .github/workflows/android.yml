@@ -79,7 +79,8 @@ jobs:
                     cache: 'gradle'
 
             -   name: Prepare Firebase services configuration
-                uses: ./.github/workflows/firebase-config.yml
+                #uses: ./.github/workflows/firebase-config.yml
+                run: ls -l app/
 
             -   name: Run tests
                 run: ./gradlew test
