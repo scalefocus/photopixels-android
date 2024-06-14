@@ -40,6 +40,7 @@ on:
 jobs:
     check:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         steps:
             -   name: Checkout project code
                 uses: actions/checkout@v4
@@ -54,11 +55,15 @@ jobs:
             -   name: Grant execute permissions for gradlew
                 run: chmod +x ./gradlew
 
+            -   name: Prepare Firebase services configuration
+                uses: ./.github/workflows/firebase-config
+
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
 
     test:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         needs: check
         steps:
             -   name: Checkout project code
@@ -70,6 +75,9 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'gradle'
+
+            -   name: Prepare Firebase services configuration
+                uses: ./.github/workflows/firebase-config
 
             -   name: Run tests
                 run: ./gradlew test
@@ -91,6 +99,9 @@ jobs:
             -   name: Grant execute permissions for gradlew
                 run: chmod +x ./gradlew
 
+            -   name: Prepare Firebase services configuration
+                uses: ./.github/workflows/firebase-config
+
             -   name: Build with Gradle
                 run: ./gradlew assembleDebug
 
@@ -107,6 +118,9 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'gradle'
+
+            -   name: Prepare Firebase services configuration
+                uses: ./.github/workflows/firebase-config
 
             -   name: Prepare release signing configuration
                 env:
