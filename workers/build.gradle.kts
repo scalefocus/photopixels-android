@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.scalefocus.workers"
+    namespace = "io.photopixels.workers"
 
     defaultConfig {
         consumerProguardFiles("proguard-rules.pro")
-        manifestPlaceholders["appAuthRedirectScheme"] = "com.scalefocus.photopixels"
+        manifestPlaceholders["appAuthRedirectScheme"] = "io.photopixels.app"
     }
 }
 

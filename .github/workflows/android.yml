@@ -24,6 +24,7 @@ on:
             - feature/**
             - bugfix/**
             - release/**
+            - hotfix/**
         tags:
             - 'v*.*.*'
 

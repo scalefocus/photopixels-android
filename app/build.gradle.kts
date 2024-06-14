@@ -9,12 +9,12 @@ plugins {
 }
 
 android {
-    namespace = "com.scalefocus.photopixels"
+    namespace = "io.photopixels.app"
 
     defaultConfig {
-        applicationId = "com.scalefocus.photopixels"
+        applicationId = "io.photopixels.app"
 
-        manifestPlaceholders["appAuthRedirectScheme"] = "com.scalefocus.photopixels"
+        manifestPlaceholders["appAuthRedirectScheme"] = "io.photopixels.app"
     }
 
     buildTypes {
