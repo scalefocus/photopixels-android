@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -35,8 +36,10 @@ import com.bumptech.glide.request.transition.Transition
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.CircularIndicator
 import io.photopixels.presentation.theme.SFSecondaryLightBlue
+import net.engawapg.lib.zoomable.rememberZoomState
+import net.engawapg.lib.zoomable.zoomable
 
-private const val BEYOND_BOUNDS_PAGE_COUNT = 5
+private const val BEYOND_BOUNDS_PAGE_COUNT = 1
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -55,6 +58,7 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
             Box {
                 HorizontalPager(
                     state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
                     beyondBoundsPageCount = BEYOND_BOUNDS_PAGE_COUNT,
                     key = { index -> screenState.photosGlideUrls[index].toStringUrl() },
                     pageSize = PageSize.Fill
@@ -62,27 +66,7 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
                     FullScreenImage(imageGlideUrl = screenState.photosGlideUrls[index])
                 }
 
-                Icon(
-                    modifier = Modifier
-                        .size(60.dp, 60.dp)
-                        .alpha(0.5f)
-                        .align(Alignment.CenterStart)
-                        .padding(start = 20.dp),
-                    tint = SFSecondaryLightBlue,
-                    painter = painterResource(id = R.drawable.ic_arrow_back_24),
-                    contentDescription = null
-                )
-
-                Icon(
-                    modifier = Modifier
-                        .size(60.dp, 60.dp)
-                        .alpha(0.5f)
-                        .align(Alignment.CenterEnd)
-                        .padding(end = 20.dp),
-                    tint = SFSecondaryLightBlue,
-                    painter = painterResource(id = R.drawable.ic_arrow_forward_24),
-                    contentDescription = null
-                )
+                // SwipeArrows() Arrows removed for now
             }
         }
     }
@@ -111,7 +95,8 @@ private fun FullScreenImage(imageGlideUrl: GlideUrl) {
                 }
 
                 @Suppress("EmptyFunctionBlock")
-                override fun onLoadCleared(placeholder: Drawable?) {}
+                override fun onLoadCleared(placeholder: Drawable?) {
+                }
             })
     }
 
@@ -120,13 +105,39 @@ private fun FullScreenImage(imageGlideUrl: GlideUrl) {
     }
 
     image?.let {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Image(
-                painter = rememberAsyncImagePainter(it),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+        Image(
+            painter = rememberAsyncImagePainter(it),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxSize()
+                .zoomable(rememberZoomState())
+        )
     }
+}
+
+@Suppress("UnusedPrivateMember")
+@Composable
+private fun BoxScope.SwipeArrows() {
+    Icon(
+        modifier = Modifier
+            .size(60.dp, 60.dp)
+            .alpha(0.5f)
+            .align(Alignment.CenterStart)
+            .padding(start = 20.dp),
+        tint = SFSecondaryLightBlue,
+        painter = painterResource(id = R.drawable.ic_arrow_back_24),
+        contentDescription = null
+    )
+
+    Icon(
+        modifier = Modifier
+            .size(60.dp, 60.dp)
+            .alpha(0.5f)
+            .align(Alignment.CenterEnd)
+            .padding(end = 20.dp),
+        tint = SFSecondaryLightBlue,
+        painter = painterResource(id = R.drawable.ic_arrow_forward_24),
+        contentDescription = null
+    )
 }

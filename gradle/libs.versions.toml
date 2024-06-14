@@ -49,6 +49,7 @@ appauth = "0.11.1"
 jwtdecode = "2.0.0"
 grpcNetty = "1.57.0"
 grpcOkhttp = "1.50.0"
+zoomable = "1.6.1"
 
 [libraries]
 
@@ -101,6 +102,7 @@ material3 = { group = "androidx.compose.material3", name = "material3" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "nav_version" }
 lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle-runtime-compose" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomable" }
 
 # Dependency injection
 hilt-gradle = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hilt" }

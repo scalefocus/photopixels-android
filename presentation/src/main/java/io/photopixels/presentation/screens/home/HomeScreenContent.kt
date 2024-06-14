@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -45,14 +46,12 @@ import io.photopixels.presentation.theme.PhotoPixelsTheme
 import io.photopixels.presentation.theme.SFSecondaryLightBlue
 import kotlinx.collections.immutable.ImmutableList
 
-private const val THUMBNAILS_GRID_COLUMNS = 4
+private const val THUMBNAILS_GRID_COLUMNS = 5
 
 @Composable
 fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenActions) -> Unit) {
     Column(
-        Modifier
-            .fillMaxSize()
-            .padding(20.dp),
+        Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -91,9 +90,9 @@ private fun ThumbnailsGrid(state: HomeScreenState, onThumbnailClick: (String) ->
         items(count = state.photoThumbnails.size, key = { index -> state.photoThumbnails[index].id }) { index ->
             Box(
                 modifier = Modifier
-                    .padding(4.dp)
-                    .height(80.dp)
-                    .width(80.dp)
+                    .padding(1.dp)
+                    .height(85.dp)
+                    .width(85.dp)
             ) {
                 val photoData = state.photoThumbnails[index]
                 ThumbnailImage(
@@ -119,7 +118,8 @@ private fun ThumbnailImage(
     Card(
         modifier = modifier
             .fillMaxSize()
-            .clickable { onThumbnailClick(id) }
+            .clickable { onThumbnailClick(id) },
+        shape = RectangleShape
     ) {
         Box(contentAlignment = Alignment.TopCenter) {
             GlideImage(model = thumbnail, contentDescription = null, contentScale = ContentScale.Crop)
