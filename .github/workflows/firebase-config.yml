@@ -16,6 +16,8 @@ jobs:
     firebase-config:
         runs-on: ubuntu-latest
         steps:
+            -   uses: actions/checkout@v4
+              
             -   name: Prepare Firebase services configuration
                 env:
                     GOOGLE_SERVICES_JSON: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
