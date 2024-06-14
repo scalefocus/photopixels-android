@@ -56,9 +56,9 @@ jobs:
                 run: chmod +x ./gradlew
 
             -   run: |
-                    ls -l /home/runner/work/photopixels-android/photopixels-android/.github/workflows/firebase-config.yml
+                    ls -l ./.github/actions/firebase-config/action.yml
             -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config.yml
+                uses: ./.github/actions/firebase-config/action.yml
 
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt

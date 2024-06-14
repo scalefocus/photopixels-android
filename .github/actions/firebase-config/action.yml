@@ -14,4 +14,5 @@ runs:
         -   name: Prepare Firebase services configuration
             env:
                 GOOGLE_SERVICES_JSON: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+            shell: bash
             run: echo $GOOGLE_SERVICES_JSON > app/google-services.json
