@@ -17,11 +17,14 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 apply(findPluginId("androidApplication"))
                 apply(findPluginId("kotlinAndroid"))
                 apply(findPluginId("kspPlugin"))
-                apply(findPluginId("gmsGoogleServices"))
-                apply(findPluginId("firebaseCrashlytics"))
-                apply(findPluginId("firebasePerformance"))
                 apply("plugin.detekt")
                 apply("plugin.ktlint")
+
+                if (file("google-services.json").exists()) {
+                    apply(findPluginId("gmsGoogleServices"))
+                    apply(findPluginId("firebaseCrashlytics"))
+                    apply(findPluginId("firebasePerformance"))
+                }
 
                 // Uncomment to enable flavors as defined in AppFlavors.kt
                 // apply("plugin.flavors")
