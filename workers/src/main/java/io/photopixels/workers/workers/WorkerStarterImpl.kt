@@ -8,8 +8,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.model.WorkerStatus
 import io.photopixels.domain.workers.WorkerStarter
-import io.photopixels.workers.workers.DevicePhotosWorker
-import io.photopixels.workers.workers.UploadPhotosWorker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
 import java.util.UUID
