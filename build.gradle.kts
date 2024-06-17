@@ -8,5 +8,8 @@ plugins {
     alias(libs.plugins.hiltAndroidPlugin) apply false
     alias(libs.plugins.detektPlugin) apply false
     alias(libs.plugins.ktlintPlugin) apply false
-    alias(libs.plugins.kotlin.compose.compiler) apply false
+    alias(libs.plugins.kotlinComposeCompiler) apply false
+    alias(libs.plugins.gmsGoogleServices) apply false
+    alias(libs.plugins.firebaseCrashlytics) apply false
+    alias(libs.plugins.firebasePerformance) apply false
 }

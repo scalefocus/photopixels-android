@@ -40,6 +40,7 @@ on:
 jobs:
     check:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         steps:
             -   name: Checkout project code
                 uses: actions/checkout@v4
@@ -54,11 +55,17 @@ jobs:
             -   name: Grant execute permissions for gradlew
                 run: chmod +x ./gradlew
 
+            -   name: Prepare Firebase services configuration
+                uses: ./.github/actions/firebase-config
+                with:
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
 
     test:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         needs: check
         steps:
             -   name: Checkout project code
@@ -71,11 +78,17 @@ jobs:
                     distribution: 'adopt'
                     cache: 'gradle'
 
+            -   name: Prepare Firebase services configuration
+                uses: ./.github/actions/firebase-config
+                with:
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+
             -   name: Run tests
                 run: ./gradlew test
 
     build:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         needs: test
         steps:
             -   name: Checkout project code
@@ -91,11 +104,17 @@ jobs:
             -   name: Grant execute permissions for gradlew
                 run: chmod +x ./gradlew
 
+            -   name: Prepare Firebase services configuration
+                uses: ./.github/actions/firebase-config
+                with:
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+
             -   name: Build with Gradle
                 run: ./gradlew assembleDebug
 
     assemble-signed-release:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         needs: build
         steps:
             -   name: Checkout project code
@@ -107,6 +126,11 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'gradle'
+
+            -   name: Prepare Firebase services configuration
+                uses: ./.github/actions/firebase-config
+                with:
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
             -   name: Prepare release signing configuration
                 env:
@@ -181,6 +205,7 @@ jobs:
 
     distribute:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         needs: assemble-signed-release
         steps:
             -   name: Checkout project code

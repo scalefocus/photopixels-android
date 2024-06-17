@@ -1,4 +1,6 @@
-import io.photopixels.buildlogic.extensions.libs
+
+import io.photopixels.buildlogic.extensions.findPluginId
+import io.photopixels.buildlogic.extensions.findVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.getByType
@@ -11,8 +13,7 @@ class AndroidKtlintConventionPlugin : Plugin<Project> {
         with(target) {
             allprojects {
                 with(pluginManager) {
-                    val ktlintPlugin = libs.findPlugin("ktlintPlugin").get().get().pluginId
-                    apply(ktlintPlugin)
+                    apply(findPluginId("ktlintPlugin"))
                 }
 
                 val extension = extensions.getByType<KtlintExtension>()
@@ -28,7 +29,7 @@ class AndroidKtlintConventionPlugin : Plugin<Project> {
 }
 
 private fun Project.configureKtlint(extension: KtlintExtension) = extension.apply {
-    version.set(libs.findVersion("ktlint").get().toString())
+    version.set(findVersion("ktlint"))
     debug.set(true)
     verbose.set(true)
     android.set(true)
