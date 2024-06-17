@@ -88,6 +88,7 @@ jobs:
 
     build:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         needs: test
         steps:
             -   name: Checkout project code
@@ -113,6 +114,7 @@ jobs:
 
     assemble-signed-release:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         needs: build
         steps:
             -   name: Checkout project code
@@ -203,6 +205,7 @@ jobs:
 
     distribute:
         runs-on: ubuntu-latest
+        environment: scalefocus-production
         needs: assemble-signed-release
         steps:
             -   name: Checkout project code
