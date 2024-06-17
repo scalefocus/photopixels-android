@@ -17,6 +17,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 apply(findPluginId("kspPlugin"))
                 apply(findPluginId("gmsGoogleServices"))
                 apply(findPluginId("firebaseCrashlytics"))
+                apply(findPluginId("firebasePerformance"))
                 apply("plugin.detekt")
                 apply("plugin.ktlint")
 
@@ -68,6 +69,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 dependencies {
                     "implementation"(libs.findLibrary("timber").get())
 
+                    // TODO Move Firebase plugins and dependencies to their own convention plugin
                     // Firebase SDKs
                     "implementation"(platform(libs.findLibrary("firebase-bom").get()))
                     "implementation"(libs.findBundle("firebase").get())

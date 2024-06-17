@@ -52,6 +52,7 @@ grpcOkhttp = "1.50.0"
 zoomable = "1.6.1"
 gms-google-services-plugin = "4.4.2"
 firebase-crashlytics-plugin = "3.0.1"
+firebase-performance-plugin = "1.4.2"
 firebase-bom = "33.1.0"
 
 [libraries]
@@ -138,6 +139,7 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-performance = { module = "com.google.firebase:firebase-perf" }
 
 # Google
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
@@ -165,7 +167,7 @@ ktor = [
 ]
 
 firebase = [
-    "firebase-crashlytics", "firebase-analytics"
+    "firebase-crashlytics", "firebase-analytics", "firebase-performance"
 ]
 
 google-photos = [
@@ -186,3 +188,4 @@ ktlintPlugin = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gra
 kotlinComposeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 gmsGoogleServices = { id = "com.google.gms.google-services", version.ref = "gms-google-services-plugin" }
 firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }
+firebasePerformance = { id = "com.google.firebase.firebase-perf", version.ref = "firebase-performance-plugin" }
