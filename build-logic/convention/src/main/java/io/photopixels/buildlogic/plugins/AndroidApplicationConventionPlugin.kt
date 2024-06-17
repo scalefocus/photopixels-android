@@ -1,3 +1,4 @@
+
 import com.android.build.api.dsl.ApplicationExtension
 import io.photopixels.buildlogic.config.configureKotlinAndroid
 import io.photopixels.buildlogic.extensions.findPluginId
@@ -7,6 +8,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.exclude
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -72,7 +74,10 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     // TODO Move Firebase plugins and dependencies to their own convention plugin
                     // Firebase SDKs
                     "implementation"(platform(libs.findLibrary("firebase-bom").get()))
-                    "implementation"(libs.findBundle("firebase").get())
+                    "implementation"(libs.findBundle("firebase").get()) {
+                        exclude(group = "com.google.protobuf", module = "protobuf-javalite")
+                        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
+                    }
                 }
             }
         }
