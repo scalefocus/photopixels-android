@@ -11,8 +11,5 @@ plugins {
     alias(libs.plugins.kotlinComposeCompiler) apply false
     alias(libs.plugins.gmsGoogleServices) apply false
     alias(libs.plugins.firebaseCrashlytics) apply false
-<<<<<<< HEAD
     alias(libs.plugins.firebasePerformance) apply false
-=======
->>>>>>> a095334 (Optimize build logic code.)
 }
