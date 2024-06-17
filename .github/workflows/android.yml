@@ -60,9 +60,6 @@ jobs:
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
-            -   run: echo $google_services_json
-            -   run: cat app/google-services.json
-
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
 
@@ -82,9 +79,9 @@ jobs:
                     cache: 'gradle'
 
             -   name: Prepare Firebase services configuration
-                #uses: ./.github/workflows/firebase-config.yml
-                run: ls -l app/
-                   cat app/google-services.json
+                uses: ./.github/actions/firebase-config
+                with:
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
             -   name: Run tests
                 run: ./gradlew test
@@ -107,7 +104,9 @@ jobs:
                 run: chmod +x ./gradlew
 
             -   name: Prepare Firebase services configuration
-                uses: ./.github/workflows/firebase-config.yml
+                uses: ./.github/actions/firebase-config
+                with:
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
             -   name: Build with Gradle
                 run: ./gradlew assembleDebug
@@ -127,7 +126,9 @@ jobs:
                     cache: 'gradle'
 
             -   name: Prepare Firebase services configuration
-                uses: ./.github/workflows/firebase-config.yml
+                uses: ./.github/actions/firebase-config
+                with:
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
             -   name: Prepare release signing configuration
                 env:
