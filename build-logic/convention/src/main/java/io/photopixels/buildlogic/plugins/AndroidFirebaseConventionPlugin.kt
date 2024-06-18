@@ -4,6 +4,7 @@ import com.android.build.api.variant.FilterConfiguration
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.google.firebase.appdistribution.gradle.AppDistributionExtension
 import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
+import io.photopixels.buildlogic.config.buildNewVariantOutputName
 import io.photopixels.buildlogic.extensions.findPluginId
 import io.photopixels.buildlogic.extensions.libs
 import org.gradle.api.Plugin

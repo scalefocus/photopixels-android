@@ -1,3 +1,5 @@
+package io.photopixels.buildlogic.config
+
 import dev.android.buildlogic.util.OS
 import dev.android.buildlogic.util.getOsName
 import org.gradle.api.DefaultTask

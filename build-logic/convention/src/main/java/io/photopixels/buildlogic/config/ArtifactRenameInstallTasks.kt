@@ -1,3 +1,5 @@
+package io.photopixels.buildlogic.config
+
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension

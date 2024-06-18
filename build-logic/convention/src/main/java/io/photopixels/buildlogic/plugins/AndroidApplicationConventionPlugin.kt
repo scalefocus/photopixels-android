@@ -1,5 +1,7 @@
 import com.android.build.api.dsl.ApplicationExtension
 import io.photopixels.buildlogic.config.configureKotlinAndroid
+import io.photopixels.buildlogic.config.installArtifactRenameTasks
+import io.photopixels.buildlogic.config.installGitHooksTasks
 import io.photopixels.buildlogic.extensions.findPluginId
 import io.photopixels.buildlogic.extensions.findVersion
 import io.photopixels.buildlogic.extensions.libs
