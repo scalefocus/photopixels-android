@@ -12,4 +12,5 @@ plugins {
     alias(libs.plugins.gmsGoogleServices) apply false
     alias(libs.plugins.firebaseCrashlytics) apply false
     alias(libs.plugins.firebasePerformance) apply false
+    alias(libs.plugins.firebaseAppDistribution) apply false
 }

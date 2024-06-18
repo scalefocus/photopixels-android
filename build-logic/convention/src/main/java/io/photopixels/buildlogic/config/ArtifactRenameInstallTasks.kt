@@ -1,3 +1,5 @@
+package io.photopixels.buildlogic.config
+
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
@@ -29,7 +31,7 @@ internal fun Project.installArtifactRenameTasks() {
                 }
             }
 
-            val newName = generateNewVariantOutputName(variant)
+            val newName = buildNewVariantOutputName(variant)
 
             // This block is good for APK files only
             variant.outputs.forEach { output ->
@@ -58,14 +60,14 @@ internal fun Project.installArtifactRenameTasks() {
     }
 }
 
-private fun Project.generateNewVariantOutputName(variant: ApplicationVariant): String {
+internal fun Project.buildNewVariantOutputName(variant: ApplicationVariant): String {
     val androidExtension = project.extensions.getByType<BaseAppModuleExtension>()
 
     val appId = variant.applicationId.get()
     val versionName = androidExtension.defaultConfig.versionName ?: "unknown"
     val versionCode = androidExtension.defaultConfig.versionCode
     val buildType = variant.buildType ?: "unknown"
-    //val flavorName = variant.flavorName.orEmpty()
+    // val flavorName = variant.flavorName.orEmpty()
     val flavorNameExpanded = variant.productFlavors.joinToString("-") { it.second }
 
     val newNameSuffix = buildString {

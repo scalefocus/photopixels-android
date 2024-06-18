@@ -16,6 +16,7 @@ dependencies {
     compileOnly(libs.ksp.gradle.plugin)
     compileOnly(libs.detekt.gradle.plugin)
     compileOnly(libs.ktlint.gradle.plugin)
+    compileOnly(libs.firebase.appdistribution.gradle.plugin)
 }
 
 gradlePlugin {
@@ -83,6 +84,11 @@ gradlePlugin {
         register("applicationSigning") {
             id = "plugin.application.signing"
             implementationClass = "AndroidApplicationSigningConventionPlugin"
+        }
+
+        register("androidFirebase") {
+            id = "plugin.firebase"
+            implementationClass = "AndroidFirebaseConventionPlugin"
         }
     }
 }
