@@ -29,7 +29,7 @@ internal fun Project.installArtifactRenameTasks() {
                 }
             }
 
-            val newName = generateNewVariantOutputName(variant)
+            val newName = buildNewVariantOutputName(variant)
 
             // This block is good for APK files only
             variant.outputs.forEach { output ->
@@ -58,7 +58,7 @@ internal fun Project.installArtifactRenameTasks() {
     }
 }
 
-private fun Project.generateNewVariantOutputName(variant: ApplicationVariant): String {
+internal fun Project.buildNewVariantOutputName(variant: ApplicationVariant): String {
     val androidExtension = project.extensions.getByType<BaseAppModuleExtension>()
 
     val appId = variant.applicationId.get()

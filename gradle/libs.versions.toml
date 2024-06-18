@@ -53,6 +53,7 @@ zoomable = "1.6.1"
 gms-google-services-plugin = "4.4.2"
 firebase-crashlytics-plugin = "3.0.1"
 firebase-performance-plugin = "1.4.2"
+firebaseAppdistribution = "5.0.0"
 firebase-bom = "33.1.0"
 
 [libraries]
@@ -63,6 +64,7 @@ kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", v
 ksp-gradle-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp-plugin" }
 detekt-gradle-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt-plugin" }
 ktlint-gradle-plugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint-gradle-plugin" }
+firebase-appdistribution-gradle-plugin = { group = "com.google.firebase", name = "firebase-appdistribution-gradle", version.ref = "firebaseAppdistribution" }
 
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt-plugin" }
 detekt-compose = { group = "io.nlopez.compose.rules", name = "detekt", version.ref = "detekt-compose" }
@@ -189,3 +191,4 @@ kotlinComposeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.re
 gmsGoogleServices = { id = "com.google.gms.google-services", version.ref = "gms-google-services-plugin" }
 firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }
 firebasePerformance = { id = "com.google.firebase.firebase-perf", version.ref = "firebase-performance-plugin" }
+firebaseAppDistribution = { id = "com.google.firebase.appdistribution", version.ref = "firebaseAppdistribution"}

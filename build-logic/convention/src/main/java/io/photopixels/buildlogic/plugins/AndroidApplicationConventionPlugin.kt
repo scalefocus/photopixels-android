@@ -1,4 +1,3 @@
-
 import com.android.build.api.dsl.ApplicationExtension
 import io.photopixels.buildlogic.config.configureKotlinAndroid
 import io.photopixels.buildlogic.extensions.findPluginId
@@ -8,7 +7,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.exclude
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -19,12 +17,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 apply(findPluginId("kspPlugin"))
                 apply("plugin.detekt")
                 apply("plugin.ktlint")
-
-                if (file("google-services.json").exists()) {
-                    apply(findPluginId("gmsGoogleServices"))
-                    apply(findPluginId("firebaseCrashlytics"))
-                    apply(findPluginId("firebasePerformance"))
-                }
+                apply("plugin.firebase")
 
                 // Uncomment to enable flavors as defined in AppFlavors.kt
                 // apply("plugin.flavors")
@@ -73,14 +66,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
                 dependencies {
                     "implementation"(libs.findLibrary("timber").get())
-
-                    // TODO Move Firebase plugins and dependencies to their own convention plugin
-                    // Firebase SDKs
-                    "implementation"(platform(libs.findLibrary("firebase-bom").get()))
-                    "implementation"(libs.findBundle("firebase").get()) {
-                        exclude(group = "com.google.protobuf", module = "protobuf-javalite")
-                        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
-                    }
                 }
             }
         }
