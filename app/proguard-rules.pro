@@ -33,3 +33,11 @@
 -dontwarn org.apache.http.impl.auth.KerberosScheme
 -dontwarn org.apache.http.**
 
+## Proguard rules for Firebase Performance
+-keep class com.google.protobuf.** { *; }
+-keep class com.google.firebase.perf.** { *; }
+-keepnames class com.google.firebase.perf.** { *; }
+
+## FIXME Test without this rule after Compose 1.7.0 is released (now it is 1.6.8)
+## Fix crash in release builds due to Google's f*ck up on Compose and Lifecycle Runtime libraries
+-keep class androidx.compose.ui.platform.AndroidCompositionLocals_androidKt { *; }

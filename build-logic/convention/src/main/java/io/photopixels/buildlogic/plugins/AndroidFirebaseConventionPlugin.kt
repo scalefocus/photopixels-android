@@ -24,6 +24,8 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
                     apply(findPluginId("firebaseCrashlytics"))
                     apply(findPluginId("firebasePerformance"))
                     apply(findPluginId("firebaseAppDistribution"))
+                } else {
+                    println("Firebase services gradle plugins are not enabled; missing google-services.json file.")
                 }
             }
 
@@ -38,6 +40,7 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
             }
 
             configureFirebaseAppDistribution()
+            configureFirebaseCrashlytics()
         }
     }
 }
@@ -121,4 +124,12 @@ private fun Project.prepareReleaseAppDistribution(
             }
         }
     }
+}
+
+// FIXME See comment in "<rootDir>/app/build.gradle.kts"
+private fun Project.configureFirebaseCrashlytics() {
+//    extensions.configure<CrashlyticsExtension> {
+//        mappingFileUploadEnabled = true
+//        nativeSymbolUploadEnabled = true
+//    }
 }

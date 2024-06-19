@@ -17,6 +17,7 @@ dependencies {
     compileOnly(libs.detekt.gradle.plugin)
     compileOnly(libs.ktlint.gradle.plugin)
     compileOnly(libs.firebase.appdistribution.gradle.plugin)
+    compileOnly(libs.firebase.crashlytics.gradle.plugin)
 }
 
 gradlePlugin {

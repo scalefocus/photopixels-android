@@ -51,10 +51,11 @@ grpcNetty = "1.57.0"
 grpcOkhttp = "1.50.0"
 zoomable = "1.6.1"
 gms-google-services-plugin = "4.4.2"
+firebase-bom = "33.1.0"
 firebase-crashlytics-plugin = "3.0.1"
 firebase-performance-plugin = "1.4.2"
 firebaseAppdistribution = "5.0.0"
-firebase-bom = "33.1.0"
+firebaseCrashlyticsGradle = "3.0.1"
 
 [libraries]
 
@@ -65,6 +66,7 @@ ksp-gradle-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.
 detekt-gradle-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt-plugin" }
 ktlint-gradle-plugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint-gradle-plugin" }
 firebase-appdistribution-gradle-plugin = { group = "com.google.firebase", name = "firebase-appdistribution-gradle", version.ref = "firebaseAppdistribution" }
+firebase-crashlytics-gradle-plugin = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsGradle" }
 
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt-plugin" }
 detekt-compose = { group = "io.nlopez.compose.rules", name = "detekt", version.ref = "detekt-compose" }

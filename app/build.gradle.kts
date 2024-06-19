@@ -22,6 +22,15 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
+    // FIXME https://github.com/firebase/firebase-android-sdk/issues/3148
+    //  This is a known issue with the Crashlytics Extension not being properly registered from a Gradle
+    //  convention plugin. There is a dedicated function in AndroidFirebaseConventionPlugin.kt that can be used when
+    //  this issue is resolved.
+    firebaseCrashlytics {
+        mappingFileUploadEnabled = true
+        nativeSymbolUploadEnabled = true
+    }
 }
 
 dependencies {
