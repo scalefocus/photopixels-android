@@ -39,6 +39,7 @@ of the project. This is how **photopixels.properties** should look like:
 ```
 # Google Console Android Client ID
 GOOGLE_OAUTH_ANDROID_CLIENT_ID="android_client_id_from_google_cloud_console"
+
 # Google Console Android Web ID
 GOOGLE_OAUTH_WEB_CLIENT_ID="web_client_id_from_google_cloud_console"
 GOOGLE_OAUTH_WEB_CLIENT_SECRET="web_client_secret_from_google_cloud_console"

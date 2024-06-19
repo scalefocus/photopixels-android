@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.scalefocus.data"
+    namespace = "io.photopixels.data"
 
     val properties = Properties().apply {
         with(rootProject.file("photopixels.properties")) { if (exists()) load(inputStream()) }
@@ -20,15 +20,21 @@ android {
     defaultConfig {
         buildConfigField("String", "GOOGLE_OAUTH_WEB_CLIENT_ID", webClientId)
         buildConfigField("String", "GOOGLE_OAUTH_WEB_CLIENT_SECRET", webClientSecret)
+        consumerProguardFiles("proguard-rules.pro")
+
+        manifestPlaceholders["appAuthRedirectScheme"] = "io.photopixels.app"
     }
 
-    buildTypes {
-        release {
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
+    packaging {
+        resources {
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/io.netty.versions.properties"
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 }
 
@@ -52,10 +58,5 @@ dependencies {
     implementation(libs.googleid)
 
     // Google Photos
-    implementation(libs.google.photos.library.client)
-    implementation("io.grpc:grpc-netty:1.57.0")
-    implementation("io.grpc:grpc-protobuf:1.57.0")
-    implementation("io.grpc:grpc-stub:1.57.0")
-    implementation("io.grpc:grpc-okhttp:1.50.0")
-    implementation("io.grpc:grpc-core:1.57.0")
+    implementation(libs.bundles.google.photos)
 }

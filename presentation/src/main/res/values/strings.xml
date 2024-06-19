@@ -33,6 +33,8 @@
     <string name="register_pass_not_strong">Passwords must be at least 8 characters with at least one lowercase, one uppercase, and one non alphanumeric character.</string>
     <string name="register_name_incorrect">Please type correct name</string>
     <string name="register_email_incorrect">Please type correct email address</string>
+    <string name="register_account_taken_error">Account is already taken. Please choose different account.</string>
+    <string name="register_account_success">Account has been created successfully.</string>
 
     <!-- Misc -->
     <string name="button_submit">Submit</string>
@@ -41,10 +43,11 @@
     <string name="home_screen_title">Home</string>
     <string name="sync_screen_title">Sync</string>
     <string name="settings_screen_title">Settings</string>
-    <string name="home_screen_empty_msg">Your Photo Pixels library is empty, go to sync screen to start uploading!</string>
-    <string name="home_screen_go_to_sync">Go to Sync screen</string>
+    <string name="home_screen_empty_msg">Your Photo Pixels library is empty.</string>
+    <string name="button_sync_photos">Sync photos</string>
     <string name="error_title">Error</string>
     <string name="error_permission_denied">Photos permissions are denied. Please provide PhotoPixels storage permissions.</string>
+    <string name="error_generic">Something went wrong. Please try again later</string>
 
     <!-- Settings Screen -->
     <string name="settings_screen_heading_title">Application Settings</string>
@@ -67,5 +70,14 @@
     <!-- Forgot password Screen -->
     <string name="forgot_pass_title">Forgot Password?</string>
     <string name="forgot_pass_screen_hint">Please enter your email address</string>
+    <string name="forgot_pass_code_msg">Please enter the verification code that was sent to your email address</string>
+    <string name="forgot_pass_ver_code">Verification code</string>
+    <string name="forgot_pass_code_hint">Code</string>
+    <string name="forgot_pass_new">New password</string>
+    <string name="forgot_pass_confirm">Confirm new password</string>
+    <string name="forgot_pass_mail_sent_msg">Password reset code sent to your email.</string>
+    <string name="forgot_pass_success_msg">Your password has been successfully reset.</string>
+    <string name="forgot_pass_error_incorrect_code">Verification code is incorrect. Please check the code from email carefully.</string>
+    <string name="reset_password_title">Reset Password</string>
 
 </resources>

@@ -9,18 +9,27 @@ plugins {
 }
 
 android {
-    namespace = "com.scalefocus.photopixels"
+    namespace = "io.photopixels.app"
 
     defaultConfig {
-        applicationId = "com.scalefocus.photopixels"
+        applicationId = "io.photopixels.app"
 
-        manifestPlaceholders["appAuthRedirectScheme"] = "com.scalefocus.photopixels"
+        manifestPlaceholders["appAuthRedirectScheme"] = "io.photopixels.app"
     }
 
     buildTypes {
         release {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
+    }
+
+    // FIXME https://github.com/firebase/firebase-android-sdk/issues/3148
+    //  This is a known issue with the Crashlytics Extension not being properly registered from a Gradle
+    //  convention plugin. There is a dedicated function in AndroidFirebaseConventionPlugin.kt that can be used when
+    //  this issue is resolved.
+    firebaseCrashlytics {
+        mappingFileUploadEnabled = true
+        nativeSymbolUploadEnabled = true
     }
 }
 

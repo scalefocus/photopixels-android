@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "com.scalefocus.presentation"
+    namespace = "io.photopixels.presentation"
 
     buildTypes {
         release {
@@ -25,6 +25,12 @@ android {
 
     defaultConfig {
         buildConfigField("String", "GOOGLE_OAUTH_ANDROID_CLIENT_ID", androidClientId)
+        consumerProguardFiles("proguard-rules.pro")
+        manifestPlaceholders["appAuthRedirectScheme"] = "io.photopixels.app"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 }
 
@@ -37,6 +43,7 @@ dependencies {
     implementation(libs.glide.compose)
     ksp(libs.glide.compiler)
     ksp(libs.glide.ksp)
+    implementation(libs.zoomable)
 
     // App auth - library
     implementation(libs.appauth)

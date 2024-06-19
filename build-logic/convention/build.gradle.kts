@@ -2,7 +2,7 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "com.scalefocus.photopixels.buildlogic"
+group = "io.photopixels.buildlogic"
 
 java {
     sourceCompatibility = JavaVersion.valueOf(libs.versions.javaVersion.get())
@@ -12,9 +12,12 @@ java {
 dependencies {
     compileOnly(libs.android.gradle.plugin)
     compileOnly(libs.kotlin.gradle.plugin)
+    compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.ksp.gradle.plugin)
     compileOnly(libs.detekt.gradle.plugin)
     compileOnly(libs.ktlint.gradle.plugin)
+    compileOnly(libs.firebase.appdistribution.gradle.plugin)
+    compileOnly(libs.firebase.crashlytics.gradle.plugin)
 }
 
 gradlePlugin {
@@ -82,6 +85,11 @@ gradlePlugin {
         register("applicationSigning") {
             id = "plugin.application.signing"
             implementationClass = "AndroidApplicationSigningConventionPlugin"
+        }
+
+        register("androidFirebase") {
+            id = "plugin.firebase"
+            implementationClass = "AndroidFirebaseConventionPlugin"
         }
     }
 }
