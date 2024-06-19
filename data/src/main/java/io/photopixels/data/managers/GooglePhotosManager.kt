@@ -6,7 +6,10 @@ import com.google.auth.oauth2.AccessToken
 import com.google.auth.oauth2.UserCredentials
 import com.google.photos.library.v1.PhotosLibraryClient
 import com.google.photos.library.v1.PhotosLibrarySettings
+import com.google.photos.types.proto.MediaItem
 import io.photopixels.data.BuildConfig
+import io.photopixels.data.mappers.toEntity
+import io.photopixels.data.storage.database.GooglePhotosDao
 import io.photopixels.data.storage.datastore.AuthDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +20,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GooglePhotosManager @Inject constructor(private val authDataStore: AuthDataStore) {
+class GooglePhotosManager @Inject constructor(
+    private val authDataStore: AuthDataStore,
+    private val googlePhotosDao: GooglePhotosDao
+) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var photosLibraryClient: PhotosLibraryClient
 
@@ -35,7 +41,8 @@ class GooglePhotosManager @Inject constructor(private val authDataStore: AuthDat
         Timber.tag(GOOGLE_PHOTOS_TAG).d("init google photos library")
         val googleAuthToken = authDataStore.getGoogleAuthToken()
         googleAuthToken?.let {
-            val settings = PhotosLibrarySettings.newBuilder()
+            val settings = PhotosLibrarySettings
+                .newBuilder()
                 .setCredentialsProvider(FixedCredentialsProvider.create(getUserCredentials(it)))
                 .build()
 
@@ -47,7 +54,8 @@ class GooglePhotosManager @Inject constructor(private val authDataStore: AuthDat
     private fun getUserCredentials(googleAuthToken: String): Credentials {
         Timber.tag(GOOGLE_PHOTOS_TAG).d("init google photos library with google auth token:$googleAuthToken")
         val accessToken = AccessToken(googleAuthToken, null)
-        return UserCredentials.newBuilder()
+        return UserCredentials
+            .newBuilder()
             .setClientId(BuildConfig.GOOGLE_OAUTH_WEB_CLIENT_ID)
             .setClientSecret(BuildConfig.GOOGLE_OAUTH_WEB_CLIENT_SECRET)
             .setAccessToken(accessToken)
@@ -76,10 +84,17 @@ class GooglePhotosManager @Inject constructor(private val authDataStore: AuthDat
                     val baseUrl = mediaItem.baseUrl
                     Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
                 }
+
+                savePhotosDataToDB(mediaItems)
             } catch (e: Exception) {
                 Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: exception handled ====$e")
             }
         }
+    }
+
+    private suspend fun savePhotosDataToDB(mediaItemsList: List<MediaItem>) {
+        val googlePhotosList = mediaItemsList.map { it.toEntity() }
+        googlePhotosDao.insertPhotosData(googlePhotosList)
     }
 
     companion object {
