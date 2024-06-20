@@ -39,8 +39,10 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
                 }
             }
 
-            configureFirebaseAppDistribution()
-            configureFirebaseCrashlytics()
+            if (firebaseConfigExists) {
+                configureFirebaseAppDistribution()
+                configureFirebaseCrashlytics()
+            }
         }
     }
 }
