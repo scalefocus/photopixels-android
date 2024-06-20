@@ -27,9 +27,14 @@ android {
     //  This is a known issue with the Crashlytics Extension not being properly registered from a Gradle
     //  convention plugin. There is a dedicated function in AndroidFirebaseConventionPlugin.kt that can be used when
     //  this issue is resolved.
-    firebaseCrashlytics {
-        mappingFileUploadEnabled = true
-        nativeSymbolUploadEnabled = true
+    val firebaseConfigExists = file("google-services.json").exists()
+    if (firebaseConfigExists) {
+        withGroovyBuilder {
+            "firebaseCrashlytics" {
+                "mappingFileUploadEnabled"(true)
+                "nativeSymbolUploadEnabled"(true)
+            }
+        }
     }
 }
 
