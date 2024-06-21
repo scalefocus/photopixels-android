@@ -256,7 +256,7 @@ jobs:
 
             -   name: Publish via Firebase AppDistribution
                 run: |
-                    variant = ${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
+                    variants = ${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
                     tasks=""
                     for variant in $(echo $variants | sed "s/, / /g"); do
                         capitalized=$(echo $variant | sed 's/\b\(.\)/\u\1/g')
