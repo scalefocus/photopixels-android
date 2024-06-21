@@ -60,6 +60,12 @@ jobs:
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
+            - name: Prepare Firebase App Distribution configuration
+              uses: ./.github/actions/firebase-app-distribution-config
+              with:
+                  credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                  groups: scalefocus-general
+
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
 
