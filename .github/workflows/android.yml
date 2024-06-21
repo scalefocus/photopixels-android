@@ -144,12 +144,12 @@ jobs:
 #                    java-version: '17'
 #                    distribution: 'adopt'
 #                    cache: 'gradle'
-#
-#            -   name: Prepare Firebase services configuration
-#                uses: ./.github/actions/firebase-config
-#                with:
-#                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-#
+
+            -   name: Prepare Firebase services configuration
+                uses: ./.github/actions/firebase-config
+                with:
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+
 #            -   name: Prepare Firebase App Distribution configuration
 #                uses: ./.github/actions/firebase-app-distribution-config
 #                with:
@@ -252,7 +252,9 @@ jobs:
                 uses: ./.github/actions/firebase-app-distribution-config
                 with:
                     credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-                    groups: scalefocus-general
+                    groups: ${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+                    artifact_type: ${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+                    build_type: ${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
 
             -   name: Publish via Firebase App Distribution
                 shell: bash
