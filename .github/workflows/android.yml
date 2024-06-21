@@ -252,16 +252,14 @@ jobs:
                 uses: ./.github/actions/firebase-app-distribution-config
                 with:
                     credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-                    groups: ${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
-                    artifact_type: ${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-                    build_type: ${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
+                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
 
             -   name: Publish via Firebase App Distribution
                 shell: bash
                 run: |
-                    env
-                    
-                    variants="${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}"
+                    variants="${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}"
                     tasks=""
                     
                     IFS=',' read -ra variant_array <<< "$variants"
