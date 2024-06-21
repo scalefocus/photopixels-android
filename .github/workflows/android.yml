@@ -224,5 +224,18 @@ jobs:
                     name: photopixels-release-apk
                     path: app/build/outputs/apk/release/
 
+            - name: Prepare Firebase App Distribution configuration
+              uses: ./.github/actions/firebase-app-distribution-config
+              with:
+                  credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                  groups: scalefocus-general
+
             -   name: Publish via Firebase AppDistribution
-                run: echo "TODO download artifact and do appDistributionUploadRelease"
+                run: |
+                    variant = ${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
+                    tasks=""
+                    for variant in $(echo $variants | sed "s/, / /g"); do
+                        capitalized=$(echo $variant | sed 's/\b\(.\)/\u\1/g')
+                        tasks="$tasks appDistributionUpload$capitalized"
+                    done
+                    ./gradlew $tasks

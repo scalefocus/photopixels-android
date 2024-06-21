@@ -75,13 +75,13 @@ Place the following properties in the **local.properties** file in the root of t
 # region Firebase App Distribution properties
 # --------------------------------------------------------------------------------------------------
 # The path to your service account private key JSON file.
-FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE=/path/to/firebase/app/distribution/credentials/file
+PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE=/path/to/firebase/app/distribution/credentials/file
 
 # The tester groups you want to distribute builds to.
-FIREBASE_APPDISTRIBUTION_GROUPS=release-group1, release-group2, release-group3
+PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS=release-group1, release-group2, release-group3
 
 # Specifies your app's file type. Can be set to "AAB" or "APK".
-FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE=APK
+PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE=APK
 
 # Build types: (can be project-specific, especially with product flavors): [release, debug]
 PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES=release, debug
