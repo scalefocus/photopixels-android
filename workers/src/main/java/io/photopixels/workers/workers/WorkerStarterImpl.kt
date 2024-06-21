@@ -39,35 +39,44 @@ class WorkerStarterImpl @Inject constructor(
         uniqueDevicesWorkId = devicePhotosWorkRequest.id
         uniquePhotosWorkId = uploadPhotosWorkRequest.id
 
-        WorkManager.getInstance(context).beginWith(devicePhotosWorkRequest).then(uploadPhotosWorkRequest).enqueue()
+        WorkManager
+            .getInstance(context)
+            .beginWith(devicePhotosWorkRequest)
+            .then(uploadPhotosWorkRequest)
+            .enqueue()
     }
 
-    override fun getUploadPhotosWorkerListener(): Flow<WorkerInfo> {
-        return WorkManager.getInstance(context)
-            .getWorkInfoByIdFlow(uniquePhotosWorkId!!) // TODO this may be null, handle it better
-            .transform { workInfo ->
-                if (workInfo.state.isFinished) {
-                    val workerResultData = workInfo.outputData.keyValueMap
-                    emit(
-                        WorkerInfo(
-                            workerTag = workInfo.tags.first(),
-                            WorkerStatus.FINISHED,
-                            resultData = workerResultData
-                        )
+    override fun getUploadPhotosWorkerListener(): Flow<WorkerInfo> = WorkManager
+        .getInstance(context)
+        .getWorkInfoByIdFlow(uniquePhotosWorkId!!) // TODO this may be null, handle it better
+        .transform { workInfo ->
+            if (workInfo.state.isFinished) {
+                val workerResultData = workInfo.outputData.keyValueMap
+                emit(
+                    WorkerInfo(
+                        workerTag = workInfo.tags.first(),
+                        WorkerStatus.FINISHED,
+                        resultData = workerResultData
                     )
-                }
+                )
             }
+        }
+
+    override fun startGooglePhotosWorker() {
+        getGooglePhotosWorkerRequest().also {
+            WorkManager.getInstance(context).enqueue(it)
+        }
     }
 
-    private fun getDevicePhotosWorkerRequest(): OneTimeWorkRequest {
-        return OneTimeWorkRequestBuilder<DevicePhotosWorker>()
-            .addTag(WorkerStarter.DEVICE_PHOTOS_WORKER_TAG)
-            .build()
-    }
+    private fun getDevicePhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<DevicePhotosWorker>()
+        .addTag(WorkerStarter.DEVICE_PHOTOS_WORKER_TAG)
+        .build()
 
-    private fun getUploadPhotosWorkerRequest(): OneTimeWorkRequest {
-        return OneTimeWorkRequestBuilder<UploadPhotosWorker>()
-            .addTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
-            .build()
-    }
+    private fun getUploadPhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<UploadPhotosWorker>()
+        .addTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
+        .build()
+
+    private fun getGooglePhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<GooglePhotosWorker>()
+        .addTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
+        .build()
 }

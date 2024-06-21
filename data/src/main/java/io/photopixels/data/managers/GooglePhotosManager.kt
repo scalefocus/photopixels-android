@@ -33,7 +33,7 @@ class GooglePhotosManager @Inject constructor(
         }
     }
 
-    fun fetchGooglePhotos() {
+    suspend fun fetchGooglePhotos() {
         fetchPhotos()
     }
 
@@ -62,33 +62,29 @@ class GooglePhotosManager @Inject constructor(
             .build()
     }
 
-    private fun fetchPhotos() {
-        coroutineScope.launch(Dispatchers.IO) {
-            Timber.tag(GOOGLE_PHOTOS_TAG).d("in fetchPhotos()")
-            if (!::photosLibraryClient.isInitialized) {
-                Timber.tag(GOOGLE_PHOTOS_TAG).d("library is not initialized")
-                initPhotosLibrary()
-                Timber.tag(GOOGLE_PHOTOS_TAG).d("library initialized")
-            } else {
-                Timber.tag(GOOGLE_PHOTOS_TAG).d("library initialized already")
+    private suspend fun fetchPhotos() {
+        if (!::photosLibraryClient.isInitialized) {
+            Timber.tag(GOOGLE_PHOTOS_TAG).d("library is not initialized")
+            initPhotosLibrary()
+            Timber.tag(GOOGLE_PHOTOS_TAG).d("library initialized")
+        } else {
+            Timber.tag(GOOGLE_PHOTOS_TAG).d("library initialized already")
+        }
+
+        try {
+            val response = photosLibraryClient.listMediaItems()
+            // response contains list of photo objects
+            val mediaItems = response.iterateAll().toList()
+            for (mediaItem in mediaItems) {
+                // Access media item properties
+                val id = mediaItem.id
+                val baseUrl = mediaItem.baseUrl
+                // Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
             }
 
-            try {
-                Timber.tag(GOOGLE_PHOTOS_TAG).d("Try List media Items")
-                val response = photosLibraryClient.listMediaItems()
-                // response contains list of photo objects
-                val mediaItems = response.iterateAll().toList()
-                for (mediaItem in mediaItems) {
-                    // Access media item properties
-                    val id = mediaItem.id
-                    val baseUrl = mediaItem.baseUrl
-                    Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
-                }
-
-                savePhotosDataToDB(mediaItems)
-            } catch (e: Exception) {
-                Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: exception handled ====$e")
-            }
+            savePhotosDataToDB(mediaItems)
+        } catch (e: Exception) {
+            Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: exception handled ====$e")
         }
     }
 

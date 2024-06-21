@@ -6,6 +6,7 @@ import io.photopixels.domain.usecases.ClearUserDataUseCase
 import io.photopixels.domain.usecases.GetAppInfoData
 import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
 import io.photopixels.domain.usecases.googlephotos.GetGooglePhotosUseCase
+import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.login.GoogleAuthorization
@@ -19,7 +20,8 @@ class SettingsScreenViewModel @Inject constructor(
     private val clearUserDataUseCase: ClearUserDataUseCase,
     private val saveGoogleAuthTokenUseCase: SaveGoogleAuthTokenUseCase,
     private val getGooglePhotosUseCase: GetGooglePhotosUseCase,
-    private val googleAuthorization: GoogleAuthorization
+    private val googleAuthorization: GoogleAuthorization,
+    private val workerStarter: WorkerStarter
 ) : BaseViewModel<SettingsScreenState, SettingsScreenActions, SettingsScreenEvents>(SettingsScreenState()) {
 
     // TODO Implement logic for load/save user-prefs
@@ -93,9 +95,9 @@ class SettingsScreenViewModel @Inject constructor(
                     isGoogleSyncEnabled = true
                 )
             }
-            // TODO trigger Google photos sync worker
-            Timber.tag("TAG").e("SettingsScreenViewModel() invoking getGooglePhotosUseCase.invoke()")
+
             getGooglePhotosUseCase.invoke()
+            workerStarter.startGooglePhotosWorker()
         }
     }
 }
