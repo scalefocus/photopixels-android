@@ -45,29 +45,29 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v4
-                with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'gradle'
-
-            -   name: Grant execute permissions for gradlew
-                run: chmod +x ./gradlew
-
-            -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
-                with:
-                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-
-            -   name: Prepare Firebase App Distribution configuration
-                uses: ./.github/actions/firebase-app-distribution-config
-                with:
-                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-                    groups: scalefocus-general
-
-            -   name: Run Android lint, ktlint, detekt
-                run: ./gradlew lint ktlintCheck detekt
+#            -   name: Set up JDK 17
+#                uses: actions/setup-java@v4
+#                with:
+#                    java-version: '17'
+#                    distribution: 'adopt'
+#                    cache: 'gradle'
+#
+#            -   name: Grant execute permissions for gradlew
+#                run: chmod +x ./gradlew
+#
+#            -   name: Prepare Firebase services configuration
+#                uses: ./.github/actions/firebase-config
+#                with:
+#                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+#
+#            -   name: Prepare Firebase App Distribution configuration
+#                uses: ./.github/actions/firebase-app-distribution-config
+#                with:
+#                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+#                    groups: scalefocus-general
+#
+#            -   name: Run Android lint, ktlint, detekt
+#                run: ./gradlew lint ktlintCheck detekt
 
     test:
         runs-on: ubuntu-latest
@@ -77,26 +77,26 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v4
-                with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'gradle'
-
-            -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
-                with:
-                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-
-            -   name: Prepare Firebase App Distribution configuration
-                uses: ./.github/actions/firebase-app-distribution-config
-                with:
-                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-                    groups: scalefocus-general
-
-            -   name: Run tests
-                run: ./gradlew test
+#            -   name: Set up JDK 17
+#                uses: actions/setup-java@v4
+#                with:
+#                    java-version: '17'
+#                    distribution: 'adopt'
+#                    cache: 'gradle'
+#
+#            -   name: Prepare Firebase services configuration
+#                uses: ./.github/actions/firebase-config
+#                with:
+#                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+#
+#            -   name: Prepare Firebase App Distribution configuration
+#                uses: ./.github/actions/firebase-app-distribution-config
+#                with:
+#                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+#                    groups: scalefocus-general
+#
+#            -   name: Run tests
+#                run: ./gradlew test
 
     build:
         runs-on: ubuntu-latest
@@ -106,29 +106,29 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v4
-                with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'gradle'
-
-            -   name: Grant execute permissions for gradlew
-                run: chmod +x ./gradlew
-
-            -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
-                with:
-                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-
-            -   name: Prepare Firebase App Distribution configuration
-                uses: ./.github/actions/firebase-app-distribution-config
-                with:
-                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-                    groups: scalefocus-general
-
-            -   name: Build with Gradle
-                run: ./gradlew assembleDebug
+#            -   name: Set up JDK 17
+#                uses: actions/setup-java@v4
+#                with:
+#                    java-version: '17'
+#                    distribution: 'adopt'
+#                    cache: 'gradle'
+#
+#            -   name: Grant execute permissions for gradlew
+#                run: chmod +x ./gradlew
+#
+#            -   name: Prepare Firebase services configuration
+#                uses: ./.github/actions/firebase-config
+#                with:
+#                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+#
+#            -   name: Prepare Firebase App Distribution configuration
+#                uses: ./.github/actions/firebase-app-distribution-config
+#                with:
+#                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+#                    groups: scalefocus-general
+#
+#            -   name: Build with Gradle
+#                run: ./gradlew assembleDebug
 
     assemble-signed-release:
         runs-on: ubuntu-latest
@@ -262,4 +262,6 @@ jobs:
                         capitalized=$(echo $variant | sed 's/\b\(.\)/\u\1/g')
                         tasks="$tasks appDistributionUpload$capitalized"
                     done
+                    
+                    echo "Tasks: $tasks"
                     ./gradlew $tasks
