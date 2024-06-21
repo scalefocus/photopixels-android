@@ -259,6 +259,8 @@ jobs:
             -   name: Publish via Firebase App Distribution
                 shell: bash
                 run: |
+                    env
+                    
                     variants="${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}"
                     tasks=""
                     

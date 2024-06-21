@@ -24,4 +24,5 @@ runs:
 
                 pwd
                 ls -la
-                cat app/google-services.json
+                ls -la app/
+                cat app/google-services.json | base64
