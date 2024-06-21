@@ -19,4 +19,9 @@ runs:
 
         -   name: Prepare Firebase services configuration
             shell: bash
-            run: echo '${{ inputs.google_services_json }}' > app/google-services.json
+            run: |
+                echo '${{ inputs.google_services_json }}' > app/google-services.json
+
+                pwd
+                ls -la
+                cat app/google-services.json
