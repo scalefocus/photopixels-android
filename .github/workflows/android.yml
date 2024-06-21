@@ -255,13 +255,19 @@ jobs:
                     groups: scalefocus-general
 
             -   name: Publish via Firebase App Distribution
+                shell: bash
                 run: |
-                    variants=${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
+                    variants="${{ env.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}"
                     tasks=""
-                    for variant in $(echo $variants | sed "s/, / /g"); do
-                        capitalized=$(echo $variant | sed 's/\b\(.\)/\u\1/g')
+                    
+                    IFS=',' read -ra variant_array <<< "$variants"
+                    
+                    for variant in "${variant_array[@]}"; do
+                        capitalized=$(echo "$variant" | sed 's/\b\(.\)/\u\1/g')
                         tasks="$tasks appDistributionUpload$capitalized"
                     done
                     
-                    echo "Tasks: $tasks"
-                    ./gradlew $tasks
+                    echo "Tasks: [$tasks] from variants: [$variants]"
+                    if [ -n "$tasks" ]; then
+                        ./gradlew $tasks
+                    fi
