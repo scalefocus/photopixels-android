@@ -60,11 +60,11 @@ jobs:
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
-            - name: Prepare Firebase App Distribution configuration
-              uses: ./.github/actions/firebase-app-distribution-config
-              with:
-                  credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-                  groups: scalefocus-general
+            -   name: Prepare Firebase App Distribution configuration
+                uses: ./.github/actions/firebase-app-distribution-config
+                with:
+                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    groups: scalefocus-general
 
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
@@ -88,6 +88,12 @@ jobs:
                 uses: ./.github/actions/firebase-config
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+
+            -   name: Prepare Firebase App Distribution configuration
+                uses: ./.github/actions/firebase-app-distribution-config
+                with:
+                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    groups: scalefocus-general
 
             -   name: Run tests
                 run: ./gradlew test
@@ -115,6 +121,12 @@ jobs:
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
+            -   name: Prepare Firebase App Distribution configuration
+                uses: ./.github/actions/firebase-app-distribution-config
+                with:
+                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    groups: scalefocus-general
+
             -   name: Build with Gradle
                 run: ./gradlew assembleDebug
 
@@ -137,6 +149,12 @@ jobs:
                 uses: ./.github/actions/firebase-config
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+
+            -   name: Prepare Firebase App Distribution configuration
+                uses: ./.github/actions/firebase-app-distribution-config
+                with:
+                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    groups: scalefocus-general
 
             -   name: Prepare release signing configuration
                 env:
@@ -230,11 +248,11 @@ jobs:
                     name: photopixels-release-apk
                     path: app/build/outputs/apk/release/
 
-            - name: Prepare Firebase App Distribution configuration
-              uses: ./.github/actions/firebase-app-distribution-config
-              with:
-                  credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-                  groups: scalefocus-general
+            -   name: Prepare Firebase App Distribution configuration
+                uses: ./.github/actions/firebase-app-distribution-config
+                with:
+                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    groups: scalefocus-general
 
             -   name: Publish via Firebase AppDistribution
                 run: |

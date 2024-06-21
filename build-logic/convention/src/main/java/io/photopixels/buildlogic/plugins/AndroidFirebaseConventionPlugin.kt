@@ -29,6 +29,7 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
                     apply(findPluginId("firebaseAppDistribution"))
                 } else {
                     println("Firebase services gradle plugins are not enabled; missing google-services.json file.")
+                    println("Searched in[${file("google-services.json").absolutePath}]")
                 }
             }
 
