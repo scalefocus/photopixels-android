@@ -36,7 +36,3 @@ runs:
                 echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS=${{ inputs.groups }}' >> local.properties
                 echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE=${{ inputs.artifact_type }}' >> local.properties
                 echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES=${{ inputs.build_type }}' >> local.properties
-                
-                pwd
-                ls -la
-                cat local.properties

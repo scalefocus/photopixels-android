@@ -138,94 +138,94 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-#            -   name: Set up JDK 17
-#                uses: actions/setup-java@v4
-#                with:
-#                    java-version: '17'
-#                    distribution: 'adopt'
-#                    cache: 'gradle'
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v4
+                with:
+                    java-version: '17'
+                    distribution: 'adopt'
+                    cache: 'gradle'
 
             -   name: Prepare Firebase services configuration
                 uses: ./.github/actions/firebase-config
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
-#            -   name: Prepare Firebase App Distribution configuration
-#                uses: ./.github/actions/firebase-app-distribution-config
-#                with:
-#                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-#                    groups: scalefocus-general
-#
-#            -   name: Prepare release signing configuration
-#                env:
-#                    ENCODED_STRING: ${{ secrets.KEYSTORE_BASE_64 }}
-#                    RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-#                    RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
-#                    RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-#
-#                run: |
-#                    # Base64 decoding of keystore kept in temporary environment variable
-#                    echo $ENCODED_STRING > keystore-b64.txt
-#                    base64 -d keystore-b64.txt > keystore.jks
-#
-#                    # Create property file with signing configuration values
-#                    echo "keystorePath=../keystore.jks" > keystore.properties
-#                    echo "keystorePassword=$RELEASE_KEYSTORE_PASSWORD" >> keystore.properties
-#                    echo "keyAlias=$RELEASE_KEY_ALIAS" >> keystore.properties
-#                    echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties
-#
-#            -   name: Generate build number
-#                id: generate_build_number
-#                shell: bash
-#                run: |
-#                    # Use reference timestamp to reduce the version code value due to Google Play
-#                    # limit of 2100000000. Basically we take the current timestamp and subtract the
-#                    # reference timestamp from it.
-#                    referenceTimestamp=$(date -d "2024-06-01" +%s)
-#                    currentTimestamp=$(date +%s)
-#                    timeDifference=$(( currentTimestamp - referenceTimestamp ))
-#
-#                    # We multiply the time difference by a factor (here, 10) to give it more weight
-#                    # and add the GITHUB_RUN_NUMBER for additional uniqueness. We can adjust the
-#                    # multiplier based on how frequently we expect to build.
-#                    versionCode=$(( (timeDifference * 10) + GITHUB_RUN_NUMBER ))
-#                    echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
-#                    #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
-#
-#            -   name: Create release APK
-#                run: |
-#                    ./gradlew assembleRelease \
-#                    -PversionCode=${{ steps.generate_build_number.outputs.versionCode }}
-#
-#            -   name: Upload release APK to artifacts
-#                uses: actions/upload-artifact@v4
-#                with:
-#                    name: photopixels-release-apk
-#                    path: app/build/outputs/apk/release/*release*.apk
-#                    if-no-files-found: error # error, warn, ignore
-#                    overwrite: false
-#
-#            -   name: Upload reports
-#                if: always()
-#                uses: actions/upload-artifact@v4
-#                with:
-#                    name: photopixels-android-reports
-#                    path: |
-#                        **/build/reports/*
-#
-#            -   name: Upload test results
-#                if: always()
-#                uses: actions/upload-artifact@v4
-#                with:
-#                    name: photopixels-android-test-results
-#                    path: |
-#                        **/build/test-results/*
-#
-#            -   name: Publish release APK to Github Releases
-#                uses: softprops/action-gh-release@v2
-#                if: startsWith(github.ref, 'refs/tags/')
-#                with:
-#                    files: app/build/outputs/apk/release/*release*.apk
+            -   name: Prepare Firebase App Distribution configuration
+                uses: ./.github/actions/firebase-app-distribution-config
+                with:
+                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    groups: scalefocus-general
+
+            -   name: Prepare release signing configuration
+                env:
+                    ENCODED_STRING: ${{ secrets.KEYSTORE_BASE_64 }}
+                    RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+                    RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+                    RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+                run: |
+                    # Base64 decoding of keystore kept in temporary environment variable
+                    echo $ENCODED_STRING > keystore-b64.txt
+                    base64 -d keystore-b64.txt > keystore.jks
+
+                    # Create property file with signing configuration values
+                    echo "keystorePath=../keystore.jks" > keystore.properties
+                    echo "keystorePassword=$RELEASE_KEYSTORE_PASSWORD" >> keystore.properties
+                    echo "keyAlias=$RELEASE_KEY_ALIAS" >> keystore.properties
+                    echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties
+
+            -   name: Generate build number
+                id: generate_build_number
+                shell: bash
+                run: |
+                    # Use reference timestamp to reduce the version code value due to Google Play
+                    # limit of 2100000000. Basically we take the current timestamp and subtract the
+                    # reference timestamp from it.
+                    referenceTimestamp=$(date -d "2024-06-01" +%s)
+                    currentTimestamp=$(date +%s)
+                    timeDifference=$(( currentTimestamp - referenceTimestamp ))
+
+                    # We multiply the time difference by a factor (here, 10) to give it more weight
+                    # and add the GITHUB_RUN_NUMBER for additional uniqueness. We can adjust the
+                    # multiplier based on how frequently we expect to build.
+                    versionCode=$(( (timeDifference * 10) + GITHUB_RUN_NUMBER ))
+                    echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
+                    #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
+
+            -   name: Create release APK
+                run: |
+                    ./gradlew assembleRelease \
+                    -PversionCode=${{ steps.generate_build_number.outputs.versionCode }}
+
+            -   name: Upload release APK to artifacts
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-release-apk
+                    path: app/build/outputs/apk/release/*release*.apk
+                    if-no-files-found: error # error, warn, ignore
+                    overwrite: false
+
+            -   name: Upload reports
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-reports
+                    path: |
+                        **/build/reports/*
+
+            -   name: Upload test results
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-test-results
+                    path: |
+                        **/build/test-results/*
+
+            -   name: Publish release APK to Github Releases
+                uses: softprops/action-gh-release@v2
+                if: startsWith(github.ref, 'refs/tags/')
+                with:
+                    files: app/build/outputs/apk/release/*release*.apk
 
     distribute:
         runs-on: ubuntu-latest
@@ -242,11 +242,11 @@ jobs:
                     distribution: 'adopt'
                     cache: 'gradle'
 
-#            -   name: Download APK from artifacts
-#                uses: actions/download-artifact@v4
-#                with:
-#                    name: photopixels-release-apk
-#                    path: app/build/outputs/apk/release/
+            -   name: Download APK from artifacts
+                uses: actions/download-artifact@v4
+                with:
+                    name: photopixels-release-apk
+                    path: app/build/outputs/apk/release/
 
             -   name: Prepare Firebase App Distribution configuration
                 uses: ./.github/actions/firebase-app-distribution-config

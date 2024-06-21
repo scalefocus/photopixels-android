@@ -21,8 +21,3 @@ runs:
             shell: bash
             run: |
                 echo '${{ inputs.google_services_json }}' > app/google-services.json
-
-                pwd
-                ls -la
-                ls -la app/
-                cat app/google-services.json | base64
