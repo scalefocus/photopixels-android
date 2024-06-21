@@ -49,3 +49,45 @@ GOOGLE_OAUTH_WEB_CLIENT_SECRET="web_client_secret_from_google_cloud_console"
 
 **TODO: add instructions/links describing how to obtain properties for photopixels.properties 
 file.**
+
+## Firebase Services Configuration
+
+This project already includes the necessary dependencies for the following Firebase services:
+* Firebase Crashlytics
+* Firebase Performance
+* Firebase App Distribution
+
+There is a Gradle conventional plugin called **AndroidFirebaseConventionPlugin.kt**. You may modify
+its contents as you see fit for your current project.
+
+To be able to use any of the Firebase services, you need to provide the **google-services.json**
+file downloaded from the Firebase Console. Place this file into the **app* module (**app/**
+directory) of the project. Once Gradle finds this file, it enables the fore-mentioned Firebase
+services. Without this file, all Firebase services will remain disabled.
+
+There may be necessary to provide additional configuration to be able to use the Firebase services.
+
+### Additional Configuration for Firebase App Distribution
+
+Place the following properties in the **local.properties** file in the root of the project:
+
+```
+# region Firebase App Distribution properties
+# --------------------------------------------------------------------------------------------------
+# The path to your service account private key JSON file.
+FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE=/path/to/firebase/app/distribution/credentials/file
+
+# The tester groups you want to distribute builds to.
+FIREBASE_APPDISTRIBUTION_GROUPS=release-group1, release-group2, release-group3
+
+# Specifies your app's file type. Can be set to "AAB" or "APK".
+FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE=APK
+
+# Build types: (can be project-specific, especially with product flavors): [release, debug]
+PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES=release, debug
+# --------------------------------------------------------------------------------------------------
+# endregion
+```
+
+NOTE: When application product flavors are used, **AndroidFirebaseConventionPlugin.kt** will have to
+be revised and modified to support them.
