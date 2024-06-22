@@ -64,7 +64,9 @@ jobs:
 #                uses: ./.github/actions/firebase-app-distribution-config
 #                with:
 #                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-#                    groups: scalefocus-general
+#                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+#                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+#                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
 #
 #            -   name: Run Android lint, ktlint, detekt
 #                run: ./gradlew lint ktlintCheck detekt
@@ -93,7 +95,9 @@ jobs:
 #                uses: ./.github/actions/firebase-app-distribution-config
 #                with:
 #                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-#                    groups: scalefocus-general
+#                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+#                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+#                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
 #
 #            -   name: Run tests
 #                run: ./gradlew test
@@ -125,7 +129,9 @@ jobs:
 #                uses: ./.github/actions/firebase-app-distribution-config
 #                with:
 #                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-#                    groups: scalefocus-general
+#                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+#                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+#                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
 #
 #            -   name: Build with Gradle
 #                run: ./gradlew assembleDebug
@@ -154,7 +160,9 @@ jobs:
                 uses: ./.github/actions/firebase-app-distribution-config
                 with:
                     credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-                    groups: scalefocus-general
+                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
 
             -   name: Prepare release signing configuration
                 env:
@@ -191,6 +199,13 @@ jobs:
                     versionCode=$(( (timeDifference * 10) + GITHUB_RUN_NUMBER ))
                     echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
                     #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
+
+            - name: TEMP STEP permissions
+              run: |
+                  chmod 644 app/google-services.json
+                  chmod 644 keystore.jks
+            - name: TEMP STEP clean
+              run: ./gradlew clean
 
             -   name: Create release APK
                 run: |
