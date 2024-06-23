@@ -156,6 +156,9 @@ jobs:
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
 
+            -   name: Verify File Creation
+                run: ls -l ${{ github.workspace }}/app/google-services.json
+
             -   name: Prepare Firebase App Distribution configuration
                 uses: ./.github/actions/firebase-app-distribution-config
                 with:
