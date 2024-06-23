@@ -12,10 +12,10 @@ inputs:
         description: The Firebase Google Services JSON content
         required: true
 
-#outputs:
-#    file_path:
-#        description: Path to the created file
-#        value: ${{ steps.create-file.outputs.file_path }}
+outputs:
+    file_path:
+        description: Path to the created file
+        value: ${{ steps.create-file.outputs.file_path }}
 
 runs:
     using: "composite"
@@ -27,4 +27,4 @@ runs:
             shell: bash
             run: |
                 echo '${{ inputs.google_services_json }}' > ${{ github.workspace }}/app/google-services.json
-#                echo "file_path=$file_path" >> $GITHUB_OUTPUT
+                echo "file_path=$file_path" >> $GITHUB_OUTPUT
