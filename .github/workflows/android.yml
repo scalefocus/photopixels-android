@@ -200,6 +200,8 @@ jobs:
                     echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
                     #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
 
+            - name: TEMP STEP Debug with tmate
+              uses: mxschmitt/action-tmate@v3
             - name: TEMP STEP permissions
               run: |
                   chmod 644 app/google-services.json
