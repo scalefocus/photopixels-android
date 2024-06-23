@@ -21,3 +21,9 @@ runs:
             shell: bash
             run: |
                 echo '${{ inputs.google_services_json }}' > ./app/google-services.json
+
+        -   name: TEMP STEP List files
+            shell: bash
+            run: |
+                ls -la
+                ls -la ./app/
