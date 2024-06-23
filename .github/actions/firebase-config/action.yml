@@ -12,18 +12,19 @@ inputs:
         description: The Firebase Google Services JSON content
         required: true
 
+#outputs:
+#    file_path:
+#        description: Path to the created file
+#        value: ${{ steps.create-file.outputs.file_path }}
+
 runs:
     using: "composite"
     steps:
         -   uses: actions/checkout@v4
 
         -   name: Prepare Firebase services configuration
+            id: create-file
             shell: bash
             run: |
-                echo '${{ inputs.google_services_json }}' > ./app/google-services.json
-
-        -   name: TEMP STEP List files
-            shell: bash
-            run: |
-                ls -la
-                ls -la ./app/
+                echo '${{ inputs.google_services_json }}' > ${{ github.workspace }}/app/google-services.json
+#                echo "file_path=$file_path" >> $GITHUB_OUTPUT
