@@ -206,7 +206,8 @@ jobs:
             - name: TEMP STEP List files
               run: |
                   ls -la
-                  ls -la ./app/
+                  ls -la ${{ github.workspace }}/app/
+                  ls -la ${{ github.workspace }}/app/google-services.json
             - name: TEMP STEP Debug with tmate
               uses: mxschmitt/action-tmate@v3
             - name: TEMP STEP permissions
