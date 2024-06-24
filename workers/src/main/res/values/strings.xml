@@ -4,11 +4,11 @@
     <string name="performing_scan_device_photos_operation">Performing scan device photos operation…</string>
     <string name="channel_for_scan_photos_worker_notifications">Channel for scan photos worker notifications</string>
     <string name="channel_for_upload_photos_worker_notifications">Channel for upload photos worker notifications</string>
-    <string name="channel_for_upload_google_photos_worker_notifications">Channel for upload google photos worker notifications</string>
+    <string name="channel_for_upload_google_photos_worker_notifications">Google Photos notifications channel</string>
     <string name="sync_and_hash">Sync and Hash</string>
     <string name="upload_photos">Upload photos</string>
     <string name="upload_photos_description">Uploading your photos to PhotoPixels cloud…</string>
     <string name="upload_google_photos">Sync Google photos</string>
     <string name="upload_google_photos_description">Uploading your Google photos to PhotoPixels cloud…</string>
-    <string name="upload_google_photos_completed">Uploading Google photos has completed</string>
+    <string name="upload_google_photos_completed">Uploading Google photos to PhotoPixels has completed</string>
 </resources>
