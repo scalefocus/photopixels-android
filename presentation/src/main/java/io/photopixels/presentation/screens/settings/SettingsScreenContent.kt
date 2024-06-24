@@ -62,30 +62,30 @@ fun SettingsScreenContent(
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        screenState.appInfoData?.let {
-            AppDetails(appVersion = it.appVersion, serverVersion = it.serverVersion)
+        screenState.appInfoData?.let { appInfoData ->
+            AppDetails(appVersion = appInfoData.appVersion, serverVersion = appInfoData.serverVersion)
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            ActiveUser(user = it.loggedUser)
+            ActiveUser(user = appInfoData.loggedUser)
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            ServerAddress(serverAddress = it.serverAddress)
+            ServerAddress(serverAddress = appInfoData.serverAddress)
 
             Spacer(modifier = Modifier.height(30.dp))
 
             BackgroundActivity(
-                requirePowerForSync = screenState.isRequirePowerEnabled,
-                requireWifiForSync = screenState.isRequireWifiEnabled,
-                onPowerForSyncChange = { TODO("Implement") },
-                onWifiForSyncChange = { TODO("Implement") }
+                requirePowerForSync = screenState.userSettings.requirePower,
+                requireWifiForSync = screenState.userSettings.requireWifi,
+                onPowerForSyncChange = { onSubmitAction(SettingsScreenActions.OnRequirePowerClicked(it)) },
+                onWifiForSyncChange = { onSubmitAction(SettingsScreenActions.OnRequireWifiClicked(it)) }
             )
 
             Spacer(modifier = Modifier.height(30.dp))
 
             GooglePhotos(
-                googlePhotosSyncEnabled = screenState.isGoogleSyncEnabled,
+                googlePhotosSyncEnabled = screenState.userSettings.syncWithGoogle,
                 onGooglePhotosSyncChange = { checked ->
                     onSubmitAction(
                         SettingsScreenActions.OnSyncGooglePhotosClicked(

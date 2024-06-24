@@ -35,6 +35,7 @@ class GooglePhotosWorker @AssistedInject constructor(
     private val updatePhotoInDbUseCase: UpdatePhotoInDbUseCase,
     private val notificationsHelper: NotificationsHelper
 ) : CoroutineWorker(appContext, workerParams) {
+    private var uploadedPhotosCounter = 0
 
     @SuppressLint("MissingPermission")
     override suspend fun doWork(): Result {
@@ -62,14 +63,16 @@ class GooglePhotosWorker @AssistedInject constructor(
             }
         }
 
-        createNotification(
-            notificationTitleId = R.string.upload_google_photos,
-            notificationContentId = R.string.upload_google_photos_completed,
-            notificationIconId = android.R.drawable.stat_sys_upload_done,
-            isOngoing = false,
-            autoCancel = true,
-            isForeground = false
-        )
+        if (uploadedPhotosCounter > 0) { // Show notification if at least 1 photo has been uploaded
+            createNotification(
+                notificationTitleId = R.string.upload_google_photos,
+                notificationContentId = R.string.upload_google_photos_completed,
+                notificationIconId = android.R.drawable.stat_sys_upload_done,
+                isOngoing = false,
+                autoCancel = true,
+                isForeground = false
+            )
+        }
 
         return Result.success()
     }
@@ -104,6 +107,7 @@ class GooglePhotosWorker @AssistedInject constructor(
                         isAlreadyUploaded = true
                     )
                 updatePhotoInDbUseCase.updatedGooglePhotoData(updatedPhotoData)
+                uploadedPhotosCounter++
             }
 
             is Response.Failure -> {

@@ -6,15 +6,21 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.Gson
+import io.photopixels.domain.model.UserSettings
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
-class UserPreferencesDataStore @Inject constructor(private val context: Context, private val cipherUtil: CipherUtil) {
+class UserPreferencesDataStore @Inject constructor(
+    private val context: Context,
+    private val cipherUtil: CipherUtil
+) {
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
 
     companion object {
         private val SERVER_ADDRESS_KEY = stringPreferencesKey("server_address")
         private val SERVER_VERSION_KEY = stringPreferencesKey("server_version")
+        private val USER_SETTINGS_KEY = stringPreferencesKey("user_settings")
     }
 
     suspend fun setServerAddress(serverAddress: String) {
@@ -45,5 +51,21 @@ class UserPreferencesDataStore @Inject constructor(private val context: Context,
 
     suspend fun clearServerData() {
         context.dataStore.edit { it.clear() }
+    }
+
+    suspend fun setUserSettings(userSettings: UserSettings) {
+        val jsonString = Gson().toJson(userSettings)
+
+        context.dataStore.edit { preferences ->
+            preferences[USER_SETTINGS_KEY] = jsonString
+        }
+    }
+
+    @Suppress("SwallowedException")
+    suspend fun getUserSettings(): UserSettings? = try {
+        val jsonString = context.dataStore.data.first()[USER_SETTINGS_KEY]
+        Gson().fromJson(jsonString, UserSettings::class.java)
+    } catch (ex: NoSuchElementException) {
+        null
     }
 }

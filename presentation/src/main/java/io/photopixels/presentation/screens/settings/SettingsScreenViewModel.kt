@@ -2,16 +2,18 @@ package io.photopixels.presentation.screens.settings
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.photopixels.domain.model.UserSettings
 import io.photopixels.domain.usecases.ClearUserDataUseCase
 import io.photopixels.domain.usecases.GetAppInfoData
+import io.photopixels.domain.usecases.GetUserSettingsUseCase
 import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
+import io.photopixels.domain.usecases.SetUserSettingsUseCase
 import io.photopixels.domain.usecases.googlephotos.GetGooglePhotosUseCase
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.login.GoogleAuthorization
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,10 +23,17 @@ class SettingsScreenViewModel @Inject constructor(
     private val saveGoogleAuthTokenUseCase: SaveGoogleAuthTokenUseCase,
     private val getGooglePhotosUseCase: GetGooglePhotosUseCase,
     private val googleAuthorization: GoogleAuthorization,
+    private val getUserSettingsUseCase: GetUserSettingsUseCase,
+    private val setUserSettingsUseCase: SetUserSettingsUseCase,
     private val workerStarter: WorkerStarter
 ) : BaseViewModel<SettingsScreenState, SettingsScreenActions, SettingsScreenEvents>(SettingsScreenState()) {
 
-    // TODO Implement logic for load/save user-prefs
+    private var userSettings: UserSettings = UserSettings()
+
+    init {
+        loadUserSettings()
+    }
+
     override suspend fun handleActions(action: SettingsScreenActions) {
         when (action) {
             is SettingsScreenActions.LoadSettingsData -> {
@@ -36,14 +45,10 @@ class SettingsScreenViewModel @Inject constructor(
             }
 
             is SettingsScreenActions.OnSyncGooglePhotosClicked -> {
-                Timber.tag("TAG").e("OnSyncGooglePhotosClicked checked:${action.isChecked}")
                 if (action.isChecked) {
-                    // loginWithGoogle(action.activityContext) Sign-in with Google is not needed for now
-
                     authorizeWithGoogle()
                 } else {
-                    // TODO Stop Google-Photos syncing if active
-                    // TODO TBD should we also logout user from google if uncheck this option?
+                    stopGoogleSync()
                 }
             }
 
@@ -53,13 +58,24 @@ class SettingsScreenViewModel @Inject constructor(
 
             is SettingsScreenActions.OnGoogleOauthIntentReceived -> {
                 viewModelScope.launch {
-                    Timber.tag("TAG").e("SettingsScreenViewMo OnGoogleOauthIntentReceived action received!!!!")
                     googleAuthorization.handleAuthorizationResponse(action.intent).collect { googleAuthToken ->
                         googleAuthToken?.let {
                             onGoogleLoginSuccess(it)
                         }
                     }
                 }
+            }
+
+            is SettingsScreenActions.OnRequirePowerClicked -> {
+                updateState { copy(userSettings = userSettings.copy(requirePower = action.isChecked)) }
+                userSettings = userSettings.copy(requirePower = action.isChecked)
+                setUserSettingsUseCase.invoke(userSettings)
+            }
+
+            is SettingsScreenActions.OnRequireWifiClicked -> {
+                updateState { copy(userSettings = userSettings.copy(requireWifi = action.isChecked)) }
+                userSettings = userSettings.copy(requireWifi = action.isChecked)
+                setUserSettingsUseCase.invoke(userSettings)
             }
         }
     }
@@ -80,7 +96,6 @@ class SettingsScreenViewModel @Inject constructor(
 
     private fun authorizeWithGoogle() {
         val intent = googleAuthorization.generateAuthorizationIntent()
-        Timber.tag("TAG").e("Received intent in VM!!!")
         intent?.let {
             submitEvent(SettingsScreenEvents.StartAuthorizationIntent(it))
         }
@@ -92,12 +107,40 @@ class SettingsScreenViewModel @Inject constructor(
             updateState {
                 copy(
                     messageId = R.string.settings_screen_google_login_success,
-                    isGoogleSyncEnabled = true
+                    userSettings = userSettings.copy(syncWithGoogle = true)
                 )
             }
 
+            userSettings = userSettings.copy(syncWithGoogle = true)
+            setUserSettingsUseCase.invoke(userSettings)
             getGooglePhotosUseCase.invoke()
             workerStarter.startGooglePhotosWorker()
+        }
+    }
+
+    private fun stopGoogleSync() {
+        viewModelScope.launch {
+            updateState {
+                copy(
+                    userSettings = userSettings.copy(syncWithGoogle = false)
+                )
+            }
+            userSettings = userSettings.copy(syncWithGoogle = false)
+            setUserSettingsUseCase.invoke(userSettings)
+            workerStarter.stopGooglePhotosWorker()
+        }
+    }
+
+    private fun loadUserSettings() {
+        viewModelScope.launch {
+            val settings = getUserSettingsUseCase.invoke()
+            settings?.let {
+                userSettings = it
+
+                updateState {
+                    copy(userSettings = it)
+                }
+            }
         }
     }
 }

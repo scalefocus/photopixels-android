@@ -18,6 +18,7 @@ class WorkerStarterImpl @Inject constructor(
 ) : WorkerStarter {
     private var uniquePhotosWorkId: UUID? = null
     private var uniqueDevicesWorkId: UUID? = null
+    private var uniqueGooglePhotosWorkId: UUID? = null
 
     override fun startDevicePhotosWorker() {
         getDevicePhotosWorkerRequest()
@@ -63,8 +64,19 @@ class WorkerStarterImpl @Inject constructor(
         }
 
     override fun startGooglePhotosWorker() {
-        getGooglePhotosWorkerRequest().also {
-            WorkManager.getInstance(context).enqueue(it)
+        uniqueGooglePhotosWorkId = getGooglePhotosWorkerRequest()
+            .also {
+                WorkManager.getInstance(context).enqueue(it)
+            }.id
+    }
+
+    override fun stopGooglePhotosWorker() {
+        uniqueGooglePhotosWorkId?.let {
+            val workerInfo = WorkManager.getInstance(context).getWorkInfoById(it)
+
+            if (!workerInfo.get().state.isFinished) {
+                WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
+            }
         }
     }
 
