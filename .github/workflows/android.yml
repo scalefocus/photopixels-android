@@ -193,7 +193,7 @@ jobs:
 #                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
 #                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
 #                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
-            - 
+
 ### TODO use setup-project action
             -   name: Setup project
                 uses: ./.github/actions/setup-project
