@@ -1,0 +1,57 @@
+# --------------------------------------------------------------------------------------------------
+# This GitHub Actions workflow file defines a reusable workflow that can be shared across jobs.
+# It prepares an environment specific version of "google-services.json" and places into the proper
+# location on the file system.
+# --------------------------------------------------------------------------------------------------
+
+name: Setup project
+description: Execute common steps such as code checkout, configuration files, etc.
+
+inputs:
+    google_services_json:
+        description: The Google Services JSON contents holding the Firebase configuration
+        required: true
+    dist_credentials_file:
+        description: The path to the service account private key JSON file
+        required: true
+    dist_groups:
+        description: The tester groups you want to distribute builds to.
+        required: true
+    dist_artifact_type:
+        description: Specifies the app's file type. Can be set to "AAB" or "APK" (default).
+        required: false
+        default: APK
+    dist_variant:
+        description: Build variant, can be project-specific, especially with product flavors [release (default), debug]
+        required: false
+        default: release
+
+runs:
+    using: "composite"
+    steps:
+        -   name: Checkout project code
+            uses: actions/checkout@v4
+
+        -   name: Set up JDK 17
+            uses: actions/setup-java@v4
+            with:
+                java-version: '17'
+                distribution: 'adopt'
+                cache: 'gradle'
+
+        -   name: Grant execute permissions for gradlew
+            shell: bash
+            run: chmod +x ./gradlew
+
+        -   name: Prepare Firebase services configuration
+            uses: ./.github/actions/firebase-config
+            with:
+                google_services_json: ${{ inputs.google_services_json }}
+
+        -   name: Prepare Firebase App Distribution configuration
+            uses: ./.github/actions/firebase-app-distribution-config
+            with:
+                credentials_file: ${{ inputs.dist_credentials_file }}
+                groups: ${{ inputs.dist_groups }}
+                artifact_type: ${{ inputs.dist_artifact_type }}
+                build_type: ${{ inputs.dist_variant }}
