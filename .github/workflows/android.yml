@@ -190,6 +190,7 @@ jobs:
         runs-on: ubuntu-latest
         environment: scalefocus-production
         needs: assemble-signed-release
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
         steps:
             -   name: Checkout project code
                 uses: actions/checkout@v4
