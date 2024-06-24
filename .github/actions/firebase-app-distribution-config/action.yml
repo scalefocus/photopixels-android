@@ -26,7 +26,7 @@ inputs:
 runs:
     using: "composite"
     steps:
-        -   uses: actions/checkout@v4
+#        -   uses: actions/checkout@v4
 
         -   name: Prepare Firebase App Distribution configuration
             shell: bash
