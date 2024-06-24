@@ -57,7 +57,7 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
  */
 private fun Project.configureFirebaseAppDistribution() {
     val buildTypesValue = project.findProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES")?.toString()
-        ?: gradleLocalProperties(rootDir, providers).getProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES")
+        ?: gradleLocalProperties(rootDir, providers).getProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS")
 
     val buildTypes = buildTypesValue.split(",").map { it.trim() }
 

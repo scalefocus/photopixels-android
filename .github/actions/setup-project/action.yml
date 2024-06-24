@@ -44,14 +44,15 @@ runs:
             run: chmod +x ./gradlew
 
         -   name: Prepare Firebase services configuration
-            uses: ./.github/actions/firebase-config
-            with:
-                google_services_json: ${{ inputs.google_services_json }}
+            shell: bash
+            run: |
+                echo '${{ inputs.google_services_json }}' > ${{ github.workspace }}/app/google-services.json
 
         -   name: Prepare Firebase App Distribution configuration
-            uses: ./.github/actions/firebase-app-distribution-config
-            with:
-                credentials_file: ${{ inputs.dist_credentials_file }}
-                groups: ${{ inputs.dist_groups }}
-                artifact_type: ${{ inputs.dist_artifact_type }}
-                build_type: ${{ inputs.dist_variant }}
+            shell: bash
+            run: |
+                echo '${{ inputs.dist_credentials_file }}' > photopixels-firebase-appdistribution-private-key.json
+                echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE=photopixels-firebase-appdistribution-private-key.json' > local.properties
+                echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS=${{ inputs.dist_groups }}' >> local.properties
+                echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE=${{ inputs.dist_artifact_type }}' >> local.properties
+                echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS=${{ inputs.dist_variant }}' >> local.properties        

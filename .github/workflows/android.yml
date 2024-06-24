@@ -45,30 +45,6 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-#            -   name: Set up JDK 17
-#                uses: actions/setup-java@v4
-#                with:
-#                    java-version: '17'
-#                    distribution: 'adopt'
-#                    cache: 'gradle'
-#
-#            -   name: Grant execute permissions for gradlew
-#                run: chmod +x ./gradlew
-#
-#            -   name: Prepare Firebase services configuration
-#                uses: ./.github/actions/firebase-config
-#                with:
-#                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-#
-#            -   name: Prepare Firebase App Distribution configuration
-#                uses: ./.github/actions/firebase-app-distribution-config
-#                with:
-#                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-#                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
-#                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-#                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
-
-### TODO use setup-project action
             -   name: Setup project
                 uses: ./.github/actions/setup-project
                 with:
@@ -76,10 +52,18 @@ jobs:
                     dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
                     dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
                     dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
+
+            -   name: Upload build reports
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-reports
+                    path: |
+                        **/build/reports/*
 
     test:
         runs-on: ubuntu-latest
@@ -89,27 +73,6 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-#            -   name: Set up JDK 17
-#                uses: actions/setup-java@v4
-#                with:
-#                    java-version: '17'
-#                    distribution: 'adopt'
-#                    cache: 'gradle'
-#
-#            -   name: Prepare Firebase services configuration
-#                uses: ./.github/actions/firebase-config
-#                with:
-#                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-#
-#            -   name: Prepare Firebase App Distribution configuration
-#                uses: ./.github/actions/firebase-app-distribution-config
-#                with:
-#                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-#                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
-#                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-#                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
-
-### TODO use setup-project action
             -   name: Setup project
                 uses: ./.github/actions/setup-project
                 with:
@@ -117,10 +80,18 @@ jobs:
                     dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
                     dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
                     dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Run tests
                 run: ./gradlew test
+
+            -   name: Upload test results
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-test-results
+                    path: |
+                        **/build/test-results/*
 
     build:
         runs-on: ubuntu-latest
@@ -130,30 +101,6 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-#            -   name: Set up JDK 17
-#                uses: actions/setup-java@v4
-#                with:
-#                    java-version: '17'
-#                    distribution: 'adopt'
-#                    cache: 'gradle'
-#
-#            -   name: Grant execute permissions for gradlew
-#                run: chmod +x ./gradlew
-#
-#            -   name: Prepare Firebase services configuration
-#                uses: ./.github/actions/firebase-config
-#                with:
-#                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-#
-#            -   name: Prepare Firebase App Distribution configuration
-#                uses: ./.github/actions/firebase-app-distribution-config
-#                with:
-#                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-#                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
-#                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-#                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
-
-### TODO use setup-project action
             -   name: Setup project
                 uses: ./.github/actions/setup-project
                 with:
@@ -161,7 +108,7 @@ jobs:
                     dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
                     dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
                     dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Build with Gradle
                 run: ./gradlew assembleDebug
@@ -174,27 +121,6 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-#            -   name: Set up JDK 17
-#                uses: actions/setup-java@v4
-#                with:
-#                    java-version: '17'
-#                    distribution: 'adopt'
-#                    cache: 'gradle'
-#
-#            -   name: Prepare Firebase services configuration
-#                uses: ./.github/actions/firebase-config
-#                with:
-#                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-#
-#            -   name: Prepare Firebase App Distribution configuration
-#                uses: ./.github/actions/firebase-app-distribution-config
-#                with:
-#                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-#                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
-#                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-#                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
-
-### TODO use setup-project action
             -   name: Setup project
                 uses: ./.github/actions/setup-project
                 with:
@@ -202,7 +128,7 @@ jobs:
                     dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
                     dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
                     dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Prepare release signing configuration
                 env:
@@ -254,22 +180,6 @@ jobs:
                     if-no-files-found: error # error, warn, ignore
                     overwrite: false
 
-            -   name: Upload reports
-                if: always()
-                uses: actions/upload-artifact@v4
-                with:
-                    name: photopixels-android-reports
-                    path: |
-                        **/build/reports/*
-
-            -   name: Upload test results
-                if: always()
-                uses: actions/upload-artifact@v4
-                with:
-                    name: photopixels-android-test-results
-                    path: |
-                        **/build/test-results/*
-
             -   name: Publish release APK to Github Releases
                 uses: softprops/action-gh-release@v2
                 if: startsWith(github.ref, 'refs/tags/')
@@ -284,27 +194,6 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-#            -   name: Set up JDK 17
-#                uses: actions/setup-java@v4
-#                with:
-#                    java-version: '17'
-#                    distribution: 'adopt'
-#                    cache: 'gradle'
-#
-#            -   name: Prepare Firebase services configuration
-#                uses: ./.github/actions/firebase-config
-#                with:
-#                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
-#
-#            -   name: Prepare Firebase App Distribution configuration
-#                uses: ./.github/actions/firebase-app-distribution-config
-#                with:
-#                    credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
-#                    groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
-#                    artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-#                    build_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
-
-### TODO use setup-project action
             -   name: Setup project
                 uses: ./.github/actions/setup-project
                 with:
@@ -312,7 +201,7 @@ jobs:
                     dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
                     dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
                     dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
-                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Download APK from artifacts
                 uses: actions/download-artifact@v4
@@ -323,7 +212,7 @@ jobs:
             -   name: Publish via Firebase App Distribution
                 shell: bash
                 run: |
-                    variants="${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES }}"
+                    variants="${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}"
                     tasks=""
                     
                     IFS=',' read -ra variant_array <<< "$variants"

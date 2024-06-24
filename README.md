@@ -84,7 +84,7 @@ PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS=release-group1, release-group2, rele
 PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE=APK
 
 # Build types: (can be project-specific, especially with product flavors): [release, debug]
-PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES=release, debug
+PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS=release, debug
 # --------------------------------------------------------------------------------------------------
 # endregion
 ```
