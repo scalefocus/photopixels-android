@@ -20,8 +20,6 @@ outputs:
 runs:
     using: "composite"
     steps:
-#        -   uses: actions/checkout@v4
-
         -   name: Prepare Firebase services configuration
             id: create-file
             shell: bash
