@@ -1,4 +1,3 @@
-
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
@@ -60,22 +59,20 @@ private fun Project.configureDetekt(extension: DetektExtension) = extension.appl
     }
 }
 
-private fun configureDetektReports(objects: ObjectFactory): DetektReports {
-    return DetektReports(objects).apply {
-        // XML: checkstyle-like format mainly for integrations like Jenkins
-        xml.required.set(true)
+private fun configureDetektReports(objects: ObjectFactory): DetektReports = DetektReports(objects).apply {
+    // XML: checkstyle-like format mainly for integrations like Jenkins
+    xml.required.set(true)
 
-        // HTML: observe findings in your browser with structure and code snippets
-        html.required.set(true)
+    // HTML: observe findings in your browser with structure and code snippets
+    html.required.set(true)
 
-        // TXT: similar to the console output, contains issue signature to manually edit baseline files
-        txt.required.set(true)
+    // TXT: similar to the console output, contains issue signature to manually edit baseline files
+    txt.required.set(true)
 
-        // SARIF: standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations
-        // with GitHub Code Scanning
-        sarif.required.set(true)
+    // SARIF: standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations
+    // with GitHub Code Scanning
+    sarif.required.set(true)
 
-        // MD: simple Markdown format
-        md.required.set(true)
-    }
+    // MD: simple Markdown format
+    md.required.set(true)
 }

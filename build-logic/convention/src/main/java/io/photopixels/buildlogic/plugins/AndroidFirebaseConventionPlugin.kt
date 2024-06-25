@@ -13,6 +13,9 @@ import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.exclude
 import java.util.Locale
 
+private const val BUILD_TYPE_DEBUG = "debug"
+private const val BUILD_TYPE_RELEASE = "release"
+
 class AndroidFirebaseConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
@@ -26,6 +29,7 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
                     apply(findPluginId("firebaseAppDistribution"))
                 } else {
                     println("Firebase services gradle plugins are not enabled; missing google-services.json file.")
+                    println("Searched in [${file("google-services.json").absolutePath}]")
                 }
             }
 
@@ -47,9 +51,15 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
     }
 }
 
+/**
+ * Configure Firebase App Distribution.
+ * NOTE: If app flavors exist, this method will have to be modified to support them.
+ */
 private fun Project.configureFirebaseAppDistribution() {
-    val buildType = project.findProperty("PHOTOPIXELS_BUILD_TYPE")?.toString()
-        ?: gradleLocalProperties(rootDir, providers).getProperty("PHOTOPIXELS_BUILD_TYPE")
+    val buildTypesValue = project.findProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES")?.toString()
+        ?: gradleLocalProperties(rootDir, providers).getProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS")
+
+    val buildTypes = buildTypesValue.split(",").map { it.trim() }
 
     val credentialsFile = project.findProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE")?.toString()
         ?: gradleLocalProperties(rootDir, providers)
@@ -65,15 +75,15 @@ private fun Project.configureFirebaseAppDistribution() {
 
     // For detailed information, see https://firebase.google.com/docs/app-distribution/android/distribute-gradle
     firebaseAppDistribution {
-        when (buildType) {
-            "debug" -> Unit
+        if (buildTypes.contains(BUILD_TYPE_DEBUG)) Unit
 
-            "release" -> prepareReleaseAppDistribution(
+        if (buildTypes.contains(BUILD_TYPE_RELEASE)) {
+            prepareReleaseAppDistribution(
                 appDistributionExtension = this,
                 credentialsFile = credentialsFile,
                 artifactTypeValue = artifactTypeValue,
                 groupsValue = groupsValue,
-                buildType = buildType
+                buildType = BUILD_TYPE_RELEASE
             )
         }
     }
