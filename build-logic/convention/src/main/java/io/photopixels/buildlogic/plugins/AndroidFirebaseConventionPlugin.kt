@@ -4,6 +4,7 @@ import com.android.build.api.variant.FilterConfiguration
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.google.firebase.appdistribution.gradle.AppDistributionExtension
 import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
+import dev.android.buildlogic.util.isReleaseBuild
 import io.photopixels.buildlogic.config.buildNewVariantOutputName
 import io.photopixels.buildlogic.extensions.findPluginId
 import io.photopixels.buildlogic.extensions.libs
@@ -19,7 +20,8 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
             val firebaseConfigExists = file("google-services.json").exists()
 
             with(pluginManager) {
-                if (firebaseConfigExists) {
+                if (firebaseConfigExists && isReleaseBuild(gradle)) {
+                    println("APPLY Firebase Plugins")
                     apply(findPluginId("gmsGoogleServices"))
                     apply(findPluginId("firebaseCrashlytics"))
                     apply(findPluginId("firebasePerformance"))
@@ -29,17 +31,17 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
                 }
             }
 
-            dependencies {
-                "implementation"(platform(libs.findLibrary("firebase-bom").get()))
+            if (firebaseConfigExists && isReleaseBuild(gradle)) {
+                dependencies {
+                    "implementation"(platform(libs.findLibrary("firebase-bom").get()))
 
-                "implementation"(libs.findBundle("firebase").get()) {
-                    // Exclude dependencies that have conflicts with Google Photos API in the project
-                    exclude(group = "com.google.protobuf", module = "protobuf-javalite")
-                    exclude(group = "com.google.firebase", module = "protolite-well-known-types")
+                    "implementation"(libs.findBundle("firebase").get()) {
+                        // Exclude dependencies that have conflicts with Google Photos API in the project
+                        exclude(group = "com.google.protobuf", module = "protobuf-javalite")
+                        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
+                    }
                 }
-            }
 
-            if (firebaseConfigExists) {
                 configureFirebaseAppDistribution()
                 configureFirebaseCrashlytics()
             }

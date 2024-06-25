@@ -2,6 +2,8 @@
 
 package dev.android.buildlogic.util
 
+import org.gradle.api.invocation.Gradle
+
 internal enum class OS { WINDOWS, LINUX, MAC, OTHER }
 
 internal fun getOsName(): OS {
@@ -16,3 +18,13 @@ internal fun getOsName(): OS {
         else -> OS.OTHER
     }
 }
+
+fun isDebugBuild(gradle: Gradle): Boolean = gradle
+    .startParameter.taskRequests
+    .toString()
+    .contains("debug", true)
+
+fun isReleaseBuild(gradle: Gradle): Boolean = gradle
+    .startParameter.taskRequests
+    .toString()
+    .contains("release", true)

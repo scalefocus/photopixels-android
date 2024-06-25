@@ -1,3 +1,5 @@
+import io.photopixels.buildlogic.extensions.buildType
+
 plugins {
     id("plugin.application")
     id("plugin.application.signing")
@@ -28,7 +30,8 @@ android {
     //  convention plugin. There is a dedicated function in AndroidFirebaseConventionPlugin.kt that can be used when
     //  this issue is resolved.
     val firebaseConfigExists = file("google-services.json").exists()
-    if (firebaseConfigExists) {
+    val isReleaseBuild = rootProject.buildType?.contains("release", true) == true
+    if (firebaseConfigExists && isReleaseBuild) {
         withGroovyBuilder {
             "firebaseCrashlytics" {
                 "mappingFileUploadEnabled"(true)

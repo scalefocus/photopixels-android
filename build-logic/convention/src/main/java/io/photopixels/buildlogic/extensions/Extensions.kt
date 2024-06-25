@@ -24,3 +24,9 @@ fun String.toCamelCase(): String =
     split("_").joinToString("") { newString ->
         newString.lowercase().replaceFirstChar { it.titlecase() }
     }
+
+var Project.buildType: String?
+    get() {
+        return null
+    }
+    set(value) {}
