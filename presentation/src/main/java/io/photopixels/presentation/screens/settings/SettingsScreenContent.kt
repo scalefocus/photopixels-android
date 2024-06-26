@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,8 +33,6 @@ fun SettingsScreenContent(
     screenState: SettingsScreenState,
     onSubmitAction: (SettingsScreenActions) -> Unit
 ) {
-    val context = LocalContext.current
-
     screenState.messageId?.let {
         ShowAlertDialog(
             title = stringResource(id = R.string.settings_screen_google_photos_msg),
@@ -62,34 +59,33 @@ fun SettingsScreenContent(
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        screenState.appInfoData?.let {
-            AppDetails(appVersion = it.appVersion, serverVersion = it.serverVersion)
+        screenState.appInfoData?.let { appInfoData ->
+            AppDetails(appVersion = appInfoData.appVersion, serverVersion = appInfoData.serverVersion)
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            ActiveUser(user = it.loggedUser)
+            ActiveUser(user = appInfoData.loggedUser)
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            ServerAddress(serverAddress = it.serverAddress)
+            ServerAddress(serverAddress = appInfoData.serverAddress)
 
             Spacer(modifier = Modifier.height(30.dp))
 
             BackgroundActivity(
-                requirePowerForSync = screenState.isRequirePowerEnabled,
-                requireWifiForSync = screenState.isRequireWifiEnabled,
-                onPowerForSyncChange = { TODO("Implement") },
-                onWifiForSyncChange = { TODO("Implement") }
+                requirePowerForSync = screenState.userSettings.requirePower,
+                requireWifiForSync = screenState.userSettings.requireWifi,
+                onPowerForSyncChange = { onSubmitAction(SettingsScreenActions.OnRequirePowerClicked(it)) },
+                onWifiForSyncChange = { onSubmitAction(SettingsScreenActions.OnRequireWifiClicked(it)) }
             )
 
             Spacer(modifier = Modifier.height(30.dp))
 
             GooglePhotos(
-                googlePhotosSyncEnabled = screenState.isGoogleSyncEnabled,
+                googlePhotosSyncEnabled = screenState.userSettings.syncWithGoogle,
                 onGooglePhotosSyncChange = { checked ->
                     onSubmitAction(
                         SettingsScreenActions.OnSyncGooglePhotosClicked(
-                            activityContext = context,
                             isChecked = checked
                         )
                     )

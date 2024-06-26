@@ -37,4 +37,6 @@ interface BackendApi {
     suspend fun forgotPassword(email: String): Response<Unit>
 
     suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit>
+
+    suspend fun downloadPhoto(photoUrl: String): Response<ByteArray>
 }
