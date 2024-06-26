@@ -1,6 +1,5 @@
 package io.photopixels.presentation.screens.settings
 
-import android.content.Context
 import android.content.Intent
 
 sealed class SettingsScreenActions {
@@ -11,7 +10,6 @@ sealed class SettingsScreenActions {
     data object OnLogoutClicked : SettingsScreenActions()
 
     data class OnSyncGooglePhotosClicked(
-        val activityContext: Context,
         val isChecked: Boolean
     ) : SettingsScreenActions()
 

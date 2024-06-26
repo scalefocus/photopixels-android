@@ -13,20 +13,21 @@ interface GooglePhotosDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertPhotosData(photosEntity: List<GooglePhotosEntity>)
 
-    @Query("DELETE from google_photos where androidCloudId=:androidCloudId")
+    @Query("DELETE FROM google_photos WHERE androidCloudId=:androidCloudId")
     suspend fun removePhotoData(androidCloudId: Int)
 
-    @Query("Select * from google_photos")
+    @Query("SELECT * FROM google_photos")
     fun getPhotosData(): Flow<GooglePhotosEntity>
 
     @Query(
-        "Select * from google_photos where serverItemHashId is null and isDeleted is null and isAlreadyUploaded is null"
+        "SELECT * FROM google_photos " +
+            "WHERE serverItemHashId IS null AND isDeleted IS null AND isAlreadyUploaded IS null"
     )
     fun getPhotosForUpload(): List<GooglePhotosEntity>
 
     @Update
     fun updatePhotoData(googlePhotoData: GooglePhotosEntity)
 
-    @Query("DELETE from google_photos")
+    @Query("DELETE FROM google_photos")
     suspend fun clearTable()
 }
