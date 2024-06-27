@@ -241,9 +241,8 @@ class HomeScreenViewModel @Inject constructor(
             }
 
             else -> {
-                // Generic Google exception
-                // TODO: Show error to the user, that Google session is expired or similar, and needs to
-                // re-login
+                // Generic Google Error(Hidden from the user for now)
+                Timber.tag(TAG).e("Unable to Sync with Google")
             }
         }
     }
@@ -262,8 +261,7 @@ class HomeScreenViewModel @Inject constructor(
                     }
                 }
             } else {
-                // TODO: Show error to the user, that Google session is expired or similar, and needs to
-                // re-login
+                updateState { copy(errorMsgId = R.string.error_google_token_expire) }
             }
         }
     }

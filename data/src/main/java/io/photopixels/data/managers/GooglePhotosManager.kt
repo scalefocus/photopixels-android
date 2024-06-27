@@ -91,6 +91,7 @@ class GooglePhotosManager @Inject constructor(
             return PhotoPixelError.ExpiredGoogleAuthTokenError
         } catch (e: Exception) {
             Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: exception handled ====$e")
+            // TODO: Log this error in Analytics server
             return PhotoPixelError.GenericGoogleError
         }
     }
