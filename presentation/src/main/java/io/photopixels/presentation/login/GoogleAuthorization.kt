@@ -5,12 +5,18 @@ import android.content.Intent
 import android.net.Uri
 import com.auth0.android.jwt.JWT
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.photopixels.domain.usecases.auth.GetGoogleAuthStateUseCase
+import io.photopixels.domain.usecases.auth.SaveGoogleAuthStateUseCase
 import io.photopixels.presentation.BuildConfig
 import io.photopixels.presentation.utils.GoogleAuthorizationUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import net.openid.appauth.AppAuthConfiguration
 import net.openid.appauth.AuthState
 import net.openid.appauth.AuthorizationException
@@ -21,6 +27,7 @@ import net.openid.appauth.AuthorizationServiceConfiguration
 import net.openid.appauth.ResponseTypeValues
 import net.openid.appauth.browser.BrowserAllowList
 import net.openid.appauth.browser.VersionedBrowserMatcher
+import org.json.JSONException
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -29,18 +36,23 @@ import javax.inject.Inject
  * Note: This class should be used if application needs user's permissions for accessing his data related to some Google APIs(drive, photos and etc..)
  */
 class GoogleAuthorization @Inject constructor(
-    @ApplicationContext private val appContext: Context
+    @ApplicationContext private val appContext: Context,
+    private val saveGoogleAuthStateUseCase: SaveGoogleAuthStateUseCase,
+    private val getGoogleAuthStateUseCase: GetGoogleAuthStateUseCase
 ) {
     private lateinit var authorizationService: AuthorizationService
     private var authState: AuthState = AuthState()
     private var jwt: JWT? = null
     private lateinit var authServiceConfig: AuthorizationServiceConfiguration
+    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     // Google auth token for accessing Google APIs
     private val googleAuthTokenFlow: MutableStateFlow<String?> = MutableStateFlow(null)
+    private val refreshTokenFlow: MutableStateFlow<Boolean?> = MutableStateFlow(null)
 
     init {
         // AppAuth library initialization
+        loadAuthState()
         initAuthServiceConfig()
         initAuthService()
     }
@@ -60,13 +72,13 @@ class GoogleAuthorization @Inject constructor(
             MESSAGE_DIGEST_ALGORITHM
         )
 
-        val builder = AuthorizationRequest.Builder(
-            authServiceConfig,
-            CLIENT_ID,
-            ResponseTypeValues.CODE,
-            Uri.parse(REDIRECT_URI)
-        )
-            .setCodeVerifier(
+        val builder = AuthorizationRequest
+            .Builder(
+                authServiceConfig,
+                CLIENT_ID,
+                ResponseTypeValues.CODE,
+                Uri.parse(REDIRECT_URI)
+            ).setCodeVerifier(
                 codeVerifier,
                 codeChallenge,
                 CODE_VERIFIER_CHALLENGE_METHOD
@@ -91,30 +103,77 @@ class GoogleAuthorization @Inject constructor(
             // Exchange authorization code for authentication token
             val tokenExchangeRequest = authorizationResponse.createTokenExchangeRequest()
             authorizationService.performTokenRequest(tokenExchangeRequest) { response, exception ->
-                Timber.tag(TAG)
-                    .e("tokenExchangeRequest response:$response \n exception:$exception")
+                Timber
+                    .tag(TAG)
+                    .d("tokenExchangeRequest response:$response \n exception:$exception")
                 if (exception != null) {
                     authState = AuthState()
                 } else {
                     if (response != null) {
                         authState.update(response, exception)
-                        response.idToken?.let { // Available only if user is authenticated, not needed for now
+                        response.idToken?.let {
+                            // Available only if user is authenticated, not needed for now
                             jwt = JWT(it)
                         }
 
                         oAuthToken = response.accessToken
-                        Timber.tag(TAG)
-                            .e("in handleAuthorizationResponse oAuthToken:$oAuthToken")
+                        Timber
+                            .tag(TAG)
+                            .d("in handleAuthorizationResponse oAuthToken:$oAuthToken")
                         googleAuthTokenFlow.update { response.accessToken }
+                        saveAuthState()
                     }
                 }
             }
         }
 
-        Timber.tag(TAG)
-            .e("in handleAuthorizationResponse return from runBlocking with:$oAuthToken")
         return googleAuthTokenFlow.asStateFlow()
     }
+
+    fun loadAuthState() {
+        coroutineScope.launch {
+            val authStateJson = getGoogleAuthStateUseCase.invoke()
+
+            authStateJson?.let {
+                try {
+                    authState = AuthState.jsonDeserialize(it)
+                    Timber.tag(TAG).d("Google Auth State LOADED Successfully:$it")
+                } catch (ex: JSONException) {
+                    Timber.tag(TAG).e("Error loading Google Auth State: ${ex.message}")
+                }
+            } ?: run {
+                Timber.tag(TAG).d("Google Auth State -> Nothing to load...")
+            }
+        }
+    }
+
+    fun performRefreshTokenRequest(): StateFlow<Boolean?> {
+        Timber.tag(TAG).d("Perform Google refresh token request")
+
+        authorizationService.performTokenRequest(
+            authState.createTokenRefreshRequest()
+        ) { response, exception ->
+
+            if (exception != null) {
+                authState = AuthState()
+                Timber.tag(TAG).d("Google refresh token request failed:${exception.message}")
+                refreshTokenFlow.update { false }
+            } else {
+                if (response != null) {
+                    Timber.tag(TAG).d("Google refresh token request completed successfully")
+                    authState.update(response, exception)
+
+                    saveAuthState()
+                    refreshTokenFlow.update { true }
+                    googleAuthTokenFlow.update { response.accessToken }
+                }
+            }
+        }
+
+        return refreshTokenFlow.asStateFlow()
+    }
+
+    fun getGoogleAuthTokenFlow(): StateFlow<String?> = googleAuthTokenFlow.asStateFlow()
 
     private fun initAuthServiceConfig() {
         authServiceConfig = AuthorizationServiceConfiguration(
@@ -127,7 +186,8 @@ class GoogleAuthorization @Inject constructor(
 
     private fun initAuthService() {
         // Allowing custom tabs to be opened inside the app, otherwise externally
-        val appAuthConfiguration = AppAuthConfiguration.Builder()
+        val appAuthConfiguration = AppAuthConfiguration
+            .Builder()
             .setBrowserMatcher(
                 BrowserAllowList(
                     VersionedBrowserMatcher.CHROME_CUSTOM_TAB,
@@ -139,6 +199,14 @@ class GoogleAuthorization @Inject constructor(
             appContext,
             appAuthConfiguration
         )
+    }
+
+    private fun saveAuthState() {
+        coroutineScope.launch {
+            Timber.tag(TAG).d("Saving google Auth State to DataStore")
+            val authStateJson = authState.jsonSerializeString()
+            saveGoogleAuthStateUseCase.invoke(authStateJson)
+        }
     }
 
     companion object {

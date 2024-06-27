@@ -39,13 +39,9 @@ class AuthRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getAuthToken(): String? {
-        return authDataStore.getAuthToken()
-    }
+    override suspend fun getAuthToken(): String? = authDataStore.getAuthToken()
 
-    override suspend fun getUsername(): String? {
-        return authDataStore.getUsername()
-    }
+    override suspend fun getUsername(): String? = authDataStore.getUsername()
 
     override suspend fun clearUserData() {
         authDataStore.clearUserData()
@@ -55,19 +51,25 @@ class AuthRepositoryImpl @Inject constructor(
         authDataStore.storeGoogleAuthToken(googleAuthToken)
     }
 
-    override suspend fun getGoogleAuthToken(): String? {
-        return authDataStore.getGoogleAuthToken()
-    }
+    override suspend fun getGoogleAuthToken(): String? = authDataStore.getGoogleAuthToken()
 
     override suspend fun clearGoogleAuthToken() {
         authDataStore.clearGoogleAuthToken()
     }
 
-    override suspend fun forgotPassword(email: String): Response<Unit> {
-        return backendApi.forgotPassword(email)
+    override suspend fun forgotPassword(email: String): Response<Unit> = backendApi.forgotPassword(email)
+
+    override suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit> =
+        backendApi
+            .resetPassword(
+                email,
+                newPassword,
+                verificationCode
+            )
+
+    override suspend fun storeGoogleAuthState(authState: String) {
+        authDataStore.storeGoogleAuthState(authState)
     }
 
-    override suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit> {
-        return backendApi.resetPassword(email, newPassword, verificationCode)
-    }
+    override suspend fun getGoogleAuthState(): String? = authDataStore.getGoogleAuthState()
 }

@@ -12,36 +12,41 @@ import io.photopixels.domain.model.WorkerStatus
 import io.photopixels.domain.usecases.GetServerRevisionUseCase
 import io.photopixels.domain.usecases.GetServerThumbnailsUseCase
 import io.photopixels.domain.usecases.GetThumbnailsFromDbUseCase
+import io.photopixels.domain.usecases.GetUserSettingsUseCase
+import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
 import io.photopixels.domain.usecases.SavePhotosIdsInMemoryUseCase
 import io.photopixels.domain.usecases.SaveThumbnailsToDbUseCase
+import io.photopixels.domain.usecases.googlephotos.GetGooglePhotosUseCase
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
+import io.photopixels.presentation.login.GoogleAuthorization
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
+@Suppress("LongParameterList")
 class HomeScreenViewModel @Inject constructor(
     private val workerStarter: WorkerStarter,
     private val getServerRevisionUseCase: GetServerRevisionUseCase,
     private val getServerThumbnailsUseCase: GetServerThumbnailsUseCase,
     private val savePhotosIdsInMemoryUseCase: SavePhotosIdsInMemoryUseCase,
     private val getThumbnailsFromDbUseCase: GetThumbnailsFromDbUseCase,
-    private val saveThumbnailsToDbUseCase: SaveThumbnailsToDbUseCase
+    private val saveThumbnailsToDbUseCase: SaveThumbnailsToDbUseCase,
+    private val getUserSettingsUseCase: GetUserSettingsUseCase,
+    private val getGooglePhotosUseCase: GetGooglePhotosUseCase,
+    private val googleAuthorization: GoogleAuthorization,
+    private val saveGoogleAuthTokenUseCase: SaveGoogleAuthTokenUseCase
 ) : BaseViewModel<HomeScreenState, HomeScreenActions, HomeScreenEvents>(HomeScreenState()) {
 
     // Used to prevent multiple starting at once of getServer thumbnails function
     private val getServerThumbnailsProgressState = MutableStateFlow(NOT_STARTED)
 
-    companion object {
-        private const val MAX_OBJECTS_TO_REQUEST = 90
-        private const val STARTED = true
-        private const val NOT_STARTED = false
-    }
-
     init {
         syncLocalPhotos()
+        syncGooglePhotos()
         // TODO Thumbnails can be stored locally in DB, and if latest revision from server is equal to local revision
         // equal -> load thumbnails from device
         // not equal -> load thumbnails from server and then store it in device
@@ -149,7 +154,9 @@ class HomeScreenViewModel @Inject constructor(
         if (serverThumbnailsResponse is Response.Success) {
             return if (isUploadComplete) {
                 // Determine newly added items by comparing hashes
-                val existingPhotoHashes = state.value.photoThumbnails.map { it.hash }.toSet()
+                val existingPhotoHashes = state.value.photoThumbnails
+                    .map { it.hash }
+                    .toSet()
                 val newItems = serverThumbnailsResponse.result.filter {
                     !existingPhotoHashes.contains(it.hash)
                 }
@@ -198,9 +205,7 @@ class HomeScreenViewModel @Inject constructor(
     // TODO Implement logic for load Thumbnails from db, when app's revision and BE revision are equal
     // NOTE: Currently we don't have latest backend revision, until we execute /revision service
     // Suggestion made: we can add latest backend revision to /status or /login endpoints
-    private suspend fun getThumbnailsFromDb(): List<PhotoUiData> {
-        return getThumbnailsFromDbUseCase.invoke()
-    }
+    private suspend fun getThumbnailsFromDb(): List<PhotoUiData> = getThumbnailsFromDbUseCase.invoke()
 
     private fun syncLocalPhotos() {
         viewModelScope.launch {
@@ -209,5 +214,64 @@ class HomeScreenViewModel @Inject constructor(
                 submitEvent(HomeScreenEvents.RequestStoragePermissionsEvent)
             }
         }
+    }
+
+    private fun syncGooglePhotos() {
+        viewModelScope.launch {
+            val isGooglePhotosSyncEnabled = getUserSettingsUseCase.invoke()?.syncWithGoogle
+
+            if (isGooglePhotosSyncEnabled == true) {
+                Timber.tag("TAG").e("HomeScreenViewModel() Start Google Photos Sync")
+                val exception = getGooglePhotosUseCase.invoke()
+
+                if (exception != null) {
+                    handleGoogleError(exception)
+                } else {
+                    workerStarter.startGooglePhotosWorker()
+                }
+            }
+        }
+    }
+
+    private suspend fun handleGoogleError(exception: PhotoPixelError) {
+        when (exception) {
+            is PhotoPixelError.ExpiredGoogleAuthTokenError -> {
+                // Google Token expired Exception
+                performGoogleRefreshRequest()
+            }
+
+            else -> {
+                // Generic Google exception
+                // TODO: Show error to the user, that Google session is expired or similar, and needs to
+                // re-login
+            }
+        }
+    }
+
+    private suspend fun performGoogleRefreshRequest() {
+        googleAuthorization.performRefreshTokenRequest().collect { isSuccessful ->
+            if (isSuccessful == true) {
+                googleAuthorization.getGoogleAuthTokenFlow().collect { googleAuthToken ->
+                    googleAuthToken?.let {
+                        Timber.tag(TAG).d("Start Google Photos sync after token refresh process")
+
+                        // Start again Google Photos worker, when new authToken is received
+                        saveGoogleAuthTokenUseCase.invoke(googleAuthToken)
+                        getGooglePhotosUseCase.invoke()
+                        workerStarter.startGooglePhotosWorker()
+                    }
+                }
+            } else {
+                // TODO: Show error to the user, that Google session is expired or similar, and needs to
+                // re-login
+            }
+        }
+    }
+
+    companion object {
+        private const val MAX_OBJECTS_TO_REQUEST = 90
+        private const val STARTED = true
+        private const val NOT_STARTED = false
+        private const val TAG = "HOME_SCREEN_VIEWMODEL"
     }
 }

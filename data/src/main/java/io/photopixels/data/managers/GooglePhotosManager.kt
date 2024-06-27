@@ -1,6 +1,7 @@
 package io.photopixels.data.managers
 
 import com.google.api.gax.core.FixedCredentialsProvider
+import com.google.api.gax.rpc.UnauthenticatedException
 import com.google.auth.Credentials
 import com.google.auth.oauth2.AccessToken
 import com.google.auth.oauth2.UserCredentials
@@ -11,6 +12,7 @@ import io.photopixels.data.BuildConfig
 import io.photopixels.data.mappers.toEntity
 import io.photopixels.data.storage.database.GooglePhotosDao
 import io.photopixels.data.storage.datastore.AuthDataStore
+import io.photopixels.domain.base.PhotoPixelError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -33,9 +35,7 @@ class GooglePhotosManager @Inject constructor(
         }
     }
 
-    suspend fun fetchGooglePhotos() {
-        fetchPhotos()
-    }
+    suspend fun fetchGooglePhotos(): PhotoPixelError? = fetchPhotos()
 
     private suspend fun initPhotosLibrary() {
         Timber.tag(GOOGLE_PHOTOS_TAG).d("init google photos library")
@@ -62,7 +62,8 @@ class GooglePhotosManager @Inject constructor(
             .build()
     }
 
-    private suspend fun fetchPhotos() {
+    @Suppress("ReturnCount")
+    private suspend fun fetchPhotos(): PhotoPixelError? {
         if (!::photosLibraryClient.isInitialized) {
             Timber.tag(GOOGLE_PHOTOS_TAG).d("library is not initialized")
             initPhotosLibrary()
@@ -82,9 +83,15 @@ class GooglePhotosManager @Inject constructor(
                 // Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
             }
 
+            Timber.tag(GOOGLE_PHOTOS_TAG).d("Google photos fetched successfully, saving photos metadata to DB")
             savePhotosDataToDB(mediaItems)
+            return null
+        } catch (e: UnauthenticatedException) {
+            Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: exception handled ====$e")
+            return PhotoPixelError.ExpiredGoogleAuthTokenError
         } catch (e: Exception) {
             Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: exception handled ====$e")
+            return PhotoPixelError.GenericGoogleError
         }
     }
 
