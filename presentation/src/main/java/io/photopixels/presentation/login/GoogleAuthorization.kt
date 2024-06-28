@@ -57,9 +57,6 @@ class GoogleAuthorization @Inject constructor(
         initAuthService()
     }
 
-    // TODO: Handle expire token case
-    // TODO: Handle auto-authorization
-
     fun generateAuthorizationIntent(): Intent? {
         if (CLIENT_ID.isBlank()) {
             Timber.tag(TAG).d("Google Client ID cannot be blank. Check Google OAuth configuration.")
@@ -156,7 +153,7 @@ class GoogleAuthorization @Inject constructor(
 
             if (exception != null) {
                 authState = AuthState()
-                Timber.tag(TAG).d("Google refresh token request failed:${exception.message}")
+                Timber.tag(TAG).e("Google refresh token request failed:${exception.message}")
                 refreshTokenFlow.update { false }
             } else {
                 if (response != null) {
