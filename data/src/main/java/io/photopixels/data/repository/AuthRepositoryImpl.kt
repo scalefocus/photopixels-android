@@ -72,4 +72,8 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getGoogleAuthState(): String? = authDataStore.getGoogleAuthState()
+
+    override suspend fun clearGoogleAuthState() {
+        authDataStore.clearGoogleAuthState()
+    }
 }

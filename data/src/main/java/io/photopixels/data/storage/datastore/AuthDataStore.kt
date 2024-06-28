@@ -89,6 +89,14 @@ class AuthDataStore @Inject constructor(
         return cipherUtil.decrypt(encryptedGoogleAuthState)
     }
 
+    suspend fun clearGoogleAuthState() {
+        context.dataStore.edit { preferences ->
+            if (preferences.contains(GOOGLE_AUTH_STATE_JSON_KEY)) {
+                preferences.remove(GOOGLE_AUTH_STATE_JSON_KEY)
+            }
+        }
+    }
+
     companion object {
         private val USERNAME_KEY = stringPreferencesKey("username")
         private val AUTH_TOKEN_KEY = stringPreferencesKey("auth_token")

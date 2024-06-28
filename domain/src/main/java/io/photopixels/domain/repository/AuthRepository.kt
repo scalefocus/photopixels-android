@@ -30,4 +30,6 @@ interface AuthRepository {
     suspend fun storeGoogleAuthState(authState: String)
 
     suspend fun getGoogleAuthState(): String?
+
+    suspend fun clearGoogleAuthState()
 }
