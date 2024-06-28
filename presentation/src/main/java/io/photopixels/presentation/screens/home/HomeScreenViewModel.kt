@@ -249,19 +249,21 @@ class HomeScreenViewModel @Inject constructor(
 
     private suspend fun performGoogleRefreshRequest() {
         googleAuthorization.performRefreshTokenRequest().collect { isSuccessful ->
-            if (isSuccessful == true) {
-                googleAuthorization.getGoogleAuthTokenFlow().collect { googleAuthToken ->
-                    googleAuthToken?.let {
-                        Timber.tag(TAG).d("Start Google Photos sync after token refresh process")
+            isSuccessful?.let {
+                if (it) {
+                    googleAuthorization.getGoogleAuthTokenFlow().collect { googleAuthToken ->
+                        googleAuthToken?.let {
+                            Timber.tag(TAG).d("Start Google Photos sync after token refresh process")
 
-                        // Start again Google Photos worker, when new authToken is received
-                        saveGoogleAuthTokenUseCase.invoke(googleAuthToken)
-                        getGooglePhotosUseCase.invoke()
-                        workerStarter.startGooglePhotosWorker()
+                            // Start again Google Photos worker, when new authToken is received
+                            saveGoogleAuthTokenUseCase.invoke(googleAuthToken)
+                            getGooglePhotosUseCase.invoke()
+                            workerStarter.startGooglePhotosWorker()
+                        }
                     }
+                } else {
+                    updateState { copy(errorMsgId = R.string.error_google_token_expire) }
                 }
-            } else {
-                updateState { copy(errorMsgId = R.string.error_google_token_expire) }
             }
         }
     }
