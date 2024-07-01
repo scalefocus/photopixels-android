@@ -51,11 +51,12 @@ grpcNetty = "1.57.0"
 grpcOkhttp = "1.50.0"
 zoomable = "1.6.1"
 gms-google-services-plugin = "4.4.2"
-firebase-bom = "33.1.0"
-firebase-crashlytics-plugin = "3.0.1"
+firebase-bom = "33.1.1"
+firebase-crashlytics-plugin = "3.0.2"
 firebase-performance-plugin = "1.4.2"
 firebaseAppdistribution = "5.0.0"
-firebaseCrashlyticsGradle = "3.0.1"
+firebaseCrashlyticsGradle = "3.0.2"
+playServicesMeasurementApi = "22.0.2"
 
 [libraries]
 
@@ -156,6 +157,7 @@ jwtdecode = { module = "com.auth0.android:jwtdecode", version.ref = "jwtdecode" 
 
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
+play-services-measurement-api = { group = "com.google.android.gms", name = "play-services-measurement-api", version.ref = "playServicesMeasurementApi" }
 
 [bundles]
 
@@ -193,4 +195,4 @@ kotlinComposeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.re
 gmsGoogleServices = { id = "com.google.gms.google-services", version.ref = "gms-google-services-plugin" }
 firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }
 firebasePerformance = { id = "com.google.firebase.firebase-perf", version.ref = "firebase-performance-plugin" }
-firebaseAppDistribution = { id = "com.google.firebase.appdistribution", version.ref = "firebaseAppdistribution"}
+firebaseAppDistribution = { id = "com.google.firebase.appdistribution", version.ref = "firebaseAppdistribution" }

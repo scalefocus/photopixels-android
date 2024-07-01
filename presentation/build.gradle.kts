@@ -50,4 +50,9 @@ dependencies {
 
     // JWT decoder
     implementation(libs.jwtdecode)
+
+    // Uncomment this if needs to access Firebase analytics and etc. from the source code of the app.
+    // For Build types != release accessing Firebase.analytics will cause a runtime crash, so it needs to be handled
+    // Check @AndroidFirebaseConventionPlugin for configuration options
+    // implementation(libs.play.services.measurement.api)
 }

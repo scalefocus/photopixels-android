@@ -2,6 +2,7 @@ import com.android.build.api.dsl.ApplicationExtension
 import io.photopixels.buildlogic.config.configureKotlinAndroid
 import io.photopixels.buildlogic.config.installArtifactRenameTasks
 import io.photopixels.buildlogic.config.installGitHooksTasks
+import io.photopixels.buildlogic.extensions.buildType
 import io.photopixels.buildlogic.extensions.findPluginId
 import io.photopixels.buildlogic.extensions.findVersion
 import io.photopixels.buildlogic.extensions.libs
@@ -53,6 +54,12 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         isMinifyEnabled = true
                         isShrinkResources = true
                         enableUnitTestCoverage = false
+
+                        rootProject.buildType = "release"
+                    }
+
+                    debug {
+                        rootProject.buildType = "debug"
                     }
                 }
 
