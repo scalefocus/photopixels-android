@@ -241,7 +241,7 @@ class HomeScreenViewModel @Inject constructor(
             }
 
             else -> {
-                // Generic Google Error(Hidden from the user for now)
+                // TODO: Generic Google Error(Hidden from the user for now)
                 Timber.tag(TAG).e("Unable to Sync with Google")
             }
         }
