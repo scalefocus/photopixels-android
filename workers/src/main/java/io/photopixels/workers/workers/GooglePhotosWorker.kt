@@ -72,6 +72,8 @@ class GooglePhotosWorker @AssistedInject constructor(
                 autoCancel = true,
                 isForeground = false
             )
+        } else {
+            Timber.tag(LOG_TAG).e("GOOGLE_PHOTOS ARE UP-TO date, nothing for upload to PhotoPixels cloud")
         }
 
         return Result.success()

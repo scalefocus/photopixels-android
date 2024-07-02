@@ -12,7 +12,10 @@ import javax.inject.Inject
 /**
  * Android Data store for write and read authentication headers with encryption.
  */
-class AuthDataStore @Inject constructor(private val context: Context, private val cipherUtil: CipherUtil) {
+class AuthDataStore @Inject constructor(
+    private val context: Context,
+    private val cipherUtil: CipherUtil
+) {
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_preferences")
 
     suspend fun storeUsername(username: String) {
@@ -73,10 +76,32 @@ class AuthDataStore @Inject constructor(private val context: Context, private va
         }
     }
 
+    suspend fun storeGoogleAuthState(authState: String) {
+        val encryptedAuthState = cipherUtil.encrypt(authState)
+
+        context.dataStore.edit { preferences ->
+            preferences[GOOGLE_AUTH_STATE_JSON_KEY] = encryptedAuthState
+        }
+    }
+
+    suspend fun getGoogleAuthState(): String? {
+        val encryptedGoogleAuthState = context.dataStore.data.first()[GOOGLE_AUTH_STATE_JSON_KEY] ?: return null
+        return cipherUtil.decrypt(encryptedGoogleAuthState)
+    }
+
+    suspend fun clearGoogleAuthState() {
+        context.dataStore.edit { preferences ->
+            if (preferences.contains(GOOGLE_AUTH_STATE_JSON_KEY)) {
+                preferences.remove(GOOGLE_AUTH_STATE_JSON_KEY)
+            }
+        }
+    }
+
     companion object {
         private val USERNAME_KEY = stringPreferencesKey("username")
         private val AUTH_TOKEN_KEY = stringPreferencesKey("auth_token")
         private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
         private val GOOGLE_AUTH_TOKEN_KEY = stringPreferencesKey("google_auth_token")
+        private val GOOGLE_AUTH_STATE_JSON_KEY = stringPreferencesKey("google_auth_state")
     }
 }
