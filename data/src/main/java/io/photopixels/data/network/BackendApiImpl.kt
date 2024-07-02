@@ -9,7 +9,9 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.URLProtocol
+import io.ktor.util.toByteArray
 import io.photopixels.data.base.request
 import io.photopixels.data.mappers.toDomain
 import io.photopixels.data.network.requests.ForgotPasswordRequest
@@ -31,42 +33,51 @@ import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 import javax.inject.Inject
 
-class BackendApiImpl @Inject constructor(private val httpClient: HttpClient) : BackendApi {
+class BackendApiImpl @Inject constructor(
+    private val httpClient: HttpClient
+) : BackendApi {
 
     override suspend fun getServerStatus(serverAddress: String): Response<ServerStatus> =
         request {
-            val result = httpClient.get {
-                url {
-                    host = serverAddress
-                    encodedPathSegments = listOf("api", "status")
-                    protocol = URLProtocol.HTTPS
-                }
-            }.body<ServerStatusResponse>()
+            val result = httpClient
+                .get {
+                    url {
+                        host = serverAddress
+                        encodedPathSegments = listOf("api", "status")
+                        protocol = URLProtocol.HTTPS
+                    }
+                }.body<ServerStatusResponse>()
 
             Response.Success(result.toDomain())
         }
 
     override suspend fun loginUser(email: String, password: String): Response<LoginResponse> =
         request {
-            val result = httpClient.post {
-                url("/api/user/login")
-                setBody(LoginRequest(email, password))
-            }.body<LoginResponse>()
+            val result = httpClient
+                .post {
+                    url("/api/user/login")
+                    setBody(LoginRequest(email, password))
+                }.body<LoginResponse>()
 
             Response.Success(result)
         }
 
     override suspend fun clearBearerTokens() {
-        httpClient.plugin(Auth).providers.filterIsInstance<BearerAuthProvider>()
-            .firstOrNull()?.clearToken()
+        httpClient
+            .plugin(Auth)
+            .providers
+            .filterIsInstance<BearerAuthProvider>()
+            .firstOrNull()
+            ?.clearToken()
     }
 
     override suspend fun refreshToken(refreshToken: String): Response<LoginResponse> =
         request {
-            val result = httpClient.post {
-                url("/api/user/refresh")
-                setBody(RefreshTokenRequest(refreshToken))
-            }.body<LoginResponse>()
+            val result = httpClient
+                .post {
+                    url("/api/user/refresh")
+                    setBody(RefreshTokenRequest(refreshToken))
+                }.body<LoginResponse>()
 
             Response.Success(result)
         }
@@ -76,28 +87,31 @@ class BackendApiImpl @Inject constructor(private val httpClient: HttpClient) : B
         email: String,
         password: String
     ): Response<Unit> = request {
-        val result = httpClient.post {
-            url("/api/user/register")
-            setBody(RegisterRequest(name, email, password))
-        }.body<Unit>()
+        val result = httpClient
+            .post {
+                url("/api/user/register")
+                setBody(RegisterRequest(name, email, password))
+            }.body<Unit>()
 
         Response.Success(result)
     }
 
     override suspend fun getServerRevision(revisionNumber: Int?): Response<ServerRevision> =
         request {
-            val result = httpClient.get {
-                url("/api/revision/$revisionNumber")
-            }.body<ServerRevisionResponse>()
+            val result = httpClient
+                .get {
+                    url("/api/revision/$revisionNumber")
+                }.body<ServerRevisionResponse>()
             Response.Success(result.toDomain())
         }
 
     override suspend fun getThumbnailsByIds(serverItemHashIds: List<String>): Response<List<PhotoUiData>> =
         request {
-            val result = httpClient.post {
-                url("/api/objects/data")
-                setBody(ObjectsDataRequest(serverItemHashIds))
-            }.body<List<ObjectResponse>>()
+            val result = httpClient
+                .post {
+                    url("/api/objects/data")
+                    setBody(ObjectsDataRequest(serverItemHashIds))
+                }.body<List<ObjectResponse>>()
 
             Response.Success(result.map { it.toDomain() })
         }
@@ -110,39 +124,51 @@ class BackendApiImpl @Inject constructor(private val httpClient: HttpClient) : B
         objectHash: String
     ): Response<PhotoUploadData> =
         request {
-            val result = httpClient.post {
-                url("/api/object")
-                setBody(
-                    UploadPhotoRequest.build(
-                        fileBytes = fileBytes,
-                        fileName = fileName,
-                        mimeType = mimeType,
-                        androidCloudId = androidCloudId,
-                        objectHash = objectHash
+            val result = httpClient
+                .post {
+                    url("/api/object")
+                    setBody(
+                        UploadPhotoRequest.build(
+                            fileBytes = fileBytes,
+                            fileName = fileName,
+                            mimeType = mimeType,
+                            androidCloudId = androidCloudId,
+                            objectHash = objectHash
+                        )
                     )
-                )
-            }.body<ObjectUploadResponse>()
+                }.body<ObjectUploadResponse>()
 
             Response.Success(result.toDomain())
         }
 
     override suspend fun forgotPassword(email: String): Response<Unit> =
         request {
-            httpClient.post {
-                url("/api/user/forgotpassword")
-                setBody(ForgotPasswordRequest(email))
-            }.body<Unit>()
+            httpClient
+                .post {
+                    url("/api/user/forgotpassword")
+                    setBody(ForgotPasswordRequest(email))
+                }.body<Unit>()
 
             Response.Success(Unit)
         }
 
     override suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit> =
         request {
-            httpClient.post {
-                url("/api/user/resetpassword")
-                setBody(ResetPasswordRequest(email, newPassword, verificationCode))
-            }.body<Unit>()
+            httpClient
+                .post {
+                    url("/api/user/resetpassword")
+                    setBody(ResetPasswordRequest(email, newPassword, verificationCode))
+                }.body<Unit>()
 
             Response.Success(Unit)
+        }
+
+    override suspend fun downloadPhoto(photoUrl: String): Response<ByteArray> =
+        request {
+            val result = httpClient
+                .get {
+                    url(photoUrl)
+                }.bodyAsChannel()
+            Response.Success(result.toByteArray())
         }
 }

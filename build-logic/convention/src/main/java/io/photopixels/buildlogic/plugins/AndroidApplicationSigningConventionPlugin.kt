@@ -14,7 +14,7 @@ class AndroidApplicationSigningConventionPlugin : Plugin<Project> {
                 if (validSigningConfig) {
                     load(keystorePropsFile.inputStream())
                 } else {
-                    println("Keystore file doesn't exist!!!!!")
+                    println("Keystore file doesn't exist in [${keystorePropsFile.absolutePath}].")
                 }
             }
 

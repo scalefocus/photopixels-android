@@ -18,6 +18,7 @@ class WorkerStarterImpl @Inject constructor(
 ) : WorkerStarter {
     private var uniquePhotosWorkId: UUID? = null
     private var uniqueDevicesWorkId: UUID? = null
+    private var uniqueGooglePhotosWorkId: UUID? = null
 
     override fun startDevicePhotosWorker() {
         getDevicePhotosWorkerRequest()
@@ -39,35 +40,55 @@ class WorkerStarterImpl @Inject constructor(
         uniqueDevicesWorkId = devicePhotosWorkRequest.id
         uniquePhotosWorkId = uploadPhotosWorkRequest.id
 
-        WorkManager.getInstance(context).beginWith(devicePhotosWorkRequest).then(uploadPhotosWorkRequest).enqueue()
+        WorkManager
+            .getInstance(context)
+            .beginWith(devicePhotosWorkRequest)
+            .then(uploadPhotosWorkRequest)
+            .enqueue()
     }
 
-    override fun getUploadPhotosWorkerListener(): Flow<WorkerInfo> {
-        return WorkManager.getInstance(context)
-            .getWorkInfoByIdFlow(uniquePhotosWorkId!!) // TODO this may be null, handle it better
-            .transform { workInfo ->
-                if (workInfo.state.isFinished) {
-                    val workerResultData = workInfo.outputData.keyValueMap
-                    emit(
-                        WorkerInfo(
-                            workerTag = workInfo.tags.first(),
-                            WorkerStatus.FINISHED,
-                            resultData = workerResultData
-                        )
+    override fun getUploadPhotosWorkerListener(): Flow<WorkerInfo> = WorkManager
+        .getInstance(context)
+        .getWorkInfoByIdFlow(uniquePhotosWorkId!!) // TODO this may be null, handle it better
+        .transform { workInfo ->
+            if (workInfo.state.isFinished) {
+                val workerResultData = workInfo.outputData.keyValueMap
+                emit(
+                    WorkerInfo(
+                        workerTag = workInfo.tags.first(),
+                        WorkerStatus.FINISHED,
+                        resultData = workerResultData
                     )
-                }
+                )
             }
+        }
+
+    override fun startGooglePhotosWorker() {
+        uniqueGooglePhotosWorkId = getGooglePhotosWorkerRequest()
+            .also {
+                WorkManager.getInstance(context).enqueue(it)
+            }.id
     }
 
-    private fun getDevicePhotosWorkerRequest(): OneTimeWorkRequest {
-        return OneTimeWorkRequestBuilder<DevicePhotosWorker>()
-            .addTag(WorkerStarter.DEVICE_PHOTOS_WORKER_TAG)
-            .build()
+    override fun stopGooglePhotosWorker() {
+        uniqueGooglePhotosWorkId?.let {
+            val workerInfo = WorkManager.getInstance(context).getWorkInfoById(it)
+
+            if (!workerInfo.get().state.isFinished) {
+                WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
+            }
+        }
     }
 
-    private fun getUploadPhotosWorkerRequest(): OneTimeWorkRequest {
-        return OneTimeWorkRequestBuilder<UploadPhotosWorker>()
-            .addTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
-            .build()
-    }
+    private fun getDevicePhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<DevicePhotosWorker>()
+        .addTag(WorkerStarter.DEVICE_PHOTOS_WORKER_TAG)
+        .build()
+
+    private fun getUploadPhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<UploadPhotosWorker>()
+        .addTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
+        .build()
+
+    private fun getGooglePhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<GooglePhotosWorker>()
+        .addTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
+        .build()
 }

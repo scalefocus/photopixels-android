@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.photopixels.data.storage.database.AppDatabase
+import io.photopixels.data.storage.database.GooglePhotosDao
 import io.photopixels.data.storage.database.PhotosDao
 import io.photopixels.data.storage.database.ThumbnailsDao
 import io.photopixels.data.storage.datastore.AuthDataStore
@@ -24,13 +25,12 @@ class StorageModule {
     @Singleton
     fun provideDatabase(
         @ApplicationContext applicationContext: Context
-    ): AppDatabase {
-        return Room.databaseBuilder(
+    ): AppDatabase = Room
+        .databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
             "photopixels-database"
         ).build()
-    }
 
     @Provides
     @Singleton
@@ -39,6 +39,10 @@ class StorageModule {
     @Provides
     @Singleton
     fun provideThumbnailsDao(appDatabase: AppDatabase): ThumbnailsDao = appDatabase.thumbnailsDao()
+
+    @Provides
+    @Singleton
+    fun provideGooglePhotosDao(appDatabase: AppDatabase): GooglePhotosDao = appDatabase.googlePhotosDao()
 
     @Provides
     @Singleton

@@ -45,23 +45,25 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v4
-                with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'gradle'
-
-            -   name: Grant execute permissions for gradlew
-                run: chmod +x ./gradlew
-
-            -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
+            -   name: Setup project
+                uses: ./.github/actions/setup-project
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+                    dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+                    dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Run Android lint, ktlint, detekt
                 run: ./gradlew lint ktlintCheck detekt
+
+            -   name: Upload build reports
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-reports
+                    path: |
+                        **/build/reports/*
 
     test:
         runs-on: ubuntu-latest
@@ -71,20 +73,25 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v4
-                with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'gradle'
-
-            -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
+            -   name: Setup project
+                uses: ./.github/actions/setup-project
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+                    dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+                    dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Run tests
                 run: ./gradlew test
+
+            -   name: Upload test results
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-android-test-results
+                    path: |
+                        **/build/test-results/*
 
     build:
         runs-on: ubuntu-latest
@@ -94,20 +101,14 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v4
-                with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'gradle'
-
-            -   name: Grant execute permissions for gradlew
-                run: chmod +x ./gradlew
-
-            -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
+            -   name: Setup project
+                uses: ./.github/actions/setup-project
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+                    dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+                    dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Build with Gradle
                 run: ./gradlew assembleDebug
@@ -120,17 +121,14 @@ jobs:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v4
-                with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'gradle'
-
-            -   name: Prepare Firebase services configuration
-                uses: ./.github/actions/firebase-config
+            -   name: Setup project
+                uses: ./.github/actions/setup-project
                 with:
                     google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+                    dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+                    dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Prepare release signing configuration
                 env:
@@ -148,25 +146,26 @@ jobs:
                     echo "keystorePath=../keystore.jks" > keystore.properties
                     echo "keystorePassword=$RELEASE_KEYSTORE_PASSWORD" >> keystore.properties
                     echo "keyAlias=$RELEASE_KEY_ALIAS" >> keystore.properties
-                    echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties 
+                    echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties
 
             -   name: Generate build number
                 id: generate_build_number
                 shell: bash
                 run: |
-                    # Use reference timestamp to reduce the version code value due to Google Play 
+                    # Use reference timestamp to reduce the version code value due to Google Play
                     # limit of 2100000000. Basically we take the current timestamp and subtract the
                     # reference timestamp from it.
                     referenceTimestamp=$(date -d "2024-06-01" +%s)
                     currentTimestamp=$(date +%s)
                     timeDifference=$(( currentTimestamp - referenceTimestamp ))
-                    
-                    # We multiply the time difference by a factor (here, 10) to give it more weight 
-                    # and add the GITHUB_RUN_NUMBER for additional uniqueness. We can adjust the 
+
+                    # We multiply the time difference by a factor (here, 10) to give it more weight
+                    # and add the GITHUB_RUN_NUMBER for additional uniqueness. We can adjust the
                     # multiplier based on how frequently we expect to build.
                     versionCode=$(( (timeDifference * 10) + GITHUB_RUN_NUMBER ))
                     echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
                     #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
+
 
             -   name: Create release APK
                 run: |
@@ -181,22 +180,6 @@ jobs:
                     if-no-files-found: error # error, warn, ignore
                     overwrite: false
 
-            -   name: Upload reports
-                if: always()
-                uses: actions/upload-artifact@v4
-                with:
-                    name: photopixels-android-reports
-                    path: |
-                        **/build/reports/*
-
-            -   name: Upload test results
-                if: always()
-                uses: actions/upload-artifact@v4
-                with:
-                    name: photopixels-android-test-results
-                    path: |
-                        **/build/test-results/*
-
             -   name: Publish release APK to Github Releases
                 uses: softprops/action-gh-release@v2
                 if: startsWith(github.ref, 'refs/tags/')
@@ -207,16 +190,19 @@ jobs:
         runs-on: ubuntu-latest
         environment: scalefocus-production
         needs: assemble-signed-release
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
         steps:
             -   name: Checkout project code
                 uses: actions/checkout@v4
 
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v4
+            -   name: Setup project
+                uses: ./.github/actions/setup-project
                 with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'gradle'
+                    google_services_json: ${{ secrets.PHOTOPIXELS_GOOGLE_SERVICES_JSON }}
+                    dist_credentials_file: ${{ secrets.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE }}
+                    dist_groups: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS }}
+                    dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
+                    dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
             -   name: Download APK from artifacts
                 uses: actions/download-artifact@v4
@@ -224,5 +210,20 @@ jobs:
                     name: photopixels-release-apk
                     path: app/build/outputs/apk/release/
 
-            -   name: Publish via Firebase AppDistribution
-                run: echo "TODO download artifact and do appDistributionUploadRelease"
+            -   name: Publish via Firebase App Distribution
+                shell: bash
+                run: |
+                    variants="${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}"
+                    tasks=""
+                    
+                    IFS=',' read -ra variant_array <<< "$variants"
+                    
+                    for variant in "${variant_array[@]}"; do
+                        capitalized=$(echo "$variant" | sed 's/\b\(.\)/\u\1/g')
+                        tasks="$tasks appDistributionUpload$capitalized"
+                    done
+                    
+                    echo "Tasks: [$tasks] from variants: [$variants]"
+                    if [ -n "$tasks" ]; then
+                        ./gradlew $tasks
+                    fi

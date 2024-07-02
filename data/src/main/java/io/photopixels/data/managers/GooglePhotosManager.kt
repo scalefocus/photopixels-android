@@ -1,13 +1,18 @@
 package io.photopixels.data.managers
 
 import com.google.api.gax.core.FixedCredentialsProvider
+import com.google.api.gax.rpc.UnauthenticatedException
 import com.google.auth.Credentials
 import com.google.auth.oauth2.AccessToken
 import com.google.auth.oauth2.UserCredentials
 import com.google.photos.library.v1.PhotosLibraryClient
 import com.google.photos.library.v1.PhotosLibrarySettings
+import com.google.photos.types.proto.MediaItem
 import io.photopixels.data.BuildConfig
+import io.photopixels.data.mappers.toEntity
+import io.photopixels.data.storage.database.GooglePhotosDao
 import io.photopixels.data.storage.datastore.AuthDataStore
+import io.photopixels.domain.base.PhotoPixelError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,9 +22,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GooglePhotosManager @Inject constructor(private val authDataStore: AuthDataStore) {
+class GooglePhotosManager @Inject constructor(
+    private val authDataStore: AuthDataStore,
+    private val googlePhotosDao: GooglePhotosDao
+) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private lateinit var photosLibraryClient: PhotosLibraryClient
+    private var photosLibraryClient: PhotosLibraryClient? = null
 
     init {
         coroutineScope.launch {
@@ -27,15 +35,24 @@ class GooglePhotosManager @Inject constructor(private val authDataStore: AuthDat
         }
     }
 
-    fun fetchGooglePhotos() {
-        fetchPhotos()
+    suspend fun fetchGooglePhotos(): PhotoPixelError? {
+        if (photosLibraryClient == null) {
+            Timber.tag(GOOGLE_PHOTOS_TAG).d("library is not initialized")
+            initPhotosLibrary()
+            Timber.tag(GOOGLE_PHOTOS_TAG).d("library initialized successfully")
+        } else {
+            Timber.tag(GOOGLE_PHOTOS_TAG).d("library initialized already")
+        }
+
+        return fetchPhotos()
     }
 
     private suspend fun initPhotosLibrary() {
         Timber.tag(GOOGLE_PHOTOS_TAG).d("init google photos library")
         val googleAuthToken = authDataStore.getGoogleAuthToken()
         googleAuthToken?.let {
-            val settings = PhotosLibrarySettings.newBuilder()
+            val settings = PhotosLibrarySettings
+                .newBuilder()
                 .setCredentialsProvider(FixedCredentialsProvider.create(getUserCredentials(it)))
                 .build()
 
@@ -47,39 +64,45 @@ class GooglePhotosManager @Inject constructor(private val authDataStore: AuthDat
     private fun getUserCredentials(googleAuthToken: String): Credentials {
         Timber.tag(GOOGLE_PHOTOS_TAG).d("init google photos library with google auth token:$googleAuthToken")
         val accessToken = AccessToken(googleAuthToken, null)
-        return UserCredentials.newBuilder()
+        return UserCredentials
+            .newBuilder()
             .setClientId(BuildConfig.GOOGLE_OAUTH_WEB_CLIENT_ID)
             .setClientSecret(BuildConfig.GOOGLE_OAUTH_WEB_CLIENT_SECRET)
             .setAccessToken(accessToken)
             .build()
     }
 
-    private fun fetchPhotos() {
-        coroutineScope.launch(Dispatchers.IO) {
-            Timber.tag(GOOGLE_PHOTOS_TAG).d("in fetchPhotos()")
-            if (!::photosLibraryClient.isInitialized) {
-                Timber.tag(GOOGLE_PHOTOS_TAG).d("library is not initialized")
-                initPhotosLibrary()
-                Timber.tag(GOOGLE_PHOTOS_TAG).d("library initialized")
-            } else {
-                Timber.tag(GOOGLE_PHOTOS_TAG).d("library initialized already")
+    private suspend fun fetchPhotos(): PhotoPixelError? {
+        val client = photosLibraryClient ?: return PhotoPixelError.GenericGoogleError.also {
+            Timber.tag(GOOGLE_PHOTOS_TAG).e("PhotosLibrary not initialized")
+        }
+
+        return try {
+            val mediaItems = client.listMediaItems().iterateAll().toList()
+            mediaItems.forEach { mediaItem ->
+                // Access media item properties (id, baseUrl, etc.) as needed
+                // val id = mediaItem.id
+                // val baseUrl = mediaItem.baseUrl
+                // Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
             }
 
-            try {
-                Timber.tag(GOOGLE_PHOTOS_TAG).d("Try List media Items")
-                val response = photosLibraryClient.listMediaItems()
-                // response contains list of photo objects
-                val mediaItems = response.iterateAll().toList()
-                for (mediaItem in mediaItems) {
-                    // Access media item properties
-                    val id = mediaItem.id
-                    val baseUrl = mediaItem.baseUrl
-                    Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
-                }
-            } catch (e: Exception) {
-                Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: exception handled ====$e")
-            }
+            Timber.tag(GOOGLE_PHOTOS_TAG).d("Google photos fetched successfully, saving photos metadata to DB")
+            savePhotosDataToDB(mediaItems)
+            null // Success - no error
+        } catch (e: UnauthenticatedException) {
+            Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: UnauthenticatedException(Token not valid):$e")
+            photosLibraryClient = null
+            PhotoPixelError.ExpiredGoogleAuthTokenError
+        } catch (e: Exception) {
+            Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: Error while fetching photos:$e")
+            // TODO: Log this error in Analytics server
+            PhotoPixelError.GenericGoogleError
         }
+    }
+
+    private suspend fun savePhotosDataToDB(mediaItemsList: List<MediaItem>) {
+        val googlePhotosList = mediaItemsList.map { it.toEntity() }
+        googlePhotosDao.insertPhotosData(googlePhotosList)
     }
 
     companion object {
