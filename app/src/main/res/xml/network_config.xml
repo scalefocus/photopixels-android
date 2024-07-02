@@ -11,13 +11,14 @@
         To be able to test the app in a local environment via HTTP, you may uncomment the code
         below and add your local domain or IP of the PhotoPixels' server.
     -->
-    <!--<domain-config cleartextTrafficPermitted="true">
-        &lt;!&ndash; Allow cleartext for "photopixels.local" or a local IP &ndash;&gt;
-        <domain includeSubdomains="true">photopixels.local</domain>
-    </domain-config>-->
+
+    <!--    <domain-config cleartextTrafficPermitted="true">-->
+    <!--        &lt;!&ndash; Allow cleartext for "photopixels.local" or a local IP &ndash;&gt;-->
+    <!--        <domain includeSubdomains="true">photopixels.local</domain>-->
+    <!--    </domain-config>-->
 
     <!-- Enforce HTTPS for all other domains -->
-    <base-config cleartextTrafficPermitted="false">
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>

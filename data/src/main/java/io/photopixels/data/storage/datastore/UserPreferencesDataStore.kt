@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
+import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.model.UserSettings
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -23,17 +24,17 @@ class UserPreferencesDataStore @Inject constructor(
         private val USER_SETTINGS_KEY = stringPreferencesKey("user_settings")
     }
 
-    suspend fun setServerAddress(serverAddress: String) {
-        val encryptedServerAddress = cipherUtil.encrypt(serverAddress)
+    suspend fun setServerAddress(serverAddress: ServerAddress) {
+        val encryptedServerAddress = cipherUtil.encrypt(Gson().toJson(serverAddress))
 
         context.dataStore.edit { preferences ->
             preferences[SERVER_ADDRESS_KEY] = encryptedServerAddress
         }
     }
 
-    suspend fun getServerAddress(): String? {
-        val encryptedServerAddress = context.dataStore.data.first()[SERVER_ADDRESS_KEY] ?: return null
-        return cipherUtil.decrypt(encryptedServerAddress)
+    suspend fun getServerAddress(): ServerAddress? {
+        val encryptedServerAddressJson = context.dataStore.data.first()[SERVER_ADDRESS_KEY] ?: return null
+        return Gson().fromJson(cipherUtil.decrypt(encryptedServerAddressJson), ServerAddress::class.java)
     }
 
     suspend fun setServerVersion(serverVersion: String) {

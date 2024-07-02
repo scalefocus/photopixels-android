@@ -3,6 +3,7 @@ package io.photopixels.data.repository
 import io.photopixels.data.network.BackendApi
 import io.photopixels.data.storage.datastore.UserPreferencesDataStore
 import io.photopixels.domain.base.Response
+import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 import io.photopixels.domain.repository.ServerRepository
@@ -14,7 +15,7 @@ class ServerRepositoryImpl @Inject constructor(
     private val backendApi: BackendApi,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ServerRepository {
-    override suspend fun getServerStatus(serverAddress: String): Flow<Response<ServerStatus>> =
+    override suspend fun getServerStatus(serverAddress: ServerAddress): Flow<Response<ServerStatus>> =
         flow {
             val result = backendApi.getServerStatus(serverAddress)
             emit(result)
@@ -26,7 +27,7 @@ class ServerRepositoryImpl @Inject constructor(
             emit(result)
         }
 
-    override suspend fun setServerAddressToDataStore(serverAddress: String) {
+    override suspend fun setServerAddressToDataStore(serverAddress: ServerAddress) {
         userPreferencesDataStore.setServerAddress(serverAddress)
     }
 
@@ -34,15 +35,11 @@ class ServerRepositoryImpl @Inject constructor(
         userPreferencesDataStore.setServerVersion(serverVersion)
     }
 
-    override suspend fun getServerVersion(): String {
-        return userPreferencesDataStore.getServerVersion()
-    }
+    override suspend fun getServerVersion(): String = userPreferencesDataStore.getServerVersion()
 
     override suspend fun clearServerData() {
         userPreferencesDataStore.clearServerData()
     }
 
-    override suspend fun getServerAddress(): String? {
-        return userPreferencesDataStore.getServerAddress()
-    }
+    override suspend fun getServerAddress(): ServerAddress? = userPreferencesDataStore.getServerAddress()
 }

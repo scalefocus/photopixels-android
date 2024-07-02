@@ -56,6 +56,7 @@ class AndroidFirebaseConventionPlugin : Plugin<Project> {
  * NOTE: If app flavors exist, this method will have to be modified to support them.
  */
 private fun Project.configureFirebaseAppDistribution() {
+    return
     val buildTypesValue = project.findProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES")?.toString()
         ?: gradleLocalProperties(rootDir, providers).getProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS")
 

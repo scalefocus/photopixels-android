@@ -39,7 +39,7 @@ class PhotosPreviewViewModel @Inject constructor(
                 val authHeader = getAuthHeaderUseCase.invoke()
                 authHeader?.let {
                     val photosIds = getPhotosIdsInMemoryUseCase.invoke()
-                    val photosGlideUrls = photosIds.map { buildGlideUrl(it, serverAddress, authHeader) }
+                    val photosGlideUrls = photosIds.map { buildGlideUrl(it, serverAddress.toString(), authHeader) }
                     val photoToLoadFirstIndex = photosIds.indexOf(clickedThumbnailServerId)
                     updateState {
                         copy(
@@ -53,15 +53,13 @@ class PhotosPreviewViewModel @Inject constructor(
         }
     }
 
-    private fun buildGlideUrl(photoId: String, serverAddress: String, authHeader: String): GlideUrl {
-        return GlideUrl(
-            "https://$serverAddress/api/object/$photoId",
-            LazyHeaders.Builder()
-                .addHeader(
-                    "Authorization",
-                    "Bearer $authHeader"
-                )
-                .build()
-        )
-    }
+    private fun buildGlideUrl(photoId: String, serverAddress: String, authHeader: String): GlideUrl = GlideUrl(
+        "$serverAddress/api/object/$photoId",
+        LazyHeaders
+            .Builder()
+            .addHeader(
+                "Authorization",
+                "Bearer $authHeader"
+            ).build()
+    )
 }

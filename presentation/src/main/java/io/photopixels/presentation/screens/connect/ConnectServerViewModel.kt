@@ -7,6 +7,7 @@ import io.photopixels.domain.usecases.GetServerInfoUseCase
 import io.photopixels.domain.usecases.GetServerStatusUseCase
 import io.photopixels.domain.usecases.SetServerInfoUseCase
 import io.photopixels.domain.usecases.ValidateFieldUseCase
+import io.photopixels.domain.utils.Utils
 import io.photopixels.domain.validation.ValidationRules
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
@@ -53,7 +54,9 @@ class ConnectServerViewModel @Inject constructor(
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
             val serverAddressValue = state.value.serverAddress.value
-            getServerStatusUseCase.invoke(serverAddressValue).collect { result ->
+            val serverAddressData = Utils.parseServerAddress(state.value.serverAddress.value)
+
+            getServerStatusUseCase.invoke(serverAddressData).collect { result ->
                 if (result is Response.Success) {
                     updateState {
                         copy(
@@ -62,7 +65,7 @@ class ConnectServerViewModel @Inject constructor(
                         )
                     }
                     submitEvent(ConnectServerEvents.NavigateToLoginScreen)
-                    setServerInfoUseCase.setServerAddress(serverAddressValue)
+                    setServerInfoUseCase.setServerAddress(serverAddressData)
                     setServerInfoUseCase.setServerVersion(result.result.serverVersion)
                 } else if (result is Response.Failure) {
                     updateState {
@@ -81,7 +84,7 @@ class ConnectServerViewModel @Inject constructor(
         viewModelScope.launch {
             val savedServerAddress = getServerInfoUseCase.getServerAddress()
             savedServerAddress?.let {
-                updateState { copy(serverAddress = serverAddress.copy(value = it)) }
+                updateState { copy(serverAddress = serverAddress.copy(value = it.toString())) }
             }
         }
     }
