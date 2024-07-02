@@ -72,35 +72,31 @@ class GooglePhotosManager @Inject constructor(
             .build()
     }
 
-    @Suppress("ReturnCount")
     private suspend fun fetchPhotos(): PhotoPixelError? {
-        photosLibraryClient?.let {
-            try {
-                val response = it.listMediaItems()
-                // response contains list of photo objects
-                val mediaItems = response.iterateAll().toList()
-                for (mediaItem in mediaItems) {
-                    // Access media item properties
-                    val id = mediaItem.id
-                    val baseUrl = mediaItem.baseUrl
-                    // Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
-                }
-
-                Timber.tag(GOOGLE_PHOTOS_TAG).d("Google photos fetched successfully, saving photos metadata to DB")
-                savePhotosDataToDB(mediaItems)
-                return null
-            } catch (e: UnauthenticatedException) {
-                Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: UnauthenticatedException(Token not valid):$e")
-                photosLibraryClient = null
-                return PhotoPixelError.ExpiredGoogleAuthTokenError
-            } catch (e: Exception) {
-                Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: Error while fetching photos:$e")
-                // TODO: Log this error in Analytics server
-                return PhotoPixelError.GenericGoogleError
-            }
-        } ?: run {
+        val client = photosLibraryClient ?: return PhotoPixelError.GenericGoogleError.also {
             Timber.tag(GOOGLE_PHOTOS_TAG).e("PhotosLibrary not initialized")
-            return PhotoPixelError.GenericGoogleError
+        }
+
+        return try {
+            val mediaItems = client.listMediaItems().iterateAll().toList()
+            mediaItems.forEach { mediaItem ->
+                // Access media item properties (id, baseUrl, etc.) as needed
+                // val id = mediaItem.id
+                // val baseUrl = mediaItem.baseUrl
+                // Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
+            }
+
+            Timber.tag(GOOGLE_PHOTOS_TAG).d("Google photos fetched successfully, saving photos metadata to DB")
+            savePhotosDataToDB(mediaItems)
+            null // Success - no error
+        } catch (e: UnauthenticatedException) {
+            Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: UnauthenticatedException(Token not valid):$e")
+            photosLibraryClient = null
+            PhotoPixelError.ExpiredGoogleAuthTokenError
+        } catch (e: Exception) {
+            Timber.tag(GOOGLE_PHOTOS_TAG).e("fetchPhotos: Error while fetching photos:$e")
+            // TODO: Log this error in Analytics server
+            PhotoPixelError.GenericGoogleError
         }
     }
 
