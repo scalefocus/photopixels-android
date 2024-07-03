@@ -14,4 +14,8 @@ sealed class PhotoPixelError {
     data object VerificationCodeIncorrect : PhotoPixelError()
 
     data object AccountAlreadyTaken : PhotoPixelError()
+
+    data object ExpiredGoogleAuthTokenError : PhotoPixelError()
+
+    data object GenericGoogleError : PhotoPixelError()
 }

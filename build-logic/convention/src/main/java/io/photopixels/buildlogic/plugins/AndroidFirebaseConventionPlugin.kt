@@ -60,6 +60,11 @@ private fun Project.configureFirebaseAppDistribution() {
     val buildTypesValue = project.findProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_TYPES")?.toString()
         ?: gradleLocalProperties(rootDir, providers).getProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS")
 
+    if (buildTypesValue == null) {
+        println("Error with Firebase Distribution. Missing buildTypesValue, check project properties")
+        return
+    }
+
     val buildTypes = buildTypesValue.split(",").map { it.trim() }
 
     val credentialsFile = project.findProperty("PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE")?.toString()
