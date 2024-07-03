@@ -167,9 +167,9 @@ jobs:
           #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
 
 
-      - name: Create release APK
+      - name: Create release APK # Version for Store(https only)
         run: |
-          ./gradlew assembleRelease assembleReleaseHttp \
+          ./gradlew assembleRelease \
           -PversionCode=${{ steps.generate_build_number.outputs.versionCode }}
 
       - name: Upload release APK to artifacts
@@ -180,12 +180,29 @@ jobs:
           if-no-files-found: error # error, warn, ignore
           overwrite: false
 
-      - name: Publish release APK to Github Releases
+
+      - name: Create releaseHttp APK  # Version with http support
+        run: |
+          ./gradlew assembleReleaseHttp \
+          -PversionCode=${{ steps.generate_build_number.outputs.versionCode }}  # Pass versionCode
+
+      - name: Upload releaseHttp APK to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: photopixels-releasehttp-apk
+          path: app/build/outputs/apk/releaseHttp/*releaseHttp*.apk
+          if-no-files-found: error # error, warn, ignore
+          overwrite: false
+
+      - name: Publish release APKs to Github Releases
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: app/build/outputs/apk/release/*release*.apk
-
+          files: |
+            app/build/outputs/apk/release/*release*.apk
+            app/build/outputs/apk/releaseHttp/*releaseHttp*.apk
+  
+  
   distribute:
     runs-on: ubuntu-latest
     environment: scalefocus-production
