@@ -51,8 +51,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 buildTypes {
                     release {
                         isDebuggable = false
-                        isMinifyEnabled = false // TODO: set to true
-                        isShrinkResources = false // TODO: set to true
+                        isMinifyEnabled = true
+                        isShrinkResources = true
                         enableUnitTestCoverage = false
                         manifestPlaceholders["ALLOW_HTTP_TRAFFIC"] = false
                         manifestPlaceholders["NETWORK_SECURITY_CONFIG"] = "@xml/network_config_https"
@@ -68,6 +68,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
                         manifestPlaceholders["ALLOW_HTTP_TRAFFIC"] = true
                         manifestPlaceholders["NETWORK_SECURITY_CONFIG"] = "@xml/network_config_http"
+
+                        proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
                     }
                 }
 
