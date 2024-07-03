@@ -18,4 +18,6 @@ sealed class PhotoPixelError {
     data object ExpiredGoogleAuthTokenError : PhotoPixelError()
 
     data object GenericGoogleError : PhotoPixelError()
+
+    data object HttpTrafficNotAllowed : PhotoPixelError()
 }

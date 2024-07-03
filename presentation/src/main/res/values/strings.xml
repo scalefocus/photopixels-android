@@ -20,6 +20,7 @@
     <string name="connect_error_msg">Server is not accessible, please check the address of the server.</string>
     <string name="connect_incorrect_address_msg">Please type correct server address(server.domain:port or protocol://server.domain:port)
         if the protocol and port are not present, HTTPS with 443 are used as default ones.</string>
+    <string name="connect_server_http_error">Connect to server error. Http traffic is not allowed.</string>
 
     <!-- Register Screen -->
     <string name="register_title">Register</string>
