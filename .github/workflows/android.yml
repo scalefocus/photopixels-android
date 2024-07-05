@@ -166,7 +166,6 @@ jobs:
                     echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
                     #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
 
-
             # Create Release APKs:
             # - APK for publishing on Google-Play store
             # - Apk for testing and local environments with http support
@@ -179,16 +178,9 @@ jobs:
                 uses: actions/upload-artifact@v4
                 with:
                     name: photopixels-release-apk
-                    path: app/build/outputs/apk/release/*release*.apk
-                    if-no-files-found: error # error, warn, ignore
-                    overwrite: false
-
-            -   name: Upload releaseHttp APK to artifacts
-                uses: actions/upload-artifact@v4
-                with:
-                    name: photopixels-releasehttp-apk
-                    path: app/build/outputs/apk/release/*release*.apk
-                        app/build/outputs/apk/releaseHttp/releaseHttp.apk
+                    path: |
+                        app/build/outputs/apk/release/*release*.apk    
+                        app/build/outputs/apk/releaseHttp/*releaseHttp*.apk
                     if-no-files-found: error # error, warn, ignore
                     overwrite: false
 
