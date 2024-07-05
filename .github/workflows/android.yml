@@ -141,7 +141,7 @@ jobs:
                     # Base64 decoding of keystore kept in temporary environment variable
                     echo $ENCODED_STRING > keystore-b64.txt
                     base64 -d keystore-b64.txt > keystore.jks
-
+                    
                     # Create property file with signing configuration values
                     echo "keystorePath=../keystore.jks" > keystore.properties
                     echo "keystorePassword=$RELEASE_KEYSTORE_PASSWORD" >> keystore.properties
@@ -158,7 +158,7 @@ jobs:
                     referenceTimestamp=$(date -d "2024-06-01" +%s)
                     currentTimestamp=$(date +%s)
                     timeDifference=$(( currentTimestamp - referenceTimestamp ))
-
+                    
                     # We multiply the time difference by a factor (here, 10) to give it more weight
                     # and add the GITHUB_RUN_NUMBER for additional uniqueness. We can adjust the
                     # multiplier based on how frequently we expect to build.
@@ -166,25 +166,32 @@ jobs:
                     echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
                     #echo "IO_PHOTOPIXELS_ANDROID_VERSIONCODE=$versionCode" >> $GITHUB_ENV
 
-
-            -   name: Create release APK
+            # Create Release APKs:
+            # - APK for publishing on Google-Play store
+            # - Apk for testing and local environments with http support
+            -   name: Create release APKs
                 run: |
-                    ./gradlew assembleRelease \
+                    ./gradlew assembleRelease assembleReleaseHttp \
                     -PversionCode=${{ steps.generate_build_number.outputs.versionCode }}
 
             -   name: Upload release APK to artifacts
                 uses: actions/upload-artifact@v4
                 with:
                     name: photopixels-release-apk
-                    path: app/build/outputs/apk/release/*release*.apk
+                    path: |
+                        app/build/outputs/apk/release/*release*.apk
+                        app/build/outputs/apk/releaseHttp/*releaseHttp*.apk
                     if-no-files-found: error # error, warn, ignore
                     overwrite: false
 
-            -   name: Publish release APK to Github Releases
+            -   name: Publish release APKs to Github Releases
                 uses: softprops/action-gh-release@v2
                 if: startsWith(github.ref, 'refs/tags/')
                 with:
-                    files: app/build/outputs/apk/release/*release*.apk
+                    files: |
+                        app/build/outputs/apk/release/*release*.apk
+                        app/build/outputs/apk/releaseHttp/*releaseHttp*.apk
+    
 
     distribute:
         runs-on: ubuntu-latest

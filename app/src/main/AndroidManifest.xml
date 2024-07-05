@@ -27,8 +27,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PhotoPixels"
+        android:usesCleartextTraffic="${ALLOW_HTTP_TRAFFIC}"
         tools:targetApi="31"
-        android:networkSecurityConfig="@xml/network_config"> <!-- This is for Charles Proxy, remove later -->
+        android:networkSecurityConfig="${NETWORK_SECURITY_CONFIG}">
         <activity
             android:name=".MainActivity"
             android:exported="true"
