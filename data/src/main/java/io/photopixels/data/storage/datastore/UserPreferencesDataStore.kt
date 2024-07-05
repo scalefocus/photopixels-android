@@ -35,6 +35,7 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun getServerAddress(): ServerAddress? {
         val encryptedServerAddressJson = context.dataStore.data.first()[SERVER_ADDRESS_KEY] ?: return null
         return Gson().fromJson(cipherUtil.decrypt(encryptedServerAddressJson), ServerAddress::class.java)
+        // TODO: Gson can be replaced with kotlin-serialization
     }
 
     suspend fun setServerVersion(serverVersion: String) {

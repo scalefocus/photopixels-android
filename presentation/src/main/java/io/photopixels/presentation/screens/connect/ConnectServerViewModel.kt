@@ -4,11 +4,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.base.Response
+import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.usecases.GetServerInfoUseCase
 import io.photopixels.domain.usecases.GetServerStatusUseCase
 import io.photopixels.domain.usecases.SetServerInfoUseCase
 import io.photopixels.domain.usecases.ValidateFieldUseCase
-import io.photopixels.domain.utils.Utils
 import io.photopixels.domain.validation.ValidationRules
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
@@ -55,7 +55,7 @@ class ConnectServerViewModel @Inject constructor(
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
             val serverAddressValue = state.value.serverAddress.value
-            val serverAddressData = Utils.parseServerAddress(state.value.serverAddress.value)
+            val serverAddressData = ServerAddress.fromString(state.value.serverAddress.value)
 
             getServerStatusUseCase.invoke(serverAddressData).collect { result ->
                 if (result is Response.Success) {

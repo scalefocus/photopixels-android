@@ -37,7 +37,7 @@ suspend fun <T> handleThrowableResponse(throwable: Throwable): Response<T> = whe
     }
 
     is IOException -> {
-        if (throwable.message?.contains(CLEAR_HTTP_TRAFFIC_ERROR, false) == true) {
+        if (throwable.message?.contains(CLEAR_TEXT_TRAFFIC_ERROR, false) == true) {
             Response.Failure(PhotoPixelError.HttpTrafficNotAllowed)
         } else {
             Response.Failure(PhotoPixelError.NoInternetConnection)
@@ -55,6 +55,10 @@ suspend fun <T> handleThrowableResponse(throwable: Throwable): Response<T> = whe
 
 // TODO: Add more BE errors here
 private suspend fun translateServerError(httpResponse: HttpResponse): PhotoPixelError {
+    if (httpResponse.status.value == HttpStatusCode.NotFound.value) {
+        return PhotoPixelError.GenericError
+    }
+
     val bodyText = httpResponse.bodyAsText()
     return when (httpResponse.status.value) {
         HttpStatusCode.Conflict.value, CUSTOM_BE_ERROR -> { // Duplicate photo error while uploading
@@ -79,4 +83,4 @@ private suspend fun translateServerError(httpResponse: HttpResponse): PhotoPixel
 
 private const val CUSTOM_BE_ERROR = -1
 private const val HTTP_ERROR_TAG = "network_error"
-private const val CLEAR_HTTP_TRAFFIC_ERROR = "Cleartext HTTP traffic"
+private const val CLEAR_TEXT_TRAFFIC_ERROR = "Cleartext HTTP traffic"
