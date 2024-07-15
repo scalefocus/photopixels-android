@@ -29,6 +29,7 @@ import io.photopixels.data.network.responses.ServerStatusResponse
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 import javax.inject.Inject
@@ -37,14 +38,15 @@ class BackendApiImpl @Inject constructor(
     private val httpClient: HttpClient
 ) : BackendApi {
 
-    override suspend fun getServerStatus(serverAddress: String): Response<ServerStatus> =
+    override suspend fun getServerStatus(serverAddress: ServerAddress): Response<ServerStatus> =
         request {
             val result = httpClient
                 .get {
                     url {
-                        host = serverAddress
+                        host = serverAddress.host
                         encodedPathSegments = listOf("api", "status")
-                        protocol = URLProtocol.HTTPS
+                        protocol = URLProtocol.createOrDefault(serverAddress.protocol)
+                        port = serverAddress.port
                     }
                 }.body<ServerStatusResponse>()
 

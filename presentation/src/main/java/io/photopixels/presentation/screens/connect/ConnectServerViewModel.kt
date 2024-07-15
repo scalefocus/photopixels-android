@@ -2,7 +2,9 @@ package io.photopixels.presentation.screens.connect
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.base.Response
+import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.usecases.GetServerInfoUseCase
 import io.photopixels.domain.usecases.GetServerStatusUseCase
 import io.photopixels.domain.usecases.SetServerInfoUseCase
@@ -53,7 +55,9 @@ class ConnectServerViewModel @Inject constructor(
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
             val serverAddressValue = state.value.serverAddress.value
-            getServerStatusUseCase.invoke(serverAddressValue).collect { result ->
+            val serverAddressData = ServerAddress.fromString(state.value.serverAddress.value)
+
+            getServerStatusUseCase.invoke(serverAddressData).collect { result ->
                 if (result is Response.Success) {
                     updateState {
                         copy(
@@ -62,13 +66,18 @@ class ConnectServerViewModel @Inject constructor(
                         )
                     }
                     submitEvent(ConnectServerEvents.NavigateToLoginScreen)
-                    setServerInfoUseCase.setServerAddress(serverAddressValue)
+                    setServerInfoUseCase.setServerAddress(serverAddressData)
                     setServerInfoUseCase.setServerVersion(result.result.serverVersion)
                 } else if (result is Response.Failure) {
+                    var errorMsgId = R.string.connect_error_msg
+                    if (result.error is PhotoPixelError.HttpTrafficNotAllowed) {
+                        errorMsgId = R.string.connect_server_http_error
+                    }
+
                     updateState {
                         copy(
                             isLoading = false,
-                            errorMsgId = R.string.connect_error_msg,
+                            errorMsgId = errorMsgId,
                             serverAddress = serverAddress.copy(value = serverAddressValue, errorMsgId = null)
                         )
                     }
@@ -81,7 +90,7 @@ class ConnectServerViewModel @Inject constructor(
         viewModelScope.launch {
             val savedServerAddress = getServerInfoUseCase.getServerAddress()
             savedServerAddress?.let {
-                updateState { copy(serverAddress = serverAddress.copy(value = it)) }
+                updateState { copy(serverAddress = serverAddress.copy(value = it.toString())) }
             }
         }
     }

@@ -4,6 +4,7 @@ import io.photopixels.data.network.responses.LoginResponse
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 
@@ -12,7 +13,7 @@ interface BackendApi {
         private const val DEFAULT_REVISION_NUMBER = 0
     }
 
-    suspend fun getServerStatus(serverAddress: String): Response<ServerStatus>
+    suspend fun getServerStatus(serverAddress: ServerAddress): Response<ServerStatus>
 
     suspend fun loginUser(email: String, password: String): Response<LoginResponse>
 

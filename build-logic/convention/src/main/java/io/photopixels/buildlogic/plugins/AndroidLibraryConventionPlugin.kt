@@ -7,6 +7,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.get
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -39,6 +40,10 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                         isMinifyEnabled = false
                         isShrinkResources = false
                         enableUnitTestCoverage = false
+                    }
+
+                    create("releaseHttp") {
+                        initWith(buildTypes["release"])
                     }
                 }
             }

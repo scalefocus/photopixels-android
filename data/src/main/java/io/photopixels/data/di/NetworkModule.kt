@@ -67,8 +67,10 @@ class NetworkModule {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 url {
                     runBlocking {
-                        host = userPreferencesDataStore.getServerAddress()!!
-                        protocol = URLProtocol.HTTPS
+                        userPreferencesDataStore.getServerAddress()?.let {
+                            host = it.host
+                            protocol = URLProtocol.createOrDefault(it.protocol)
+                        }
                     }
                 }
             }
@@ -178,8 +180,9 @@ class NetworkModule {
                 val storedServerAddress = userDataStore.getServerAddress()
                 storedServerAddress?.let { serverAddress ->
                     url {
-                        host = serverAddress
-                        protocol = URLProtocol.HTTPS
+                        host = serverAddress.host
+                        protocol = URLProtocol.createOrDefault(serverAddress.protocol)
+                        port = serverAddress.port
                     }
                 }
             }
@@ -198,21 +201,20 @@ class NetworkModule {
         refreshToken: String,
         @Named("refreshTokenHttpClient") httpClient: HttpClient,
         authDataStore: AuthDataStore,
-    ): Pair<String, String>? {
-        return try {
-            val response = httpClient.post {
+    ): Pair<String, String>? = try {
+        val response = httpClient
+            .post {
                 url("/api/user/refresh")
                 setBody(RefreshTokenRequest(refreshToken = refreshToken))
             }.body<LoginResponse>()
-            val newAuthToken = response.accessToken
-            val newRefreshToken = response.refreshToken
+        val newAuthToken = response.accessToken
+        val newRefreshToken = response.refreshToken
 
-            Log.e("TAG", "Refresh token call succesfull!!!!")
-            authDataStore.storeAuthHeaders(newAuthToken, newRefreshToken)
-            Pair(newAuthToken, newRefreshToken)
-        } catch (exception: ResponseException) {
-            Log.e("TAG", "Error Refresh token call:$exception!!!!")
-            null
-        }
+        Log.e("TAG", "Refresh token call succesfull!!!!")
+        authDataStore.storeAuthHeaders(newAuthToken, newRefreshToken)
+        Pair(newAuthToken, newRefreshToken)
+    } catch (exception: ResponseException) {
+        Log.e("TAG", "Error Refresh token call:$exception!!!!")
+        null
     }
 }
