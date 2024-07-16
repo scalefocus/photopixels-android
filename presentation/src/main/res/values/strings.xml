@@ -42,6 +42,7 @@
     <string name="button_submit">Submit</string>
     <string name="button_ok">OK</string>
     <string name="button_cancel">Cancel</string>
+    <string name="button_delete">Delete</string>
     <string name="home_screen_title">Home</string>
     <string name="sync_screen_title">Sync</string>
     <string name="settings_screen_title">Settings</string>
@@ -71,6 +72,7 @@
     <string name="settings_screen_google_no_acc_error">No Google account found on the device. Please login with your Google account first.</string>
 
     <!-- Forgot password Screen -->
+
     <string name="forgot_pass_title">Forgot Password?</string>
     <string name="forgot_pass_screen_hint">Please enter your email address</string>
     <string name="forgot_pass_code_msg">Please enter the verification code that was sent to your email address</string>
@@ -82,5 +84,11 @@
     <string name="forgot_pass_success_msg">Your password has been successfully reset.</string>
     <string name="forgot_pass_error_incorrect_code">Verification code is incorrect. Please check the code from email carefully.</string>
     <string name="reset_password_title">Reset Password</string>
+
+    <!-- Photos Screen -->
+    <string name="photos_preview_delete_title">Delete Photo</string>
+    <string name="photos_preview_delete_msg">Are you sure you want to delete this photo?</string>
+    <string name="photos_delete_success">Photo deleted successfully</string>
+    <string name="photos_delete_error">Error while deleting photo. Please try again later.</string>
 
 </resources>

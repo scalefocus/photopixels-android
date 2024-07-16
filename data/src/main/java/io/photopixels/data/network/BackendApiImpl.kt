@@ -5,6 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.plugin
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -172,5 +173,14 @@ class BackendApiImpl @Inject constructor(
                     url(photoUrl)
                 }.bodyAsChannel()
             Response.Success(result.toByteArray())
+        }
+
+    override suspend fun deletePhoto(photoServerId: String): Response<Unit> =
+        request {
+            httpClient
+                .delete {
+                    url("/api/object/$photoServerId")
+                }.body<Unit>()
+            Response.Success(Unit)
         }
 }
