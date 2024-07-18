@@ -7,5 +7,6 @@ data class PhotosPreviewScreenState(
     val photoToLoadFirstIndex: Int = 0,
     val photosGlideUrls: List<GlideUrl> = emptyList(),
     val isLoading: Boolean = false,
-    val isDeleteDialogVisible: Boolean = false
+    val isDeleteDialogVisible: Boolean = false,
+    val isThereDeletedPhoto: Boolean = false
 )

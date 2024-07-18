@@ -82,7 +82,7 @@ class PhotosPreviewViewModel @Inject constructor(
                 removeAt(imageIndex)
             }
             photosIds.removeAt(imageIndex)
-            updateState { copy(photosGlideUrls = newImages) }
+            updateState { copy(photosGlideUrls = newImages, isThereDeletedPhoto = true) }
         } else {
             submitEvent(PhotosPreviewEvents.OnPhotoDeleteFail)
         }
