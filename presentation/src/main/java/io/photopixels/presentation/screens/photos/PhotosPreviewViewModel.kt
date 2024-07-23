@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.photopixels.domain.base.Response
+import io.photopixels.domain.usecases.DeletePhotoUseCase
 import io.photopixels.domain.usecases.GetAuthHeaderUseCase
 import io.photopixels.domain.usecases.GetPhotosIdsFromMemory
 import io.photopixels.domain.usecases.GetServerInfoUseCase
@@ -18,8 +20,10 @@ class PhotosPreviewViewModel @Inject constructor(
     private val getPhotosIdsInMemoryUseCase: GetPhotosIdsFromMemory,
     private val getServerInfoUseCase: GetServerInfoUseCase,
     private val getAuthHeaderUseCase: GetAuthHeaderUseCase,
+    private val deletePhotoUseCase: DeletePhotoUseCase,
     private val savedState: SavedStateHandle
-) : BaseViewModel<PhotosPreviewScreenState, PhotosPreviewActions, Unit>(PhotosPreviewScreenState()) {
+) : BaseViewModel<PhotosPreviewScreenState, PhotosPreviewActions, PhotosPreviewEvents>(PhotosPreviewScreenState()) {
+    private var photosIds = mutableListOf<String>()
 
     init {
         viewModelScope.launch {
@@ -28,7 +32,19 @@ class PhotosPreviewViewModel @Inject constructor(
     }
 
     override suspend fun handleActions(action: PhotosPreviewActions) {
-        super.handleActions(action)
+        when (action) {
+            PhotosPreviewActions.OnDeleteIconClicked -> {
+                updateState { copy(isDeleteDialogVisible = true) }
+            }
+            is PhotosPreviewActions.OnDeletePhotoClick -> {
+                updateState { copy(isDeleteDialogVisible = false) }
+                deletePhoto(action.photoIndex)
+            }
+
+            PhotosPreviewActions.OnDeleteDialogCancelClick -> {
+                updateState { copy(isDeleteDialogVisible = false) }
+            }
+        }
     }
 
     private fun preparePhotoUrls(clickedThumbnailServerId: String) {
@@ -38,7 +54,7 @@ class PhotosPreviewViewModel @Inject constructor(
             serverAddress?.let {
                 val authHeader = getAuthHeaderUseCase.invoke()
                 authHeader?.let {
-                    val photosIds = getPhotosIdsInMemoryUseCase.invoke()
+                    photosIds = getPhotosIdsInMemoryUseCase.invoke().toMutableList()
                     val photosGlideUrls = photosIds.map { buildGlideUrl(it, serverAddress.toString(), authHeader) }
                     val photoToLoadFirstIndex = photosIds.indexOf(clickedThumbnailServerId)
                     updateState {
@@ -51,6 +67,26 @@ class PhotosPreviewViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun deletePhoto(imageIndex: Int) {
+        updateState { copy(isLoading = true) }
+        val photoServerId = photosIds[imageIndex]
+        val result = deletePhotoUseCase.invoke(photoServerId)
+
+        if (result is Response.Success) {
+            submitEvent(PhotosPreviewEvents.OnPhotoDeletedSuccessfully)
+
+            // Update UI after photo deletion
+            val newImages: List<GlideUrl> = state.value.photosGlideUrls.toMutableList().apply {
+                removeAt(imageIndex)
+            }
+            photosIds.removeAt(imageIndex)
+            updateState { copy(photosGlideUrls = newImages, isThereDeletedPhoto = true) }
+        } else {
+            submitEvent(PhotosPreviewEvents.OnPhotoDeleteFail)
+        }
+        updateState { copy(isLoading = false) }
     }
 
     private fun buildGlideUrl(photoId: String, serverAddress: String, authHeader: String): GlideUrl = GlideUrl(

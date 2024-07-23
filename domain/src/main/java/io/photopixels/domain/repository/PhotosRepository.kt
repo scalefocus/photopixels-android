@@ -43,4 +43,6 @@ interface PhotosRepository {
     suspend fun getThumbnailsFromDbCount(): Int
 
     suspend fun clearThumbnailsTable()
+
+    suspend fun deletePhoto(photoServerId: String): Response<Unit>
 }
