@@ -16,6 +16,7 @@ import io.photopixels.domain.repository.PhotosRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 class PhotosRepositoryImpl @Inject constructor(
     private val photosDao: PhotosDao,
     private val thumbnailsDao: ThumbnailsDao,
@@ -31,13 +32,9 @@ class PhotosRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override fun getDevicePhotos(context: Context): List<PhotoData> {
-        return MediaHelper.scanPhotosAndGenerateHashes(context)
-    }
+    override fun getDevicePhotos(context: Context): List<PhotoData> = MediaHelper.scanPhotosAndGenerateHashes(context)
 
-    override fun getPhotosDataForUploadFromDB(): List<PhotoData> {
-        return photosDao.getPhotosForUpload().map { it.toDomain() }
-    }
+    override fun getPhotosDataForUploadFromDB(): List<PhotoData> = photosDao.getPhotosForUpload().map { it.toDomain() }
 
     override suspend fun removePhotoDataFromDB(photoId: Int) {
         photosDao.removePhotoData(photoId)
@@ -47,9 +44,10 @@ class PhotosRepositoryImpl @Inject constructor(
         photosDao.updatePhotoData(photoData.toEntity())
     }
 
-    override suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<PhotoUiData>> {
-        return backendApi.getThumbnailsByIds(serverItemHashIds)
-    }
+    override suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<PhotoUiData>> = backendApi
+        .getThumbnailsByIds(
+            serverItemHashIds
+        )
 
     override suspend fun uploadPhoto(
         fileBytes: ByteArray,
@@ -57,17 +55,13 @@ class PhotosRepositoryImpl @Inject constructor(
         mimeType: String,
         androidCloudId: String,
         objectHash: String
-    ): Response<PhotoUploadData> {
-        return backendApi.uploadPhoto(fileBytes, fileName, mimeType, androidCloudId, objectHash)
-    }
+    ): Response<PhotoUploadData> = backendApi.uploadPhoto(fileBytes, fileName, mimeType, androidCloudId, objectHash)
 
     override suspend fun setAllPreviewPhotosIdsInMemory(photosIds: List<String>) {
         memoryStorage.addPhotosServerIdsList(photosIds)
     }
 
-    override suspend fun getAllPreviewPhotosIdsFromMemory(): List<String> {
-        return memoryStorage.photosIdsList
-    }
+    override suspend fun getAllPreviewPhotosIdsFromMemory(): List<String> = memoryStorage.photosIdsList
 
     override suspend fun clearPhotosTable() {
         photosDao.clearPhotosTable()
@@ -77,15 +71,15 @@ class PhotosRepositoryImpl @Inject constructor(
         thumbnailsDao.insertThumbnailPhotos(thumbnailsList.map { it.toEntity() })
     }
 
-    override suspend fun getThumbnailsFromDb(): List<PhotoUiData> {
-        return thumbnailsDao.getAllThumbnails().map { it.toDomain() }
+    override suspend fun getThumbnailsFromDb(): List<PhotoUiData> = thumbnailsDao.getAllThumbnails().map {
+        it.toDomain()
     }
 
-    override suspend fun getThumbnailsFromDbCount(): Int {
-        return thumbnailsDao.getThumbnailsCount()
-    }
+    override suspend fun getThumbnailsFromDbCount(): Int = thumbnailsDao.getThumbnailsCount()
 
     override suspend fun clearThumbnailsTable() {
         thumbnailsDao.clearTable()
     }
+
+    override suspend fun deletePhoto(photoServerId: String): Response<Unit> = backendApi.deletePhoto(photoServerId)
 }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.photopixels.presentation.base.composeviews.ObserverLifecycleEvents
 import io.photopixels.presentation.permissions.PermissionsHelper
 import kotlinx.coroutines.flow.collectLatest
 
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun HomeScreen(
     onNavigateToSyncScreen: () -> Unit,
     onNavigateToPreviewPhotosScreen: (String) -> Unit,
+    shouldRefresh: Boolean,
     viewModel: HomeScreenViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
@@ -26,6 +28,12 @@ fun HomeScreen(
             submitAction(viewModel = viewModel, HomeScreenActions.OnPermissionResult(permissionsMap))
         }
     )
+
+    ObserverLifecycleEvents(onStart = {
+        if (shouldRefresh) {
+            submitAction(viewModel, HomeScreenActions.LoadStartupData)
+        }
+    })
 
     LaunchedEffect(Unit) {
         viewModel.events.collectLatest {

@@ -40,4 +40,6 @@ interface BackendApi {
     suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit>
 
     suspend fun downloadPhoto(photoUrl: String): Response<ByteArray>
+
+    suspend fun deletePhoto(photoServerId: String): Response<Unit>
 }
