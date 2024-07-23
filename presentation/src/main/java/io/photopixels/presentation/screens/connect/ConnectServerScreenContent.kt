@@ -35,7 +35,7 @@ fun ConnectServerContent(state: ConnectServerState, onSubmitAction: (ConnectServ
         ShowAlertDialog(
             title = stringResource(id = R.string.connect_server_error_title),
             negativeButtonText = null,
-            description = stringResource(id = R.string.connect_error_msg),
+            description = stringResource(id = it),
             onPositiveClick = { onSubmitAction(ConnectServerActions.CloseErrorDialog) }
         )
     }

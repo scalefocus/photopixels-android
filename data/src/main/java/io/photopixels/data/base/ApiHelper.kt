@@ -24,34 +24,41 @@ import java.io.IOException
  *             Resource.Success(true)
  *         }
  */
-suspend fun <T> request(block: suspend () -> Response<T>): Response<T> {
-    return try {
-        block.invoke()
-    } catch (t: Throwable) {
-        Timber.tag(HTTP_ERROR_TAG).e(t)
-        handleThrowableResponse(t)
-    }
+suspend fun <T> request(block: suspend () -> Response<T>): Response<T> = try {
+    block.invoke()
+} catch (t: Throwable) {
+    Timber.tag(HTTP_ERROR_TAG).e(t)
+    handleThrowableResponse(t)
 }
 
-suspend fun <T> handleThrowableResponse(throwable: Throwable): Response<T> {
-    return when (throwable) {
-        is ResponseException -> throwable.response.body<HttpResponse>().let {
-            Response.Failure(translateServerError(it))
-        }
+suspend fun <T> handleThrowableResponse(throwable: Throwable): Response<T> = when (throwable) {
+    is ResponseException -> throwable.response.body<HttpResponse>().let {
+        Response.Failure(translateServerError(it))
+    }
 
-        is IOException,
-        is InterruptedException -> {
-            // Irrelevant network problem or API that throws on cancellation or
-            // blocking code was interrupted - do not record an exception
+    is IOException -> {
+        if (throwable.message?.contains(CLEAR_TEXT_TRAFFIC_ERROR, false) == true) {
+            Response.Failure(PhotoPixelError.HttpTrafficNotAllowed)
+        } else {
             Response.Failure(PhotoPixelError.NoInternetConnection)
         }
-
-        else -> Response.Failure(PhotoPixelError.GenericError)
     }
+
+    is InterruptedException -> {
+        // Irrelevant network problem or API that throws on cancellation or
+        // blocking code was interrupted - do not record an exception
+        Response.Failure(PhotoPixelError.NoInternetConnection)
+    }
+
+    else -> Response.Failure(PhotoPixelError.GenericError)
 }
 
 // TODO: Add more BE errors here
 private suspend fun translateServerError(httpResponse: HttpResponse): PhotoPixelError {
+    if (httpResponse.status.value == HttpStatusCode.NotFound.value) {
+        return PhotoPixelError.GenericError
+    }
+
     val bodyText = httpResponse.bodyAsText()
     return when (httpResponse.status.value) {
         HttpStatusCode.Conflict.value, CUSTOM_BE_ERROR -> { // Duplicate photo error while uploading
@@ -76,3 +83,4 @@ private suspend fun translateServerError(httpResponse: HttpResponse): PhotoPixel
 
 private const val CUSTOM_BE_ERROR = -1
 private const val HTTP_ERROR_TAG = "network_error"
+private const val CLEAR_TEXT_TRAFFIC_ERROR = "Cleartext HTTP traffic"

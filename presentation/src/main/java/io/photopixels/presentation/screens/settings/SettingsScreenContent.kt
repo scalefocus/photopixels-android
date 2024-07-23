@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.photopixels.domain.model.AppInfoData
+import io.photopixels.domain.model.ServerAddress
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.SFButton
 import io.photopixels.presentation.base.composeviews.SFSwitch
@@ -68,7 +69,7 @@ fun SettingsScreenContent(
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            ServerAddress(serverAddress = appInfoData.serverAddress)
+            ServerAddressColumn(serverAddress = appInfoData.serverAddress.toString())
 
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -145,7 +146,7 @@ private fun ActiveUser(user: String) {
 }
 
 @Composable
-private fun ServerAddress(serverAddress: String) {
+private fun ServerAddressColumn(serverAddress: String) {
     Column {
         Text(text = stringResource(R.string.settings_screen_server_address), style = AppTypography.BigBlue)
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -214,10 +215,10 @@ private fun SettingsScreenContentPreview() {
         SettingsScreenContent(
             SettingsScreenState(
                 appInfoData = AppInfoData(
-                    "google.com",
-                    "server-version",
-                    "1.0",
-                    "john@gmail.com"
+                    serverAddress = ServerAddress(host = "my.domain.com"),
+                    serverVersion = "0.11.1",
+                    appVersion = "1.0.0",
+                    loggedUser = "john@gmail.com"
                 )
             ),
             onSubmitAction = {}

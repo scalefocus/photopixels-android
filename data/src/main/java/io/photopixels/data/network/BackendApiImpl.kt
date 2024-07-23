@@ -5,6 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.plugin
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -29,6 +30,7 @@ import io.photopixels.data.network.responses.ServerStatusResponse
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 import javax.inject.Inject
@@ -37,14 +39,15 @@ class BackendApiImpl @Inject constructor(
     private val httpClient: HttpClient
 ) : BackendApi {
 
-    override suspend fun getServerStatus(serverAddress: String): Response<ServerStatus> =
+    override suspend fun getServerStatus(serverAddress: ServerAddress): Response<ServerStatus> =
         request {
             val result = httpClient
                 .get {
                     url {
-                        host = serverAddress
+                        host = serverAddress.host
                         encodedPathSegments = listOf("api", "status")
-                        protocol = URLProtocol.HTTPS
+                        protocol = URLProtocol.createOrDefault(serverAddress.protocol)
+                        port = serverAddress.port
                     }
                 }.body<ServerStatusResponse>()
 
@@ -170,5 +173,14 @@ class BackendApiImpl @Inject constructor(
                     url(photoUrl)
                 }.bodyAsChannel()
             Response.Success(result.toByteArray())
+        }
+
+    override suspend fun deletePhoto(photoServerId: String): Response<Unit> =
+        request {
+            httpClient
+                .delete {
+                    url("/api/object/$photoServerId")
+                }.body<Unit>()
+            Response.Success(Unit)
         }
 }

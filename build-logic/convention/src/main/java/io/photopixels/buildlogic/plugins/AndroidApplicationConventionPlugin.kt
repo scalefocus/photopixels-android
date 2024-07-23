@@ -9,6 +9,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.get
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -53,6 +54,22 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         isMinifyEnabled = true
                         isShrinkResources = true
                         enableUnitTestCoverage = false
+                        manifestPlaceholders["ALLOW_HTTP_TRAFFIC"] = false
+                        manifestPlaceholders["NETWORK_SECURITY_CONFIG"] = "@xml/network_config_https"
+                    }
+
+                    debug {
+                        manifestPlaceholders["ALLOW_HTTP_TRAFFIC"] = true
+                        manifestPlaceholders["NETWORK_SECURITY_CONFIG"] = "@xml/network_config_http"
+                    }
+
+                    create("releaseHttp") {
+                        initWith(buildTypes["release"])
+
+                        manifestPlaceholders["ALLOW_HTTP_TRAFFIC"] = true
+                        manifestPlaceholders["NETWORK_SECURITY_CONFIG"] = "@xml/network_config_http"
+
+                        proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
                     }
                 }
 

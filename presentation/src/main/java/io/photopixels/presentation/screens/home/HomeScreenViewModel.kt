@@ -45,14 +45,7 @@ class HomeScreenViewModel @Inject constructor(
     private val getServerThumbnailsProgressState = MutableStateFlow(NOT_STARTED)
 
     init {
-        syncLocalPhotos()
-        syncGooglePhotos()
-        // TODO Thumbnails can be stored locally in DB, and if latest revision from server is equal to local revision
-        // equal -> load thumbnails from device
-        // not equal -> load thumbnails from server and then store it in device
-
-        getServerThumbnailsProgressState.value = true
-        getServerRevisionAndThumbnails()
+        loadStartupData()
     }
 
     override suspend fun handleActions(action: HomeScreenActions) {
@@ -74,6 +67,10 @@ class HomeScreenViewModel @Inject constructor(
             is HomeScreenActions.OnThumbnailClick -> {
                 savePhotosIdsInMemoryUseCase.invoke(state.value.photoThumbnails.map { it.id })
                 submitEvent(HomeScreenEvents.NavigateToPreviewPhotosScreen(action.serverItemId))
+            }
+
+            HomeScreenActions.LoadStartupData -> {
+                loadStartupData()
             }
         }
     }
@@ -266,6 +263,17 @@ class HomeScreenViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun loadStartupData() {
+        syncLocalPhotos()
+        syncGooglePhotos()
+        // TODO Thumbnails can be stored locally in DB, and if latest revision from server is equal to local revision
+        // equal -> load thumbnails from device
+        // not equal -> load thumbnails from server and then store it in device
+
+        getServerThumbnailsProgressState.value = true
+        getServerRevisionAndThumbnails()
     }
 
     companion object {

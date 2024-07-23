@@ -1,6 +1,7 @@
 package io.photopixels.domain.usecases
 
 import io.photopixels.domain.model.AppInfoData
+import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.repository.AuthRepository
 import io.photopixels.domain.repository.ServerRepository
 import javax.inject.Inject
@@ -11,7 +12,7 @@ class GetAppInfoData @Inject constructor(
 ) {
 
     suspend fun invoke(appVersion: String): AppInfoData {
-        val serverAddress = serverRepository.getServerAddress() ?: ""
+        val serverAddress = serverRepository.getServerAddress() ?: ServerAddress()
         val loggedUser = authRepository.getUsername() ?: ""
         val serverVersion = serverRepository.getServerVersion()
 

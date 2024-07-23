@@ -22,8 +22,10 @@ internal fun NavGraphBuilder.homeScreenNavGraph(navHostController: NavHostContro
 }
 
 internal fun NavGraphBuilder.homeScreen(navHostController: NavHostController) {
-    composable(route = HomeScreens.Home.route) {
+    composable(route = HomeScreens.Home.route) { navBackResult ->
+        val shouldRefresh = navBackResult.savedStateHandle.get<Boolean>("shouldRefresh") ?: false
         HomeScreen(
+            shouldRefresh = shouldRefresh,
             onNavigateToSyncScreen = {
                 // TODO: implement screens
             },
@@ -48,7 +50,12 @@ internal fun NavGraphBuilder.photosPreviewScreen(
             }
         )
     ) {
-        PhotosPreviewScreen()
+        PhotosPreviewScreen(onBackPress = { shouldRefresh ->
+            navHostController.popBackStack()
+            navHostController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.set("shouldRefresh", shouldRefresh)
+        })
     }
 }
 

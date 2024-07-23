@@ -46,6 +46,12 @@ class AndroidApplicationSigningConventionPlugin : Plugin<Project> {
                             signingConfig = signingConfigs.getByName("release")
                         }
                     }
+
+                    getByName("releaseHttp") {
+                        if (validSigningConfig) {
+                            signingConfig = signingConfigs.getByName("release")
+                        }
+                    }
                 }
             }
         }
