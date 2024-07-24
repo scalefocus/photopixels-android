@@ -148,6 +148,12 @@ jobs:
                     echo "keyAlias=$RELEASE_KEY_ALIAS" >> keystore.properties
                     echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties
 
+            -   name: Write Project secrets to properties file
+                run: |
+                    echo "GOOGLE_OAUTH_ANDROID_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_ANDROID_CLIENT_ID }}" >> photopixels.properties
+                    echo "GOOGLE_OAUTH_WEB_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_ID }}" >> photopixels.properties
+                    echo "GOOGLE_OAUTH_WEB_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_SECRET }}" >> photopixels.properties
+
             -   name: Generate build number
                 id: generate_build_number
                 shell: bash
@@ -203,7 +209,7 @@ jobs:
         runs-on: ubuntu-latest
         environment: scalefocus-production
         needs: assemble-signed-release
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         steps:
             -   name: Checkout project code
                 uses: actions/checkout@v4
