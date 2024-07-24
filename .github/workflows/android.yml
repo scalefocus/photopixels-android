@@ -178,10 +178,16 @@ jobs:
                 uses: actions/upload-artifact@v4
                 with:
                     name: photopixels-release-apk
-                    path: |
-                        app/build/outputs/apk/release/*release*.apk
-                        app/build/outputs/apk/releaseHttp/*releaseHttp*.apk
+                    path: app/build/outputs/apk/release/*release*.apk
                     if-no-files-found: error # error, warn, ignore
+                    overwrite: false
+
+            -   name: Upload releaseHttp APK to artifacts
+                uses: actions/upload-artifact@v4
+                with:
+                    name: photopixels-releaseHttp-apk
+                    path: app/build/outputs/apk/releaseHttp/*releaseHttp*.apk
+                    if-no-files-found: error  # Adjust as needed (warn, ignore)
                     overwrite: false
 
             -   name: Publish release APKs to Github Releases
@@ -216,6 +222,8 @@ jobs:
                 with:
                     name: photopixels-release-apk
                     path: app/build/outputs/apk/release/
+
+            #Note: Add Download and Publish tasks if needed to distribute releaseHttp.apk to Firebase
 
             -   name: Publish via Firebase App Distribution
                 shell: bash
