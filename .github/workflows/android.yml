@@ -158,8 +158,6 @@ jobs:
                     echo "GOOGLE_OAUTH_ANDROID_CLIENT_ID=$GOOGLE_OAUTH_ANDROID_CLIENT_ID" >> photopixels.properties
                     echo "GOOGLE_OAUTH_WEB_CLIENT_ID=$GOOGLE_OAUTH_WEB_CLIENT_ID" >> photopixels.properties
                     echo "GOOGLE_OAUTH_WEB_CLIENT_SECRET=$GOOGLE_OAUTH_WEB_CLIENT_SECRET" >> photopixels.properties
-                    #TODO: Remove cat command later
-                    cat photopixels.properties 
 
             -   name: Generate build number
                 id: generate_build_number
