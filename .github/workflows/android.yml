@@ -149,10 +149,15 @@ jobs:
                     echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties
 
             -   name: Write Project secrets to properties file
+                env:
+                    GOOGLE_OAUTH_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_ANDROID_CLIENT_ID }}
+                    GOOGLE_OAUTH_WEB_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_ID }}
+                    GOOGLE_OAUTH_WEB_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_SECRET }}
+
                 run: |
-                    echo "GOOGLE_OAUTH_ANDROID_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_ANDROID_CLIENT_ID }}" >> photopixels.properties
-                    echo "GOOGLE_OAUTH_WEB_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_ID }}" >> photopixels.properties
-                    echo "GOOGLE_OAUTH_WEB_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_SECRET }}" >> photopixels.properties
+                    echo "GOOGLE_OAUTH_ANDROID_CLIENT_ID=$GOOGLE_OAUTH_ANDROID_CLIENT_ID" >> photopixels.properties
+                    echo "GOOGLE_OAUTH_WEB_CLIENT_ID=$GOOGLE_OAUTH_WEB_CLIENT_ID" >> photopixels.properties
+                    echo "GOOGLE_OAUTH_WEB_CLIENT_SECRET=$GOOGLE_OAUTH_WEB_CLIENT_SECRET" >> photopixels.properties
 
             -   name: Generate build number
                 id: generate_build_number
