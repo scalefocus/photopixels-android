@@ -130,12 +130,15 @@ jobs:
                     dist_artifact_type: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE }}
                     dist_variant: ${{ vars.PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS }}
 
-            -   name: Prepare release signing configuration
+            -   name: Prepare release signing and project secrets configurations
                 env:
                     ENCODED_STRING: ${{ secrets.KEYSTORE_BASE_64 }}
                     RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
                     RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
                     RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+                    GOOGLE_OAUTH_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_ANDROID_CLIENT_ID }}
+                    GOOGLE_OAUTH_WEB_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_ID }}
+                    GOOGLE_OAUTH_WEB_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_SECRET }}
 
                 run: |
                     # Base64 decoding of keystore kept in temporary environment variable
@@ -147,14 +150,8 @@ jobs:
                     echo "keystorePassword=$RELEASE_KEYSTORE_PASSWORD" >> keystore.properties
                     echo "keyAlias=$RELEASE_KEY_ALIAS" >> keystore.properties
                     echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties
-
-            -   name: Write Project secrets to properties file
-                env:
-                    GOOGLE_OAUTH_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_ANDROID_CLIENT_ID }}
-                    GOOGLE_OAUTH_WEB_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_ID }}
-                    GOOGLE_OAUTH_WEB_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_SECRET }}
-
-                run: |
+                    
+                    # Create property file with Google client IDs
                     echo "GOOGLE_OAUTH_ANDROID_CLIENT_ID=$GOOGLE_OAUTH_ANDROID_CLIENT_ID" >> photopixels.properties
                     echo "GOOGLE_OAUTH_WEB_CLIENT_ID=$GOOGLE_OAUTH_WEB_CLIENT_ID" >> photopixels.properties
                     echo "GOOGLE_OAUTH_WEB_CLIENT_SECRET=$GOOGLE_OAUTH_WEB_CLIENT_SECRET" >> photopixels.properties
