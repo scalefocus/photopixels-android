@@ -21,6 +21,8 @@ import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.login.GoogleAuthorization
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -218,9 +220,15 @@ class HomeScreenViewModel @Inject constructor(
             val isGooglePhotosSyncEnabled = getUserSettingsUseCase.invoke()?.syncWithGoogle
 
             if (isGooglePhotosSyncEnabled == true) {
-                Timber.tag("TAG").e("HomeScreenViewModel() Start Google Photos Sync")
-                val exception = getGooglePhotosUseCase.invoke()
+                // TODO: Fetch google photos should be part from GooglePhotosWorker or a new one should be created.
+                // When there are too many photos in Google, they first needs to be downloaded via
+                // googlePhotos library(in app-time) and then passed to the GooglePhotosWorker which can work
+                // at background, even if the app is closed
+                // During that process there is a blind spot and user is not informed.
+                // When GooglePhotosWorker is started a notification is created,
+                // but before that there are no indicators that Google photos sync is active(in-progress)
 
+                val exception = async(Dispatchers.IO) { getGooglePhotosUseCase.invoke() }.await()
                 if (exception != null) {
                     handleGoogleError(exception)
                 } else {
