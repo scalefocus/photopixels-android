@@ -79,12 +79,12 @@ class GooglePhotosManager @Inject constructor(
 
         return try {
             val mediaItems = client.listMediaItems().iterateAll().toList()
-            mediaItems.forEach { mediaItem ->
-                // Access media item properties (id, baseUrl, etc.) as needed
-                // val id = mediaItem.id
-                // val baseUrl = mediaItem.baseUrl
-                // Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
-            }
+            // mediaItems.forEach { mediaItem ->
+            // Access media item properties (id, baseUrl, etc.) as needed
+            // val id = mediaItem.id
+            // val baseUrl = mediaItem.baseUrl
+            // Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
+            // }
 
             Timber.tag(GOOGLE_PHOTOS_TAG).d("Google photos fetched successfully, saving photos metadata to DB")
             savePhotosDataToDB(mediaItems)

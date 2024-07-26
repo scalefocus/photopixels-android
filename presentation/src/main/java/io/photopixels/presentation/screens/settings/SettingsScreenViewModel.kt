@@ -13,6 +13,8 @@ import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.login.GoogleAuthorization
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -113,7 +115,8 @@ class SettingsScreenViewModel @Inject constructor(
 
             userSettings = userSettings.copy(syncWithGoogle = true)
             setUserSettingsUseCase.invoke(userSettings)
-            getGooglePhotosUseCase.invoke()
+
+            async(Dispatchers.IO) { getGooglePhotosUseCase.invoke() }.await()
             workerStarter.startGooglePhotosWorker()
         }
     }
