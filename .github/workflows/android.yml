@@ -136,7 +136,6 @@ jobs:
                     RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
                     RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
                     RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-
                 run: |
                     # Base64 decoding of keystore kept in temporary environment variable
                     echo $ENCODED_STRING > keystore-b64.txt
@@ -147,6 +146,16 @@ jobs:
                     echo "keystorePassword=$RELEASE_KEYSTORE_PASSWORD" >> keystore.properties
                     echo "keyAlias=$RELEASE_KEY_ALIAS" >> keystore.properties
                     echo "keyPassword=$RELEASE_KEY_PASSWORD" >> keystore.properties
+
+            -   name: Write Project secrets to photopixels.properties file
+                env:
+                    GOOGLE_OAUTH_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_ANDROID_CLIENT_ID }}
+                    GOOGLE_OAUTH_WEB_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_ID }}
+                    GOOGLE_OAUTH_WEB_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_WEB_CLIENT_SECRET }}
+                run: |
+                    echo "GOOGLE_OAUTH_ANDROID_CLIENT_ID=$GOOGLE_OAUTH_ANDROID_CLIENT_ID" > photopixels.properties
+                    echo "GOOGLE_OAUTH_WEB_CLIENT_ID=$GOOGLE_OAUTH_WEB_CLIENT_ID" >> photopixels.properties
+                    echo "GOOGLE_OAUTH_WEB_CLIENT_SECRET=$GOOGLE_OAUTH_WEB_CLIENT_SECRET" >> photopixels.properties
 
             -   name: Generate build number
                 id: generate_build_number
@@ -203,7 +212,7 @@ jobs:
         runs-on: ubuntu-latest
         environment: scalefocus-production
         needs: assemble-signed-release
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         steps:
             -   name: Checkout project code
                 uses: actions/checkout@v4
