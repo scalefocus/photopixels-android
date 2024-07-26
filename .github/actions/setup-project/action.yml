@@ -55,4 +55,4 @@ runs:
                 echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_CREDENTIALS_FILE=photopixels-firebase-appdistribution-private-key.json' > local.properties
                 echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_GROUPS=${{ inputs.dist_groups }}' >> local.properties
                 echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_ARTIFACT_TYPE=${{ inputs.dist_artifact_type }}' >> local.properties
-                echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS=${{ inputs.dist_variant }}' >> local.properties        
+                echo 'PHOTOPIXELS_FIREBASE_APPDISTRIBUTION_BUILD_VARIANTS=${{ inputs.dist_variant }}' >> local.properties
