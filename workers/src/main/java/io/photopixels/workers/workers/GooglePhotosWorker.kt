@@ -42,6 +42,7 @@ class GooglePhotosWorker @AssistedInject constructor(
     private var uploadedPhotosCounter = 0
 
     @SuppressLint("MissingPermission")
+    @SuppressWarnings("ReturnCount")
     override suspend fun doWork(): Result {
         Timber.tag(LOG_TAG).e("GOOGLE_PHOTOS WORKER STARTED!!!")
         var outputData: Data? = null
