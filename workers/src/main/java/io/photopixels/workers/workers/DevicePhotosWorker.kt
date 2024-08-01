@@ -38,9 +38,7 @@ class DevicePhotosWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
-        }
+        createNotificationChannel()
 
         val notification = createNotification()
 
@@ -72,12 +70,13 @@ class DevicePhotosWorker @AssistedInject constructor(
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun createNotification(): Notification {
-        return NotificationCompat.Builder(applicationContext, DEVICE_PHOTOS_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(context.getString(R.string.scan_device_photos))
-            .setContentText(context.getString(R.string.performing_scan_device_photos_operation))
-            .setSmallIcon(android.R.drawable.ic_popup_sync)
-            .setOngoing(true)
-            .build()
-    }
+    private fun createNotification(): Notification = NotificationCompat
+        .Builder(
+            applicationContext,
+            DEVICE_PHOTOS_NOTIFICATION_CHANNEL_ID
+        ).setContentTitle(context.getString(R.string.scan_device_photos))
+        .setContentText(context.getString(R.string.performing_scan_device_photos_operation))
+        .setSmallIcon(android.R.drawable.ic_popup_sync)
+        .setOngoing(true)
+        .build()
 }

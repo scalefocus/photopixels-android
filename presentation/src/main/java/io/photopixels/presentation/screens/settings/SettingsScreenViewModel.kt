@@ -8,13 +8,10 @@ import io.photopixels.domain.usecases.GetAppInfoData
 import io.photopixels.domain.usecases.GetUserSettingsUseCase
 import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
 import io.photopixels.domain.usecases.SetUserSettingsUseCase
-import io.photopixels.domain.usecases.googlephotos.GetGooglePhotosUseCase
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.login.GoogleAuthorization
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,7 +20,6 @@ class SettingsScreenViewModel @Inject constructor(
     private val getAppInfoDataUseCase: GetAppInfoData,
     private val clearUserDataUseCase: ClearUserDataUseCase,
     private val saveGoogleAuthTokenUseCase: SaveGoogleAuthTokenUseCase,
-    private val getGooglePhotosUseCase: GetGooglePhotosUseCase,
     private val googleAuthorization: GoogleAuthorization,
     private val getUserSettingsUseCase: GetUserSettingsUseCase,
     private val setUserSettingsUseCase: SetUserSettingsUseCase,
@@ -64,6 +60,7 @@ class SettingsScreenViewModel @Inject constructor(
                         googleAuthToken?.let {
                             onGoogleLoginSuccess(it)
                         }
+                        updateState { copy(isLoading = false) }
                     }
                 }
             }
@@ -79,12 +76,17 @@ class SettingsScreenViewModel @Inject constructor(
                 userSettings = userSettings.copy(requireWifi = action.isChecked)
                 setUserSettingsUseCase.invoke(userSettings)
             }
+
+            SettingsScreenActions.OnGoogleOauthIntentError -> {
+                updateState { copy(isLoading = false, messageId = R.string.settings_screen_google_login_error) }
+            }
         }
     }
 
     private fun logOutUser() {
         viewModelScope.launch {
             clearUserDataUseCase.invoke()
+            stopWorkers()
             submitEvent(SettingsScreenEvents.NavigateToConnectServerScreen)
         }
     }
@@ -100,6 +102,7 @@ class SettingsScreenViewModel @Inject constructor(
         val intent = googleAuthorization.generateAuthorizationIntent()
         intent?.let {
             submitEvent(SettingsScreenEvents.StartAuthorizationIntent(it))
+            updateState { copy(isLoading = true) }
         }
     }
 
@@ -116,7 +119,7 @@ class SettingsScreenViewModel @Inject constructor(
             userSettings = userSettings.copy(syncWithGoogle = true)
             setUserSettingsUseCase.invoke(userSettings)
 
-            async(Dispatchers.IO) { getGooglePhotosUseCase.invoke() }.await()
+            // async(Dispatchers.IO) { getGooglePhotosUseCase.invoke() }.await()
             workerStarter.startGooglePhotosWorker()
         }
     }
@@ -132,6 +135,11 @@ class SettingsScreenViewModel @Inject constructor(
             setUserSettingsUseCase.invoke(userSettings)
             workerStarter.stopGooglePhotosWorker()
         }
+    }
+
+    private fun stopWorkers() {
+        workerStarter.stopDevicePhotosWorkers()
+        workerStarter.stopGooglePhotosWorker()
     }
 
     private fun loadUserSettings() {

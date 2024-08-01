@@ -86,7 +86,10 @@ class GooglePhotosManager @Inject constructor(
             // Timber.tag(GOOGLE_PHOTOS_TAG).d("fetchPhotos: each item : $mediaItem")
             // }
 
-            Timber.tag(GOOGLE_PHOTOS_TAG).d("Google photos fetched successfully, saving photos metadata to DB")
+            Timber.tag(GOOGLE_PHOTOS_TAG).d(
+                "Google photos fetched successfully, " +
+                    "saving ${mediaItems.size} photos metadata to DB"
+            )
             savePhotosDataToDB(mediaItems)
             null // Success - no error
         } catch (e: UnauthenticatedException) {

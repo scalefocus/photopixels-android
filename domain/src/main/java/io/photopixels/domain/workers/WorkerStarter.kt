@@ -18,7 +18,11 @@ interface WorkerStarter {
 
     fun getUploadPhotosWorkerListener(): Flow<WorkerInfo>
 
+    fun stopDevicePhotosWorkers()
+
     fun startGooglePhotosWorker()
 
     fun stopGooglePhotosWorker()
+
+    fun getGooglePhotosWorkerListener(): Flow<WorkerInfo?>
 }

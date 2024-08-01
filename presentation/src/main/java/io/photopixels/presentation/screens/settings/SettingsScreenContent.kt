@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import io.photopixels.domain.model.AppInfoData
 import io.photopixels.domain.model.ServerAddress
 import io.photopixels.presentation.R
+import io.photopixels.presentation.base.composeviews.CircularIndicator
 import io.photopixels.presentation.base.composeviews.SFButton
 import io.photopixels.presentation.base.composeviews.SFSwitch
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
@@ -34,6 +35,10 @@ fun SettingsScreenContent(
     screenState: SettingsScreenState,
     onSubmitAction: (SettingsScreenActions) -> Unit
 ) {
+    if (screenState.isLoading) {
+        CircularIndicator()
+    }
+
     screenState.messageId?.let {
         ShowAlertDialog(
             title = stringResource(id = R.string.settings_screen_google_photos_msg),
