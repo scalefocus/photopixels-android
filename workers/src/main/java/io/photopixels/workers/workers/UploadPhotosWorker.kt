@@ -69,7 +69,8 @@ class UploadPhotosWorker @AssistedInject constructor(
             )
         }
 
-        val output = Data.Builder()
+        val output = Data
+            .Builder()
             .putInt(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY, uploadedPhotosCount)
             .build()
         Timber.tag(LOG_TAG).e(
@@ -140,14 +141,15 @@ class UploadPhotosWorker @AssistedInject constructor(
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun createNotification(): Notification {
-        return NotificationCompat.Builder(applicationContext, UPLOAD_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(context.getString(R.string.upload_photos))
-            .setContentText(context.getString(R.string.upload_photos_description))
-            .setSmallIcon(android.R.drawable.ic_popup_sync)
-            .setOngoing(true)
-            .build()
-    }
+    private fun createNotification(): Notification = NotificationCompat
+        .Builder(
+            applicationContext,
+            UPLOAD_NOTIFICATION_CHANNEL_ID
+        ).setContentTitle(context.getString(R.string.upload_photos))
+        .setContentText(context.getString(R.string.upload_photos_description))
+        .setSmallIcon(android.R.drawable.ic_popup_sync)
+        .setOngoing(true)
+        .build()
 
     companion object {
         private const val UPLOAD_NOTIFICATION_CHANNEL_ID = "upload_photos_channel"

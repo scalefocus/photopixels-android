@@ -16,20 +16,17 @@ import io.photopixels.domain.usecases.GetUserSettingsUseCase
 import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
 import io.photopixels.domain.usecases.SavePhotosIdsInMemoryUseCase
 import io.photopixels.domain.usecases.SaveThumbnailsToDbUseCase
-import io.photopixels.domain.usecases.googlephotos.GetGooglePhotosUseCase
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.login.GoogleAuthorization
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class HomeScreenViewModel @Inject constructor(
     private val workerStarter: WorkerStarter,
     private val getServerRevisionUseCase: GetServerRevisionUseCase,
@@ -38,7 +35,6 @@ class HomeScreenViewModel @Inject constructor(
     private val getThumbnailsFromDbUseCase: GetThumbnailsFromDbUseCase,
     private val saveThumbnailsToDbUseCase: SaveThumbnailsToDbUseCase,
     private val getUserSettingsUseCase: GetUserSettingsUseCase,
-    private val getGooglePhotosUseCase: GetGooglePhotosUseCase,
     private val googleAuthorization: GoogleAuthorization,
     private val saveGoogleAuthTokenUseCase: SaveGoogleAuthTokenUseCase
 ) : BaseViewModel<HomeScreenState, HomeScreenActions, HomeScreenEvents>(HomeScreenState()) {
@@ -122,21 +118,26 @@ class HomeScreenViewModel @Inject constructor(
                 }
             }
 
-            getServerThumbnailsProgressState.emit(false)
+            getServerThumbnailsProgressState.emit(NOT_STARTED)
         }
     }
 
+    /**
+     * Get PhotoPixels thumbnails in chunks(multiple requests) if there are more than @MAX_OBJECTS_TO_REQUEST
+     * Note: At this moment the server threshold is MAX 100 items per request
+     */
     private suspend fun getServerThumbnailsChunked(serverItemsIdsList: List<String>, isUploadComplete: Boolean) {
         val chunkSize = MAX_OBJECTS_TO_REQUEST
         val serverThumbnails = mutableListOf<PhotoUiData>()
-        val serverItemsIdsMap = mutableMapOf<Int, List<String>>()
 
+        // Contains list with Pair<photosCount, List<photosIds>> to be fetched
+        val serverItemsIdsPairList = mutableListOf<Pair<Int, List<String>>>()
         serverItemsIdsList.chunked(chunkSize) { chunkedServerItems ->
-            serverItemsIdsMap.put(chunkedServerItems.size, chunkedServerItems.toList())
+            serverItemsIdsPairList.add(Pair(chunkedServerItems.size, chunkedServerItems.toList()))
         }
 
-        serverItemsIdsMap.forEach { (_, value) ->
-            val result = getServerThumbnails(chunkedServerItemsIds = value, isUploadComplete)
+        serverItemsIdsPairList.forEach { pair ->
+            val result = getServerThumbnails(chunkedServerItemsIds = pair.second, isUploadComplete)
             serverThumbnails.addAll(result)
         }
 
@@ -185,19 +186,46 @@ class HomeScreenViewModel @Inject constructor(
                     updateState { copy(isSyncStarted = false) }
                     // Refresh thumbnails only if photos was uploaded
                     if (it.resultData?.get(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY) as Int > 0) {
-                        // Wait if function is already started
-                        if (getServerThumbnailsProgressState.value == STARTED) {
-                            getServerThumbnailsProgressState.collect { state ->
-                                if (state == NOT_STARTED) {
-                                    getServerRevisionAndThumbnails(isUploadComplete = true)
-                                }
-                            }
-                        } else {
-                            getServerRevisionAndThumbnails(isUploadComplete = true)
-                        }
+                        refreshThumbnails()
                     }
                 }
             }
+        }
+    }
+
+    private fun initGooglePhotosWorkerListener() {
+        viewModelScope.launch {
+            workerStarter.getGooglePhotosWorkerListener().collect { workerInfo ->
+                if (workerInfo?.workerStatus == WorkerStatus.FAILED) {
+                    val error = workerInfo.resultData?.get(WorkerInfo.WORKER_ERROR_RESULT_KEY) as String
+
+                    if (error == PhotoPixelError.ExpiredGoogleAuthTokenError.toString()) {
+                        handleGoogleError(PhotoPixelError.ExpiredGoogleAuthTokenError)
+                    } else {
+                        handleGoogleError(PhotoPixelError.GenericGoogleError)
+                    }
+                } else {
+                    if (workerInfo?.resultData?.containsKey(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY) == true &&
+                        workerInfo.resultData?.get(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY) as Int > 0
+                    ) {
+                        // Refresh Home screen thumbnails
+                        refreshThumbnails()
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun refreshThumbnails() {
+        // Wait if function is already started
+        if (getServerThumbnailsProgressState.value == STARTED) {
+            getServerThumbnailsProgressState.collect { state ->
+                if (state == NOT_STARTED) {
+                    getServerRevisionAndThumbnails(isUploadComplete = true)
+                }
+            }
+        } else {
+            getServerRevisionAndThumbnails(isUploadComplete = true)
         }
     }
 
@@ -220,20 +248,8 @@ class HomeScreenViewModel @Inject constructor(
             val isGooglePhotosSyncEnabled = getUserSettingsUseCase.invoke()?.syncWithGoogle
 
             if (isGooglePhotosSyncEnabled == true) {
-                // TODO: Fetch google photos should be part from GooglePhotosWorker or a new one should be created.
-                // When there are too many photos in Google, they first needs to be downloaded via
-                // googlePhotos library(in app-time) and then passed to the GooglePhotosWorker which can work
-                // at background, even if the app is closed
-                // During that process there is a blind spot and user is not informed.
-                // When GooglePhotosWorker is started a notification is created,
-                // but before that there are no indicators that Google photos sync is active(in-progress)
-
-                val exception = async(Dispatchers.IO) { getGooglePhotosUseCase.invoke() }.await()
-                if (exception != null) {
-                    handleGoogleError(exception)
-                } else {
-                    workerStarter.startGooglePhotosWorker()
-                }
+                initGooglePhotosWorkerListener()
+                workerStarter.startGooglePhotosWorker()
             }
         }
     }
@@ -262,7 +278,6 @@ class HomeScreenViewModel @Inject constructor(
 
                             // Start again Google Photos worker, when new authToken is received
                             saveGoogleAuthTokenUseCase.invoke(googleAuthToken)
-                            getGooglePhotosUseCase.invoke()
                             workerStarter.startGooglePhotosWorker()
                         }
                     }
@@ -280,7 +295,7 @@ class HomeScreenViewModel @Inject constructor(
         // equal -> load thumbnails from device
         // not equal -> load thumbnails from server and then store it in device
 
-        getServerThumbnailsProgressState.value = true
+        getServerThumbnailsProgressState.value = STARTED
         getServerRevisionAndThumbnails()
     }
 

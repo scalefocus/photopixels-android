@@ -6,8 +6,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
@@ -18,6 +16,7 @@ import dagger.assisted.AssistedInject
 import io.photopixels.domain.usecases.GetDevicePhotosUseCase
 import io.photopixels.domain.usecases.SavePhotosDataToDbUseCase
 import io.photopixels.workers.R
+import timber.log.Timber
 
 /**
  * Android worker for reading device local photos and store the information about photos in App's Database
@@ -38,9 +37,7 @@ class DevicePhotosWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
-        }
+        createNotificationChannel()
 
         val notification = createNotification()
 
@@ -53,15 +50,14 @@ class DevicePhotosWorker @AssistedInject constructor(
         return try {
             val photos = getDevicePhotosUseCase.invoke(context)
             savePhotosUseCase.invoke(photos)
-            Log.e(LOG_TAG, "DevicePhotosWorker() Completed!!!!")
+            Timber.tag(LOG_TAG).d("DevicePhotosWorker() Completed!!!!")
             Result.success()
         } catch (exception: Exception) {
-            Log.e(LOG_TAG, "Error during sync and hash: ", exception)
+            Timber.tag(LOG_TAG).e(exception, "Error during sync and hash: ")
             Result.failure()
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             DEVICE_PHOTOS_NOTIFICATION_CHANNEL_ID,
@@ -72,12 +68,13 @@ class DevicePhotosWorker @AssistedInject constructor(
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun createNotification(): Notification {
-        return NotificationCompat.Builder(applicationContext, DEVICE_PHOTOS_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(context.getString(R.string.scan_device_photos))
-            .setContentText(context.getString(R.string.performing_scan_device_photos_operation))
-            .setSmallIcon(android.R.drawable.ic_popup_sync)
-            .setOngoing(true)
-            .build()
-    }
+    private fun createNotification(): Notification = NotificationCompat
+        .Builder(
+            applicationContext,
+            DEVICE_PHOTOS_NOTIFICATION_CHANNEL_ID
+        ).setContentTitle(context.getString(R.string.scan_device_photos))
+        .setContentText(context.getString(R.string.performing_scan_device_photos_operation))
+        .setSmallIcon(android.R.drawable.ic_popup_sync)
+        .setOngoing(true)
+        .build()
 }
