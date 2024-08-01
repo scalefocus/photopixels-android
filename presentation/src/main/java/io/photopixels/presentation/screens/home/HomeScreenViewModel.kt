@@ -43,7 +43,6 @@ class HomeScreenViewModel @Inject constructor(
     private val getServerThumbnailsProgressState = MutableStateFlow(NOT_STARTED)
 
     init {
-        Timber.tag("TAG").e("in initBLock, loadStartupData()!!!!!")
         loadStartupData()
     }
 
@@ -69,7 +68,6 @@ class HomeScreenViewModel @Inject constructor(
             }
 
             HomeScreenActions.LoadStartupData -> {
-                Timber.tag("TAG").e("in HomeScreenActions.LoadStartupData, loadStartupData()!!!!!")
                 loadStartupData()
             }
         }
@@ -193,9 +191,7 @@ class HomeScreenViewModel @Inject constructor(
     private fun initGooglePhotosWorkerListener() {
         viewModelScope.launch {
             workerStarter.getGooglePhotosWorkerListener().collect { workerInfo ->
-                Timber.tag("TAG").e("HomeScreenViewModel() GOOGLE PHOTOS WORKER COMPLETED")
                 if (workerInfo?.workerStatus == WorkerStatus.FAILED) {
-                    Timber.tag("TAG").e("HomeScreenViewModel() GOOGLE PHOTOS WORKER COMPLETED with FAILED status")
                     val error = workerInfo.resultData?.get(WorkerInfo.WORKER_ERROR_RESULT_KEY) as String
 
                     if (error == PhotoPixelError.ExpiredGoogleAuthTokenError.toString()) {
@@ -204,17 +200,10 @@ class HomeScreenViewModel @Inject constructor(
                         handleGoogleError(PhotoPixelError.GenericGoogleError)
                     }
                 } else {
-                    Timber
-                        .tag(
-                            "TAG"
-                        ).e("HomeScreenViewModel() GOOGLE PHOTOS WORKER COMPLETED and try to refresh thumbnails")
                     if (workerInfo?.resultData?.containsKey(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY) == true &&
                         workerInfo.resultData?.get(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY) as Int > 0
                     ) {
-                        Timber
-                            .tag(
-                                "TAG"
-                            ).e("HomeScreenViewModel() GOOGLE PHOTOS WORKER has uploaded photos,so refresh thumbnails")
+                        // Refresh Home screen thumbnails
                         refreshThumbnails()
                     }
                 }
@@ -261,13 +250,6 @@ class HomeScreenViewModel @Inject constructor(
                 // During that process there is a blind spot and user is not informed.
                 // When GooglePhotosWorker is started a notification is created,
                 // but before that there are no indicators that Google photos sync is active(in-progress)
-
-//                val exception = async(Dispatchers.IO) { getGooglePhotosUseCase.invoke() }.await()
-//                if (exception != null) {
-//                    handleGoogleError(exception)
-//                } else {
-//                    workerStarter.startGooglePhotosWorker()
-//                }
 
                 initGooglePhotosWorkerListener()
                 workerStarter.startGooglePhotosWorker()

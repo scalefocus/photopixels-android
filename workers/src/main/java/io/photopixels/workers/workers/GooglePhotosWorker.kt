@@ -55,7 +55,6 @@ class GooglePhotosWorker @AssistedInject constructor(
         )
 
         Timber.tag(LOG_TAG).d("Download Google photos")
-
         getGooglePhotosUseCase.invoke()?.let { error ->
             val output = Data
                 .Builder()
@@ -65,11 +64,9 @@ class GooglePhotosWorker @AssistedInject constructor(
         }
 
         Timber.tag(LOG_TAG).e("Google photos download completed")
-
         val photosForUpload = getPhotosForUploadUseCase.getGooglePhotosFromDB()
         photosForUpload.forEach { googlePhoto ->
 
-            Timber.tag(LOG_TAG).d("Trying to download googlePhoto:${googlePhoto.fileName}")
             val photoResult = downloadPhotoUseCase.downloadGooglePhoto(googlePhoto.baseUrl)
             if (photoResult is Response.Success) {
                 val photoBytes = photoResult.result
@@ -95,7 +92,7 @@ class GooglePhotosWorker @AssistedInject constructor(
                 Data.Builder().putInt(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY, uploadedPhotosCounter).build()
             return Result.success(outputData)
         } else {
-            Timber.tag(LOG_TAG).d("GOOGLE_PHOTOS ARE UP-TO date, nothing for upload to PhotoPixels cloud")
+            Timber.tag(LOG_TAG).d("GOOGLE_PHOTOS are UP-TO date, nothing for upload to PhotoPixels cloud")
         }
 
         outputData =
@@ -124,8 +121,6 @@ class GooglePhotosWorker @AssistedInject constructor(
     ) {
         when (photoUploadResult) {
             is Response.Success -> {
-                Timber.tag(LOG_TAG).e("googlePhoto:${googlePhotoData.fileName} Uploaded to PhotoPixel!, save to DB now")
-
                 // Update photoData in DB
                 val updatedPhotoData =
                     googlePhotoData.copy(
@@ -137,7 +132,7 @@ class GooglePhotosWorker @AssistedInject constructor(
             }
 
             is Response.Failure -> {
-                Timber.tag(LOG_TAG).e("Error uploading photo, ${googlePhotoData.fileName}")
+                Timber.tag(LOG_TAG).e("Error uploading photo to PhotoPixels, ${googlePhotoData.fileName}")
                 if (photoUploadResult.error is PhotoPixelError.DuplicatePhotoError) {
                     // Photo is already uploaded
                     val updatedPhotoData = googlePhotoData.copy(isAlreadyUploaded = true)

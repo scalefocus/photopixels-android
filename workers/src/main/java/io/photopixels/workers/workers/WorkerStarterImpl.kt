@@ -12,7 +12,6 @@ import io.photopixels.domain.workers.WorkerStarter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.transform
-import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
@@ -81,21 +80,14 @@ class WorkerStarterImpl @Inject constructor(
                 .transform { workInfo ->
                     if (workInfo.state.isFinished) {
                         val workerResultData = workInfo.outputData.keyValueMap
-                        Timber.tag("WorkerStarterImpl").e(
-                            "Worker resultMap keys:${workerResultData.keys}" +
-                                "\n resultMap values:${workerResultData.values}"
-                        )
+
                         val workerStatus = if (workInfo.state == WorkInfo.State.FAILED) {
                             WorkerStatus.FAILED
                         } else {
                             WorkerStatus.FINISHED
                         }
                         emit(
-                            WorkerInfo(
-                                workerTag = workInfo.tags.first(),
-                                workerStatus,
-                                resultData = workerResultData
-                            )
+                            WorkerInfo(workerTag = workInfo.tags.first(), workerStatus, resultData = workerResultData)
                         )
                     }
                 }
@@ -108,9 +100,8 @@ class WorkerStarterImpl @Inject constructor(
         if (!isWorkerFinished(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)) return
 
         uniqueGooglePhotosWorkId = getGooglePhotosWorkerRequest()
-            .also {
-                WorkManager.getInstance(context).enqueue(it)
-            }.id
+            .also { WorkManager.getInstance(context).enqueue(it) }
+            .id
     }
 
     override fun stopGooglePhotosWorker() {
@@ -138,12 +129,9 @@ class WorkerStarterImpl @Inject constructor(
         val workInfos = workerManager.getWorkInfosByTag(workerTag).get()
         if (workInfos.isNotEmpty()) {
             val state = workInfos[0].state
-
-            Timber.tag("TAG").e("WORKER:$workerTag isFinished:${state.isFinished}")
             return state.isFinished
         }
 
-        Timber.tag("TAG").e("WORKER:$workerTag isFinished:true")
         return true
     }
 }
