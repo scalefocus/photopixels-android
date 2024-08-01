@@ -61,12 +61,7 @@ fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenAction
 
     if (pullToRefreshState.isRefreshing) {
         LaunchedEffect(true) {
-            onSubmitActions(HomeScreenActions.OnSyncButtonClick)
-        }
-    }
-
-    if (state.isSyncStarted.not()) {
-        LaunchedEffect(true) {
+            onSubmitActions(HomeScreenActions.LoadStartupData)
             pullToRefreshState.endRefresh()
         }
     }
