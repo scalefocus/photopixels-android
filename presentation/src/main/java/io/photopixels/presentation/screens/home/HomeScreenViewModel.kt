@@ -122,11 +122,16 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Get PhotoPixels thumbnails in chunks(multiple requests) if there are more than @MAX_OBJECTS_TO_REQUEST
+     * Note: At this moment the server threshold is MAX 100 items per request
+     */
     private suspend fun getServerThumbnailsChunked(serverItemsIdsList: List<String>, isUploadComplete: Boolean) {
         val chunkSize = MAX_OBJECTS_TO_REQUEST
         val serverThumbnails = mutableListOf<PhotoUiData>()
-        val serverItemsIdsPairList = mutableListOf<Pair<Int, List<String>>>()
 
+        // Contains list with Pair<photosCount, List<photosIds>> to be fetched
+        val serverItemsIdsPairList = mutableListOf<Pair<Int, List<String>>>()
         serverItemsIdsList.chunked(chunkSize) { chunkedServerItems ->
             serverItemsIdsPairList.add(Pair(chunkedServerItems.size, chunkedServerItems.toList()))
         }
@@ -243,14 +248,6 @@ class HomeScreenViewModel @Inject constructor(
             val isGooglePhotosSyncEnabled = getUserSettingsUseCase.invoke()?.syncWithGoogle
 
             if (isGooglePhotosSyncEnabled == true) {
-                // TODO: Fetch google photos should be part from GooglePhotosWorker or a new one should be created.
-                // When there are too many photos in Google, they first needs to be downloaded via
-                // googlePhotos library(in app-time) and then passed to the GooglePhotosWorker which can work
-                // at background, even if the app is closed
-                // During that process there is a blind spot and user is not informed.
-                // When GooglePhotosWorker is started a notification is created,
-                // but before that there are no indicators that Google photos sync is active(in-progress)
-
                 initGooglePhotosWorkerListener()
                 workerStarter.startGooglePhotosWorker()
             }
