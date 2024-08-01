@@ -118,8 +118,6 @@ class SettingsScreenViewModel @Inject constructor(
 
             userSettings = userSettings.copy(syncWithGoogle = true)
             setUserSettingsUseCase.invoke(userSettings)
-
-            // async(Dispatchers.IO) { getGooglePhotosUseCase.invoke() }.await()
             workerStarter.startGooglePhotosWorker()
         }
     }

@@ -281,7 +281,6 @@ class HomeScreenViewModel @Inject constructor(
 
                             // Start again Google Photos worker, when new authToken is received
                             saveGoogleAuthTokenUseCase.invoke(googleAuthToken)
-                            // getGooglePhotosUseCase.invoke()
                             workerStarter.startGooglePhotosWorker()
                         }
                     }
