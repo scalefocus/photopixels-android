@@ -82,19 +82,30 @@ private fun NavigationBar(navHostController: NavHostController) {
                 label = { Text(labels[index]) },
                 selected = currentRoute.value == labels[index],
                 onClick = {
-                    currentRoute.value = labels[index]
-                    when (currentRoute.value.toLowerCase(Locale.current)) {
-                        HomeScreens.Home.route -> {
-                            navHostController.navigate(HomeScreens.Home.route)
+                    val routeToOpen = labels[index].toLowerCase(Locale.current)
+                    currentRoute.value = routeToOpen
+
+                    if (navHostController.currentBackStackEntry?.destination?.route ==
+                        routeToOpen
+                    ) {
+                        return@NavigationBarItem
+                    }
+
+                    navHostController.navigate(routeToOpen) {
+                        // Pop up to the start destination of the graph to
+                        // avoid building up a large stack of destinations
+                        // on the back stack as users select items
+                        navHostController.graph.startDestinationRoute?.let { route ->
+                            popUpTo(route) {
+                                saveState = true
+                            }
                         }
 
-                        HomeScreens.Sync.route -> {
-                            // TODO: Screen TBD
-                        }
-
-                        HomeScreens.Settings.route -> {
-                            navHostController.navigate(HomeScreens.Settings.route)
-                        }
+                        // Avoid multiple copies of the same destination when
+                        // re-selecting the same item
+                        launchSingleTop = true
+                        // Restore state when re-selecting a previously selected item
+                        restoreState = true
                     }
                 }
             )
@@ -144,7 +155,8 @@ internal fun NavHostController.navigateWithoutHistory(destinationRoute: String) 
 internal fun navigateToHomeScreen(navHostController: NavHostController) {
     navHostController.apply {
         navigate(HOME_GRAPH_ROUTE) {
-            popUpTo(graph.id) { // Remove history
+            popUpTo(graph.id) {
+                // Remove history
                 inclusive = true
             }
 
