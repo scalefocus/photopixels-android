@@ -26,4 +26,6 @@ sealed class SettingsScreenActions {
     data class OnGoogleOauthIntentReceived(
         val intent: Intent
     ) : SettingsScreenActions()
+
+    data object OnGoogleOauthIntentError : SettingsScreenActions()
 }

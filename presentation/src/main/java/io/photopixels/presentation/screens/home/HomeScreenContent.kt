@@ -14,14 +14,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -48,37 +55,55 @@ import kotlinx.collections.immutable.ImmutableList
 
 private const val THUMBNAILS_GRID_COLUMNS = 5
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Suppress("LambdaParameterInRestartableEffect")
 @Composable
 fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenActions) -> Unit) {
-    Column(
-        Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (state.isLoading) {
-            CircularIndicator()
+    val pullToRefreshState = rememberPullToRefreshState()
+
+    if (pullToRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            onSubmitActions(HomeScreenActions.LoadStartupData)
+            pullToRefreshState.endRefresh()
+        }
+    }
+
+    Box(Modifier.nestedScroll(pullToRefreshState.nestedScrollConnection)) {
+        Column(
+            Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (state.isLoading) {
+                CircularIndicator()
+            }
+
+            state.errorMsgId?.let {
+                ShowAlertDialog(
+                    title = stringResource(id = R.string.error_title),
+                    negativeButtonText = null,
+                    description = stringResource(id = it),
+                    onPositiveClick = { onSubmitActions(HomeScreenActions.CloseErrorDialog) }
+                )
+            }
+
+            if (state.photoThumbnails.isEmpty()) {
+                EmptyState(
+                    isSyncStarted = state.isSyncStarted,
+                    onBtnClick = { onSubmitActions(HomeScreenActions.OnSyncButtonClick) }
+                )
+            } else {
+                ThumbnailsGrid(
+                    state = state,
+                    onThumbnailClick = { onSubmitActions(HomeScreenActions.OnThumbnailClick(it)) }
+                )
+            }
         }
 
-        state.errorMsgId?.let {
-            ShowAlertDialog(
-                title = stringResource(id = R.string.error_title),
-                negativeButtonText = null,
-                description = stringResource(id = it),
-                onPositiveClick = { onSubmitActions(HomeScreenActions.CloseErrorDialog) }
-            )
-        }
-
-        if (state.photoThumbnails.isEmpty()) {
-            EmptyState(
-                isSyncStarted = state.isSyncStarted,
-                onBtnClick = { onSubmitActions(HomeScreenActions.OnSyncButtonClick) }
-            )
-        } else {
-            ThumbnailsGrid(
-                state = state,
-                onThumbnailClick = { onSubmitActions(HomeScreenActions.OnThumbnailClick(it)) }
-            )
-        }
+        PullToRefreshContainer(
+            modifier = Modifier.align(Alignment.TopCenter),
+            state = pullToRefreshState,
+        )
     }
 }
 
@@ -137,7 +162,10 @@ private fun ThumbnailImage(
 
 @Composable
 private fun EmptyState(isSyncStarted: Boolean, onBtnClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         val icon = painterResource(id = R.drawable.photo_library_24)
         Image(
             modifier = Modifier.size(100.dp),
