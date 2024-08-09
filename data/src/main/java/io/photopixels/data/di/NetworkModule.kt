@@ -134,16 +134,15 @@ class NetworkModule {
 
         install(Auth) {
             bearer {
-                val tokenPair = runBlocking {
-                    Pair(authDataStore.getAuthToken(), authDataStore.getRefreshToken())
-                }
-                val authToken = tokenPair.first
-                val refreshToken = tokenPair.second
-
-                authToken?.let {
-                    sendWithoutRequest { true } // Don't send token for token refresh request
-                    loadTokens {
-                        BearerTokens(it, refreshToken!!) // Use stored access token
+                sendWithoutRequest { true } // Don't send token for token refresh request
+                loadTokens {
+                    val tokenPair = Pair(authDataStore.getAuthToken(), authDataStore.getRefreshToken())
+                    val authToken = tokenPair.first
+                    val refreshToken = tokenPair.second
+                    authToken?.let {
+                        refreshToken?.let { refreshToken ->
+                            BearerTokens(authToken, refreshToken) // Use stored access token
+                        }
                     }
                 }
                 refreshTokens {
@@ -210,7 +209,7 @@ class NetworkModule {
         val newAuthToken = response.accessToken
         val newRefreshToken = response.refreshToken
 
-        Log.e("TAG", "Refresh token call succesfull!!!!")
+        Log.e("TAG", "Refresh token call successful!!!!")
         authDataStore.storeAuthHeaders(newAuthToken, newRefreshToken)
         Pair(newAuthToken, newRefreshToken)
     } catch (exception: ResponseException) {

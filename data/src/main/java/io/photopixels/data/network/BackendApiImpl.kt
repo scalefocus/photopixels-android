@@ -61,7 +61,7 @@ class BackendApiImpl @Inject constructor(
                     url("/api/user/login")
                     setBody(LoginRequest(email, password))
                 }.body<LoginResponse>()
-
+            clearBearerTokens()
             Response.Success(result)
         }
 
