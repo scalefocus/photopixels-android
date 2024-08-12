@@ -61,7 +61,7 @@ class BackendApiImpl @Inject constructor(
                     url("/api/user/login")
                     setBody(LoginRequest(email, password))
                 }.body<LoginResponse>()
-            clearBearerTokens()
+            clearBearerTokens() // Clear the old tokens, so the new ones can be loaded on the next request
             Response.Success(result)
         }
 
