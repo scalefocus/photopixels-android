@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,12 +23,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.CircularIndicator
 import io.photopixels.presentation.base.composeviews.SFButton
+import io.photopixels.presentation.base.composeviews.SFDefaultTextField
 import io.photopixels.presentation.base.composeviews.SFPasswordTextField
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
 import io.photopixels.presentation.theme.AppTypography
@@ -89,17 +91,28 @@ fun LoginScreenContent(
 
                 Spacer(Modifier.height(5.dp))
 
-                TextField(
+                SFDefaultTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = username,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                     onValueChange = { username = it },
-                    label = { Text(stringResource(R.string.login_username)) }
+                    label = stringResource(R.string.login_username)
                 )
 
-                SFPasswordTextField(password = password, onValueChange = {
-                    password = it
-                })
+                SFPasswordTextField(
+                    password = password,
+                    imeAction = ImeAction.Done,
+                    keyboardActions = KeyboardActions(
+                        onDone = if (username.isNotEmpty() && password.isNotEmpty()) {
+                            { onSubmitActions(LoginScreenActions.LoginAction(username, password)) }
+                        } else {
+                            null
+                        }
+                    ),
+                    onValueChange = {
+                        password = it
+                    }
+                )
 
                 Spacer(Modifier.height(30.dp))
 
