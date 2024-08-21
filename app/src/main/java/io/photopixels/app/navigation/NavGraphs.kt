@@ -95,7 +95,7 @@ private fun NavigationBar(navHostController: NavHostController) {
                         // Pop up to the start destination of the graph to
                         // avoid building up a large stack of destinations
                         // on the back stack as users select items
-                        navHostController.graph.startDestinationRoute?.let { route ->
+                        navHostController.currentDestination?.parent?.startDestinationRoute?.let { route ->
                             popUpTo(route) {
                                 saveState = true
                             }
