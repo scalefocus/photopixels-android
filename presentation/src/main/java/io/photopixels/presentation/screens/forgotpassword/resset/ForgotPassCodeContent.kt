@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,8 +38,6 @@ fun ForgotPassCodeContent(
     state: ForgotPassCodeState,
     onSubmitActions: (ForgotPassCodeActions) -> Unit
 ) {
-    var verificationCode by remember { mutableStateOf("") }
-
     if (state.isLoading) {
         CircularIndicator()
     }
@@ -74,34 +75,8 @@ fun ForgotPassCodeContent(
                 Text(text = stringResource(R.string.forgot_pass_code_msg).uppercase(), textAlign = TextAlign.Center)
 
                 Spacer(Modifier.height(5.dp))
-                SFDefaultTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = verificationCode,
-                    onValueChange = { verificationCode = it },
-                    label = stringResource(R.string.forgot_pass_ver_code)
-                )
 
-                SFPasswordTextField(
-                    password = state.password.value,
-                    label = stringResource(id = R.string.forgot_pass_new),
-                    isError = state.password.errorMsgId != null,
-                    errorText = state.password.errorMsgId,
-                    onValueChange = {
-                        onSubmitActions(ForgotPassCodeActions.OnPassChange(it))
-                    }
-                )
-
-                SFPasswordTextField(
-                    password = state.confirmPassword.value,
-                    label = stringResource(id = R.string.forgot_pass_confirm),
-                    isError = state.confirmPassword.errorMsgId != null,
-                    errorText = state.confirmPassword.errorMsgId,
-                    onValueChange = {
-                        onSubmitActions(ForgotPassCodeActions.OnConfirmPassChange(it))
-                    }
-                )
-
-                SubmitButton(state = state, verificationCode = verificationCode, onSubmitActions = onSubmitActions)
+                InputFieldsSection(state = state, onSubmitActions = onSubmitActions)
 
                 Spacer(Modifier.height(30.dp))
             }
@@ -110,19 +85,60 @@ fun ForgotPassCodeContent(
 }
 
 @Composable
-private fun SubmitButton(
+private fun InputFieldsSection(
     state: ForgotPassCodeState,
-    verificationCode: String,
     onSubmitActions: (ForgotPassCodeActions) -> Unit
 ) {
-    val areFieldsEmpty = verificationCode.isEmpty() && state.password.value.isEmpty() &&
-        state.confirmPassword.value.isEmpty()
-    SFButton(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { onSubmitActions(ForgotPassCodeActions.OnSubmitClicked(verificationCode)) },
-        enabled = !areFieldsEmpty,
-        text = stringResource(id = R.string.button_submit)
-    )
+    var verificationCode by remember { mutableStateOf("") }
+
+    val areFieldsNotEmpty = verificationCode.isNotEmpty() && state.password.value.isNotEmpty() &&
+        state.confirmPassword.value.isNotEmpty()
+
+    Column {
+        SFDefaultTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = verificationCode,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            onValueChange = { verificationCode = it },
+            label = stringResource(R.string.forgot_pass_ver_code)
+        )
+
+        SFPasswordTextField(
+            password = state.password.value,
+            label = stringResource(id = R.string.forgot_pass_new),
+            isError = state.password.errorMsgId != null,
+            imeAction = ImeAction.Next,
+            errorText = state.password.errorMsgId,
+            onValueChange = {
+                onSubmitActions(ForgotPassCodeActions.OnPassChange(it))
+            }
+        )
+
+        SFPasswordTextField(
+            password = state.confirmPassword.value,
+            label = stringResource(id = R.string.forgot_pass_confirm),
+            isError = state.confirmPassword.errorMsgId != null,
+            errorText = state.confirmPassword.errorMsgId,
+            imeAction = ImeAction.Done,
+            keyboardActions = KeyboardActions(
+                onDone = if (areFieldsNotEmpty) {
+                    { onSubmitActions(ForgotPassCodeActions.OnSubmitClicked(verificationCode)) }
+                } else {
+                    null
+                }
+            ),
+            onValueChange = {
+                onSubmitActions(ForgotPassCodeActions.OnConfirmPassChange(it))
+            }
+        )
+
+        SFButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { onSubmitActions(ForgotPassCodeActions.OnSubmitClicked(verificationCode)) },
+            enabled = areFieldsNotEmpty,
+            text = stringResource(id = R.string.button_submit)
+        )
+    }
 }
 
 @Preview(showBackground = true)
