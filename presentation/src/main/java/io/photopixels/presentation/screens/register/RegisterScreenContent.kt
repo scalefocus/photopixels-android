@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.photopixels.presentation.R
@@ -43,6 +47,9 @@ fun RegisterScreenContent(
             onPositiveClick = { onSubmitActions(RegisterScreenActions.CloseErrorDialog) }
         )
     }
+
+    val areFieldsNotEmpty = state.name.value.isNotEmpty() && state.password.value.isNotEmpty() &&
+        state.email.value.isNotEmpty() && state.confirmPassword.value.isNotEmpty()
 
     Box {
         Image(
@@ -74,6 +81,7 @@ fun RegisterScreenContent(
                     label = stringResource(R.string.register_name),
                     isError = state.name.errorMsgId != null,
                     errorText = state.name.errorMsgId,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     modifier = Modifier.fillMaxWidth(),
                     onValueChange = {
                         onSubmitActions(RegisterScreenActions.OnNameValueChanged(it))
@@ -85,6 +93,7 @@ fun RegisterScreenContent(
                     label = stringResource(R.string.register_email),
                     isError = state.email.errorMsgId != null,
                     errorText = state.email.errorMsgId,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                     modifier = Modifier.fillMaxWidth(),
                     onValueChange = {
                         onSubmitActions(RegisterScreenActions.OnEmailValueChanged(it))
@@ -95,6 +104,7 @@ fun RegisterScreenContent(
                     password = state.password.value,
                     isError = state.password.errorMsgId != null,
                     errorText = state.password.errorMsgId,
+                    imeAction = ImeAction.Next,
                     onValueChange = {
                         onSubmitActions(RegisterScreenActions.OnPasswordValueChanged(it))
                     }
@@ -103,15 +113,20 @@ fun RegisterScreenContent(
                 SFPasswordTextField(
                     password = state.confirmPassword.value,
                     label = stringResource(id = R.string.register_confirm_password),
+                    imeAction = ImeAction.Done,
+                    keyboardActions = KeyboardActions(
+                        onDone = if (areFieldsNotEmpty) {
+                            { onSubmitActions(RegisterScreenActions.RegisterAction) }
+                        } else {
+                            null
+                        }
+                    ),
                     onValueChange = {
                         onSubmitActions(RegisterScreenActions.OnConfirmPasswordValueChanged(it))
                     }
                 )
 
                 Spacer(Modifier.height(30.dp))
-
-                val areFieldsNotEmpty = state.name.value.isNotEmpty() && state.password.value.isNotEmpty() &&
-                    state.email.value.isNotEmpty() && state.confirmPassword.value.isNotEmpty()
 
                 SFButton(
                     modifier = Modifier.fillMaxWidth(),
