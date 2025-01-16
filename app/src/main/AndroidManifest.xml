@@ -47,6 +47,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <data
                     android:scheme="${appAuthRedirectScheme}"
+                    android:host="google"
                     android:path="/oauth2redirect" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
