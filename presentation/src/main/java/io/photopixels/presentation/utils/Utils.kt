@@ -7,6 +7,6 @@ object Utils {
         val packageName = context.packageName
         val packageManager = context.packageManager
         val packageInfo = packageManager.getPackageInfo(packageName, 0)
-        return packageInfo.versionName
+        return packageInfo.versionName.orEmpty()
     }
 }

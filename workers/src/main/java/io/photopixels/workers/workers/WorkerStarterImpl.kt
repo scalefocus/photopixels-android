@@ -60,7 +60,7 @@ class WorkerStarterImpl @Inject constructor(
         .getInstance(context)
         .getWorkInfoByIdFlow(uniquePhotosWorkId!!) // TODO this may be null, handle it better
         .transform { workInfo ->
-            if (workInfo.state.isFinished) {
+            if (workInfo?.state?.isFinished == true) {
                 val workerResultData = workInfo.outputData.keyValueMap
                 emit(
                     WorkerInfo(
@@ -78,7 +78,7 @@ class WorkerStarterImpl @Inject constructor(
                 .getInstance(context)
                 .getWorkInfoByIdFlow(it)
                 .transform { workInfo ->
-                    if (workInfo.state.isFinished) {
+                    if (workInfo?.state?.isFinished == true) {
                         val workerResultData = workInfo.outputData.keyValueMap
 
                         val workerStatus = if (workInfo.state == WorkInfo.State.FAILED) {
