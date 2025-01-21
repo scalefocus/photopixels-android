@@ -210,7 +210,7 @@ class GoogleAuthorization @Inject constructor(
         const val TAG = "GOOGLE_AUTHORIZATION"
 
         const val CLIENT_ID = BuildConfig.GOOGLE_OAUTH_ANDROID_CLIENT_ID
-        const val REDIRECT_URI = "io.photopixels.app:/oauth2redirect"
+        const val REDIRECT_URI = "io.photopixels.app:/google/oauth2redirect"
 
         // Define the authorization endpoint URL
         const val AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"

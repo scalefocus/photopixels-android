@@ -22,6 +22,10 @@ android {
         buildConfigField("String", "GOOGLE_OAUTH_WEB_CLIENT_SECRET", webClientSecret)
         consumerProguardFiles("proguard-rules.pro")
 
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
+
         manifestPlaceholders["appAuthRedirectScheme"] = "io.photopixels.app"
     }
 

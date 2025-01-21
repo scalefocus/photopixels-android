@@ -1,6 +1,5 @@
 package io.photopixels.presentation.screens.photos
 
-import android.app.Activity
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -75,7 +74,7 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
-                    beyondBoundsPageCount = BEYOND_BOUNDS_PAGE_COUNT,
+                    beyondViewportPageCount = BEYOND_BOUNDS_PAGE_COUNT,
                     key = { index -> screenState.photosGlideUrls[index].toStringUrl() },
                     pageSize = PageSize.Fill
                 ) { index ->
@@ -106,7 +105,7 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
 private fun FullScreenImage(imageGlideUrl: GlideUrl) {
     var image by remember { mutableStateOf<Drawable?>(null) }
     var showLoading by remember { mutableStateOf(true) }
-    val context = (LocalContext.current as Activity).applicationContext
+    val context = LocalContext.current.applicationContext
 
     // Make image call only once per imageId
     LaunchedEffect(key1 = imageGlideUrl) {

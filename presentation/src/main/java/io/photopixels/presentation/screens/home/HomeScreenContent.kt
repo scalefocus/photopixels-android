@@ -19,16 +19,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -61,14 +59,12 @@ private const val THUMBNAILS_GRID_COLUMNS = 5
 fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenActions) -> Unit) {
     val pullToRefreshState = rememberPullToRefreshState()
 
-    if (pullToRefreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            onSubmitActions(HomeScreenActions.LoadStartupData)
-            pullToRefreshState.endRefresh()
-        }
-    }
-
-    Box(Modifier.nestedScroll(pullToRefreshState.nestedScrollConnection)) {
+    PullToRefreshBox(
+        modifier = Modifier.fillMaxSize(),
+        state = pullToRefreshState,
+        isRefreshing = state.isLoading,
+        onRefresh = { onSubmitActions(HomeScreenActions.LoadStartupData) }
+    ) {
         Column(
             Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
@@ -99,11 +95,6 @@ fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenAction
                 )
             }
         }
-
-        PullToRefreshContainer(
-            modifier = Modifier.align(Alignment.TopCenter),
-            state = pullToRefreshState,
-        )
     }
 }
 
