@@ -1,6 +1,7 @@
 package io.photopixels.presentation.screens.forgotpassword.resset
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.base.Response
@@ -9,7 +10,7 @@ import io.photopixels.domain.usecases.auth.ForgotPasswordUseCase
 import io.photopixels.domain.validation.ValidationRules
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
-import io.photopixels.presentation.base.Constants
+import io.photopixels.presentation.base.routes.Screen
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,19 +22,13 @@ class ForgotPassCodeViewModel @Inject constructor(
     BaseViewModel<ForgotPassCodeState, ForgotPassCodeActions, ForgotPassCodeEvents>(
             ForgotPassCodeState()
         ) {
-        private lateinit var email: String
-
-        init {
-            savedState.get<String>(Constants.EMAIL_ARGUMENT_NAME)?.let {
-                email = it
-            }
-        }
+        private val route = savedState.toRoute<Screen.ForgotPasswordCode>()
 
         override suspend fun handleActions(action: ForgotPassCodeActions) {
             when (action) {
                 is ForgotPassCodeActions.OnSubmitClicked -> {
                     if (validatePassword(state.value.password.value, state.value.confirmPassword.value)) {
-                        resetPassword(email = email, verificationCode = action.verificationCode)
+                        resetPassword(email = route.email, verificationCode = action.verificationCode)
                     }
                 }
 
@@ -69,15 +64,13 @@ class ForgotPassCodeViewModel @Inject constructor(
         }
 
         private suspend fun validatePassword(pass: String, confirmPass: String): Boolean {
-            var isPasswordValid = true
-
             // Check passwords match
             var errorMsgId: Int? = if (pass != confirmPass) R.string.register_error_pass_not_match else null
             updateState { copy(password = password.copy(errorMsgId = errorMsgId)) }
             if (errorMsgId != null) return false
 
             // Check password strength
-            isPasswordValid = validateFieldUseCase.invoke(pass, ValidationRules.PASSWORD)
+            val isPasswordValid = validateFieldUseCase.invoke(pass, ValidationRules.PASSWORD)
             errorMsgId = if (!isPasswordValid) R.string.register_pass_not_strong else null
             updateState { copy(password = password.copy(errorMsgId = errorMsgId)) }
 

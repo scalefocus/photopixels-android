@@ -1,9 +1,6 @@
 package io.photopixels.app.navigation
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -13,17 +10,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.text.toLowerCase
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
-import io.photopixels.app.navigation.HomeScreens.Companion.HOME_GRAPH_ROUTE
-import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.EnableScreenOrientation
 import io.photopixels.presentation.base.composeviews.SetPortraitOrientationOnly
+import io.photopixels.presentation.base.routes.HomeScreens
+import io.photopixels.presentation.base.routes.SCREENS_WITH_PORTRAIT_MODE_ONLY
+import io.photopixels.presentation.base.routes.Screen
+import kotlin.reflect.KClass
 
 @Composable
 fun NavGraphs(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -36,16 +36,16 @@ fun NavGraphs(navController: NavHostController, modifier: Modifier = Modifier) {
         }
     ) { paddings ->
         val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
+        val currentDestination = navBackStackEntry?.destination
 
-        currentRoute?.let {
+        currentDestination?.let {
             HandleScreenOrientation(it)
         }
 
         NavHost(
             navController = navController,
             modifier = Modifier.padding(paddings),
-            startDestination = Screen.Splash.route
+            startDestination = Screen.Splash
         ) {
             splashScreen(navController)
             connectToServerScreen(navController)
@@ -60,33 +60,22 @@ fun NavGraphs(navController: NavHostController, modifier: Modifier = Modifier) {
 
 @Composable
 private fun NavigationBar(navHostController: NavHostController) {
-    val currentRoute = remember {
-        mutableStateOf(HomeScreens.Home.route.toLowerCase(Locale.current))
+    var currentRoute: HomeScreens by remember {
+        mutableStateOf(HomeScreens.Home)
     } // Initially set to Home
 
     NavigationBar {
-        val navigationIcons = listOf(
-            Icons.Default.Home,
-            // Icons.Default.Check,
-            Icons.Default.Settings
-        )
-        val labels = listOf(
-            stringResource(R.string.home_screen_title),
-            // stringResource(R.string.sync_screen_title),
-            stringResource(R.string.settings_screen_title)
-        )
-
-        navigationIcons.forEachIndexed { index, icon ->
+        navigationBarItems.forEach { item ->
             NavigationBarItem(
-                icon = { Icon(icon, contentDescription = null) },
-                label = { Text(labels[index]) },
-                selected = currentRoute.value == labels[index],
+                icon = { Icon(item.icon, contentDescription = null) },
+                label = { Text(stringResource(item.labelRes)) },
+                selected = currentRoute == item.route,
                 onClick = {
-                    val routeToOpen = labels[index].toLowerCase(Locale.current)
-                    currentRoute.value = routeToOpen
+                    val routeToOpen = item.route
+                    currentRoute = routeToOpen
 
                     if (navHostController.currentBackStackEntry?.destination?.route ==
-                        routeToOpen
+                        routeToOpen::class.simpleName
                     ) {
                         return@NavigationBarItem
                     }
@@ -116,25 +105,13 @@ private fun NavigationBar(navHostController: NavHostController) {
 @Composable
 private fun isScreenHaveBottomBar(navHostController: NavHostController): Boolean {
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
-    return navBackStackEntry?.destination?.route in SCREENS_WITH_BOTTOM_BAR
+    val bottomBarsRoutes = remember(navigationBarItems) { navigationBarItems.map { it.route::class } }
+    return navBackStackEntry?.destination?.hasRouteIn(bottomBarsRoutes) ?: false
 }
 
 @Composable
-private fun HandleScreenOrientation(currentRoute: String) {
-    var disableLandscapeMode = false
-
-    run loop@{
-        SCREENS_WITH_PORTRAIT_MODE_ONLY.forEach { route ->
-            if (currentRoute.contains(route, true)) {
-                disableLandscapeMode = true
-                return@loop // stop iterating
-            } else {
-                disableLandscapeMode = false
-                return@forEach // continue
-            }
-        }
-    }
-
+private fun HandleScreenOrientation(currentDestination: NavDestination) {
+    val disableLandscapeMode = currentDestination.hasRouteIn(SCREENS_WITH_PORTRAIT_MODE_ONLY)
     if (disableLandscapeMode) {
         SetPortraitOrientationOnly()
     } else {
@@ -142,19 +119,27 @@ private fun HandleScreenOrientation(currentRoute: String) {
     }
 }
 
-internal fun NavHostController.navigateWithoutHistory(destinationRoute: String) {
-    apply {
-        navigate(destinationRoute) {
-            popUpTo(graph.id) {
-                inclusive = true
-            }
+internal fun NavDestination.hasRouteIn(routes: List<KClass<out Any>>): Boolean {
+    routes.forEach { route ->
+        if (hasRoute(route)) {
+            return true
+        }
+    }
+
+    return false
+}
+
+internal fun NavHostController.navigateWithoutHistory(destinationRoute: Any) {
+    navigate(destinationRoute) {
+        popUpTo(graph.id) {
+            inclusive = true
         }
     }
 }
 
 internal fun navigateToHomeScreen(navHostController: NavHostController) {
     navHostController.apply {
-        navigate(HOME_GRAPH_ROUTE) {
+        navigate(HomeScreens.Home) {
             popUpTo(graph.id) {
                 // Remove history
                 inclusive = true

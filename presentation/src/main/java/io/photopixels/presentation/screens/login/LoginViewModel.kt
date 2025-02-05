@@ -2,6 +2,7 @@ package io.photopixels.presentation.screens.login
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.usecases.ClearUserDataUseCase
@@ -9,7 +10,7 @@ import io.photopixels.domain.usecases.GetLoggedUserUseCase
 import io.photopixels.domain.usecases.auth.LoginUserUseCase
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
-import io.photopixels.presentation.base.Constants
+import io.photopixels.presentation.base.routes.Screen
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,7 +23,8 @@ class LoginViewModel @Inject constructor(
 ) : BaseViewModel<LoginScreenState, LoginScreenActions, LoginScreenEvents>(LoginScreenState()) {
 
     init {
-        preFillUserCredentials(savedState)
+        val route = savedState.toRoute<Screen.Login>()
+        preFillUserCredentials(route)
     }
 
     override suspend fun handleActions(action: LoginScreenActions) {
@@ -64,20 +66,18 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun preFillUserCredentials(savedState: SavedStateHandle) {
-        viewModelScope.launch {
-            // Pre-fill user credentials from registration screen
-            savedState.get<String>(Constants.EMAIL_ARGUMENT_NAME)?.let { username ->
-                savedState.get<String>(Constants.PASSWORD_ARGUMENT_NAME)?.let { password ->
-                    updateState { copy(email = username, password = password) }
-                }
-            } ?: run {
-                // Pre-fill previous logged username
+    private fun preFillUserCredentials(route: Screen.Login) {
+        if (route.email.isNullOrBlank() || route.password.isNullOrBlank()) {
+            // Pre-fill previous logged username
+            viewModelScope.launch {
                 val loggedUserName = getUserUseCase.invoke()
                 loggedUserName?.let {
                     updateState { copy(email = loggedUserName) }
                 }
             }
+        } else {
+            // Pre-fill user credentials from registration screen
+            updateState { copy(email = route.email, password = route.password) }
         }
     }
 }

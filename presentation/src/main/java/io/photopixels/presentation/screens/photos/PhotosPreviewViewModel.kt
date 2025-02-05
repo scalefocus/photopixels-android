@@ -2,6 +2,7 @@ package io.photopixels.presentation.screens.photos
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,7 +12,7 @@ import io.photopixels.domain.usecases.GetAuthHeaderUseCase
 import io.photopixels.domain.usecases.GetPhotosIdsFromMemory
 import io.photopixels.domain.usecases.GetServerInfoUseCase
 import io.photopixels.presentation.base.BaseViewModel
-import io.photopixels.presentation.base.Constants.THUMBNAIL_ID_ARGUMENT_NAME
+import io.photopixels.presentation.base.routes.HomeScreens
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,14 +22,13 @@ class PhotosPreviewViewModel @Inject constructor(
     private val getServerInfoUseCase: GetServerInfoUseCase,
     private val getAuthHeaderUseCase: GetAuthHeaderUseCase,
     private val deletePhotoUseCase: DeletePhotoUseCase,
-    private val savedState: SavedStateHandle
+    savedState: SavedStateHandle
 ) : BaseViewModel<PhotosPreviewScreenState, PhotosPreviewActions, PhotosPreviewEvents>(PhotosPreviewScreenState()) {
     private var photosIds = mutableListOf<String>()
 
     init {
-        viewModelScope.launch {
-            savedState.get<Array<String>>(THUMBNAIL_ID_ARGUMENT_NAME)?.let { preparePhotoUrls(it[0]) }
-        }
+        val route = savedState.toRoute<HomeScreens.PhotosPreview>()
+        preparePhotoUrls(route.thumbnailServerItemId)
     }
 
     override suspend fun handleActions(action: PhotosPreviewActions) {
