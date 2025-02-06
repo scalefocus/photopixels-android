@@ -7,6 +7,7 @@ plugins {
     id("plugin.hilt")
     id("plugin.test")
     id("plugin.test.android")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -36,6 +37,8 @@ android {
 
 dependencies {
     implementation(project(":domain"))
+
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.coil.compose)

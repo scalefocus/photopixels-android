@@ -2,19 +2,19 @@ package io.photopixels.app.navigation
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import androidx.navigation.navigation
-import io.photopixels.presentation.base.Constants
-import io.photopixels.presentation.base.addArgumentLabels
-import io.photopixels.presentation.base.addArguments
+import io.photopixels.presentation.base.routes.HomeGraph
+import io.photopixels.presentation.base.routes.HomeScreens
+import io.photopixels.presentation.base.routes.Screen
 import io.photopixels.presentation.screens.home.HomeScreen
 import io.photopixels.presentation.screens.photos.PhotosPreviewScreen
 import io.photopixels.presentation.screens.settings.SettingsScreen
 
+private const val HOME_SHOULD_REFRESH_BACK_RESULT = "shouldRefresh"
+
 internal fun NavGraphBuilder.homeScreenNavGraph(navHostController: NavHostController) {
-    navigation(startDestination = HomeScreens.Home.route, route = HomeScreens.HOME_GRAPH_ROUTE) {
+    navigation<HomeGraph>(startDestination = HomeScreens.Home) {
         homeScreen(navHostController)
         photosPreviewScreen(navHostController)
         settingsScreen(navHostController)
@@ -22,8 +22,8 @@ internal fun NavGraphBuilder.homeScreenNavGraph(navHostController: NavHostContro
 }
 
 internal fun NavGraphBuilder.homeScreen(navHostController: NavHostController) {
-    composable(route = HomeScreens.Home.route) { navBackResult ->
-        val shouldRefresh = navBackResult.savedStateHandle.get<Boolean>("shouldRefresh") ?: false
+    composable<HomeScreens.Home> { navBackResult ->
+        val shouldRefresh = navBackResult.savedStateHandle.get<Boolean>(HOME_SHOULD_REFRESH_BACK_RESULT) ?: false
         HomeScreen(
             shouldRefresh = shouldRefresh,
             onNavigateToSyncScreen = {
@@ -31,38 +31,28 @@ internal fun NavGraphBuilder.homeScreen(navHostController: NavHostController) {
             },
             onNavigateToPreviewPhotosScreen = { thumbnailServerItemId ->
                 navHostController.navigate(
-                    HomeScreens.PhotosPreview.route.addArguments(listOf(thumbnailServerItemId))
+                    HomeScreens.PhotosPreview(thumbnailServerItemId)
                 )
             }
         )
     }
 }
 
-internal fun NavGraphBuilder.photosPreviewScreen(
-    @Suppress("UnusedParameter") navHostController: NavHostController
-) {
-    composable(
-        route = HomeScreens.PhotosPreview.route.addArgumentLabels(listOf(Constants.THUMBNAIL_ID_ARGUMENT_NAME)),
-        arguments = listOf(
-            navArgument(name = Constants.THUMBNAIL_ID_ARGUMENT_NAME) {
-                type = NavType.StringArrayType
-                nullable = false
-            }
-        )
-    ) {
+internal fun NavGraphBuilder.photosPreviewScreen(navHostController: NavHostController) {
+    composable<HomeScreens.PhotosPreview> {
         PhotosPreviewScreen(onBackPress = { shouldRefresh ->
             navHostController.popBackStack()
             navHostController.currentBackStackEntry
                 ?.savedStateHandle
-                ?.set("shouldRefresh", shouldRefresh)
+                ?.set(HOME_SHOULD_REFRESH_BACK_RESULT, shouldRefresh)
         })
     }
 }
 
 internal fun NavGraphBuilder.settingsScreen(navHostController: NavHostController) {
-    composable(route = HomeScreens.Settings.route) {
+    composable<HomeScreens.Settings> {
         SettingsScreen(onNavigateToConnectServerScreen = {
-            navHostController.navigateWithoutHistory(Screen.ConnectToServer.route)
+            navHostController.navigateWithoutHistory(Screen.ConnectToServer)
         })
     }
 }
