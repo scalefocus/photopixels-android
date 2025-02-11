@@ -2,7 +2,6 @@ package io.photopixels.presentation.theme
 
 import android.app.Activity
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -41,7 +40,7 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun PhotoPixelsTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = isDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
@@ -69,4 +68,11 @@ fun PhotoPixelsTheme(
         typography = Typography,
         content = content
     )
+}
+
+@Suppress("FunctionOnlyReturningConstant")
+@Composable
+fun isDarkTheme(): Boolean {
+    // TODO Github task #58 force light theme until dark theme is properly implemented
+    return false
 }

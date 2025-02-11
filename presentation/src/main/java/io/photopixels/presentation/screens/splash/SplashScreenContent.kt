@@ -2,7 +2,6 @@ package io.photopixels.presentation.screens.splash
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,10 +13,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.photopixels.presentation.R
 import io.photopixels.presentation.theme.PhotoPixelsTheme
+import io.photopixels.presentation.theme.isDarkTheme
 
 @Composable
 fun SplashScreenContent(screenState: SplashScreenState) {
-    if (isSystemInDarkTheme()) {
+    if (isDarkTheme()) {
         DarkContent()
     } else {
         LightContent()
