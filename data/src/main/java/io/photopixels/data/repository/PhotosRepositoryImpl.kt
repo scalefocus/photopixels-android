@@ -13,7 +13,9 @@ import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.repository.PhotosRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -33,6 +35,13 @@ class PhotosRepositoryImpl @Inject constructor(
     }
 
     override fun getDevicePhotos(context: Context): List<PhotoData> = MediaHelper.scanPhotosAndGenerateHashes(context)
+
+    override suspend fun loadPhotoThumbnail(
+        context: Context,
+        photo: PhotoData
+    ): ByteArray = withContext(Dispatchers.Default) {
+        MediaHelper.loadPhotoThumbnail(context, photo)
+    }
 
     override fun getPhotosDataForUploadFromDB(): List<PhotoData> = photosDao.getPhotosForUpload().map { it.toDomain() }
 
@@ -69,6 +78,10 @@ class PhotosRepositoryImpl @Inject constructor(
 
     override suspend fun insertThumbnailsToDb(thumbnailsList: List<PhotoUiData>) {
         thumbnailsDao.insertThumbnailPhotos(thumbnailsList.map { it.toEntity() })
+    }
+
+    override suspend fun savePhotoThumbnailToDb(photo: PhotoData, thumbnailBytes: ByteArray) {
+        thumbnailsDao.insertThumbnailPhoto(photo.toEntity(thumbnailBytes))
     }
 
     override suspend fun getThumbnailsFromDb(): List<PhotoUiData> = thumbnailsDao.getAllThumbnails().map {

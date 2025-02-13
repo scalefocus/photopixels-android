@@ -5,6 +5,7 @@ data class PhotoUiData(
     val thumbnail: String, // Thumbnail encoded in Base64
     val thumbnailByteArray: ByteArray,
     val hash: String,
+    val localUri: String? = null,
     var isNewlyUploaded: Boolean = false,
     val appleCloudId: String?,
     val androidCloudId: String?,
@@ -18,6 +19,7 @@ data class PhotoUiData(
         if (thumbnail != other.thumbnail) return false
         if (!thumbnailByteArray.contentEquals(other.thumbnailByteArray)) return false
         if (hash != other.hash) return false
+        if (localUri != other.localUri) return false
 
         return true
     }
@@ -26,6 +28,7 @@ data class PhotoUiData(
         var result = thumbnail.hashCode()
         result = 31 * result + thumbnailByteArray.contentHashCode()
         result = 31 * result + hash.hashCode()
+        result = 31 * result + localUri.hashCode()
         return result
     }
 }

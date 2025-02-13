@@ -10,7 +10,7 @@ import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 
 fun PhotosEntity.toDomain() = PhotoData(
-    id = id.toString(),
+    id = id,
     fileName = fileName,
     fileSize = fileSize,
     mimeType = mimeType,
@@ -19,11 +19,12 @@ fun PhotosEntity.toDomain() = PhotoData(
     appleCloudId = appleCloudId,
     hash = hash,
     serverItemHashId = serverItemHashId,
-    isDeleted = isDeleted
+    isDeleted = isDeleted,
+    dateAdded = dateAdded,
 )
 
 fun PhotoData.toEntity() = PhotosEntity(
-    id = Integer.valueOf(id),
+    id = id,
     fileName = fileName,
     contentUri = contentUri,
     fileSize = fileSize,
@@ -33,7 +34,20 @@ fun PhotoData.toEntity() = PhotosEntity(
     hash = hash ?: "",
     serverItemHashId = serverItemHashId,
     isDeleted = isDeleted,
-    isAlreadyUploaded = isAlreadyUploaded
+    isAlreadyUploaded = isAlreadyUploaded,
+    dateAdded = dateAdded,
+)
+
+fun PhotoData.toEntity(thumbnailBytes: ByteArray) = ThumbnailsEntity(
+    id = id.toString(),
+    thumbnailBytes = thumbnailBytes,
+    hash = "",
+    localUri = contentUri,
+    androidCloudId = androidCloudId,
+    appleCloudId = appleCloudId,
+    contentType = "",
+    height = 0,
+    width = 0
 )
 
 fun ObjectResponse.toDomain() = PhotoUiData(
@@ -50,6 +64,7 @@ fun ThumbnailsEntity.toDomain() = PhotoUiData(
     thumbnailByteArray = thumbnailBytes,
     thumbnail = "",
     hash = hash,
+    localUri = localUri,
     androidCloudId = androidCloudId,
     appleCloudId = appleCloudId
 )
@@ -60,6 +75,7 @@ fun PhotoUiData.toEntity() = ThumbnailsEntity(
     hash = hash,
     androidCloudId = androidCloudId,
     appleCloudId = appleCloudId,
+    localUri = localUri,
     contentType = "",
     height = 0,
     width = 0

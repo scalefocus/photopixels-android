@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "device_photos")
 data class PhotosEntity(
     @PrimaryKey
-    var id: Int, //  This is from MediaStore.Images.Media._ID
+    val id: Long, //  This is from MediaStore.Images.Media._ID
     val fileName: String,
     val fileSize: Long,
     val mimeType: String,
@@ -17,5 +17,6 @@ data class PhotosEntity(
     val serverItemHashId: String?, // This hash is available after successful upload
     val isDeleted: Boolean?,
     /** Flag to prevent duplicate uploading on device level */
-    val isAlreadyUploaded: Boolean?
+    val isAlreadyUploaded: Boolean?,
+    val dateAdded: Long,
 )

@@ -15,6 +15,9 @@ interface ThumbnailsDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertThumbnailPhotos(thumbnailsList: List<ThumbnailsEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertThumbnailPhoto(thumbnail: ThumbnailsEntity)
+
     @Query("Select count(*) from thumbnails_photos")
     suspend fun getThumbnailsCount(): Int
 

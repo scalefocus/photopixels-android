@@ -1,7 +1,7 @@
 package io.photopixels.domain.model
 
 data class PhotoData(
-    val id: String,
+    val id: Long,
     val fileName: String,
     val fileSize: Long,
     val mimeType: String,
@@ -11,5 +11,6 @@ data class PhotoData(
     val androidCloudId: String?,
     val serverItemHashId: String? = null,
     val isDeleted: Boolean? = null,
-    val isAlreadyUploaded: Boolean? = null
+    val isAlreadyUploaded: Boolean? = null,
+    val dateAdded: Long,
 )

@@ -14,6 +14,8 @@ interface PhotosRepository {
 
     fun getDevicePhotos(context: Context): List<PhotoData>
 
+    suspend fun loadPhotoThumbnail(context: Context, photo: PhotoData): ByteArray
+
     fun getPhotosDataForUploadFromDB(): List<PhotoData>
 
     suspend fun removePhotoDataFromDB(photoId: Int)
@@ -37,6 +39,8 @@ interface PhotosRepository {
     suspend fun clearPhotosTable()
 
     suspend fun insertThumbnailsToDb(thumbnailsList: List<PhotoUiData>)
+
+    suspend fun savePhotoThumbnailToDb(photo: PhotoData, thumbnailBytes: ByteArray)
 
     suspend fun getThumbnailsFromDb(): List<PhotoUiData>
 

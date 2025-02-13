@@ -12,6 +12,7 @@ data class ThumbnailsEntity(
     val thumbnailBytes: ByteArray,
     val contentType: String,
     val hash: String,
+    val localUri: String?,
     val appleCloudId: String?,
     val androidCloudId: String?,
     val width: Int,
@@ -27,6 +28,7 @@ data class ThumbnailsEntity(
         if (!thumbnailBytes.contentEquals(other.thumbnailBytes)) return false
         if (contentType != other.contentType) return false
         if (hash != other.hash) return false
+        if (localUri != other.localUri) return false
         if (appleCloudId != other.appleCloudId) return false
         if (androidCloudId != other.androidCloudId) return false
         if (width != other.width) return false
@@ -40,6 +42,7 @@ data class ThumbnailsEntity(
         result = 31 * result + thumbnailBytes.contentHashCode()
         result = 31 * result + contentType.hashCode()
         result = 31 * result + hash.hashCode()
+        result = 31 * result + localUri.hashCode()
         result = 31 * result + (appleCloudId?.hashCode() ?: 0)
         result = 31 * result + (androidCloudId?.hashCode() ?: 0)
         result = 31 * result + width
