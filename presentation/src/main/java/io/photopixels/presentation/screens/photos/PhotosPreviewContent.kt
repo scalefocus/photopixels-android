@@ -1,7 +1,6 @@
 package io.photopixels.presentation.screens.photos
 
 import android.graphics.drawable.Drawable
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -31,7 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
+import coil3.compose.rememberAsyncImagePainter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.RequestOptions
@@ -47,7 +46,6 @@ import net.engawapg.lib.zoomable.zoomable
 
 private const val BEYOND_BOUNDS_PAGE_COUNT = 1
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions: (PhotosPreviewActions) -> Unit) {
     var currentImageIndex by remember { mutableIntStateOf(0) }

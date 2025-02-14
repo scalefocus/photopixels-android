@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -37,10 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.bumptech.glide.Glide
-import com.bumptech.glide.MemoryCategory
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.CircularIndicator
@@ -100,15 +99,13 @@ fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenAction
 
 @Composable
 private fun ThumbnailsGrid(state: HomeScreenState, onThumbnailClick: (String) -> Unit) {
-    Glide.get(LocalContext.current).setMemoryCategory(MemoryCategory.HIGH)
-
-    LazyVerticalGrid(columns = GridCells.Fixed(THUMBNAILS_GRID_COLUMNS), modifier = Modifier) {
+    val gridState = rememberLazyGridState()
+    LazyVerticalGrid(columns = GridCells.Fixed(THUMBNAILS_GRID_COLUMNS), state = gridState) {
         items(count = state.photoThumbnails.size, key = { index -> state.photoThumbnails[index].id }) { index ->
             Box(
                 modifier = Modifier
                     .padding(1.dp)
-                    .height(85.dp)
-                    .width(85.dp)
+                    .aspectRatio(1f)
             ) {
                 val photoData = state.photoThumbnails[index]
                 ThumbnailImage(
@@ -122,7 +119,6 @@ private fun ThumbnailsGrid(state: HomeScreenState, onThumbnailClick: (String) ->
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun ThumbnailImage(
     id: String,
@@ -138,7 +134,18 @@ private fun ThumbnailImage(
         shape = RectangleShape
     ) {
         Box(contentAlignment = Alignment.TopCenter) {
-            GlideImage(model = thumbnail, contentDescription = null, contentScale = ContentScale.Crop)
+            Image(
+                modifier = Modifier.fillMaxSize(),
+                painter = rememberAsyncImagePainter(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(thumbnail)
+                        .memoryCacheKey(id)
+                        .diskCacheKey(id)
+                        .build(),
+                ),
+                contentScale = ContentScale.Crop,
+                contentDescription = null,
+            )
 
             if (isNewlyUploaded) {
                 SmallGreenCircle(
