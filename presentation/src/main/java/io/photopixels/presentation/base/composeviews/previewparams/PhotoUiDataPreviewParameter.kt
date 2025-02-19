@@ -8,36 +8,36 @@ class PhotoUiDataPreviewParameter : PreviewParameterProvider<PhotoUiData> {
         get() = sequenceOf(
             PhotoUiData(
                 id = "123",
-                thumbnail = "",
                 hash = "asd",
                 thumbnailByteArray = byteArrayOf(),
                 appleCloudId = "",
-                androidCloudId = ""
+                androidCloudId = "",
+                dateTaken = 0,
             ),
             PhotoUiData(
                 id = "asd1",
-                thumbnail = "",
                 hash = "asd1",
                 thumbnailByteArray = byteArrayOf(),
                 isNewlyUploaded = true,
                 appleCloudId = "",
-                androidCloudId = ""
+                androidCloudId = "",
+                dateTaken = 0,
             ),
             PhotoUiData(
                 id = "njh",
-                thumbnail = "",
                 hash = "asd2",
                 thumbnailByteArray = byteArrayOf(),
                 appleCloudId = "",
-                androidCloudId = ""
+                androidCloudId = "",
+                dateTaken = 0,
             ),
             PhotoUiData(
                 id = "asda",
-                thumbnail = "",
                 hash = "asd3",
                 thumbnailByteArray = byteArrayOf(),
                 appleCloudId = "",
-                androidCloudId = ""
+                androidCloudId = "",
+                dateTaken = 0,
             )
         )
 }

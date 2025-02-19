@@ -38,9 +38,13 @@ interface PhotosRepository {
 
     suspend fun insertThumbnailsToDb(thumbnailsList: List<PhotoUiData>)
 
-    suspend fun getThumbnailsFromDb(): List<PhotoUiData>
+    fun getThumbnailsFromDb(): Flow<List<PhotoUiData>>
+
+    suspend fun clearNewlyUploadedThumbnails()
 
     suspend fun getThumbnailsFromDbCount(): Int
+
+    suspend fun deleteThumbnailsFromDb(ids: List<String>)
 
     suspend fun clearThumbnailsTable()
 

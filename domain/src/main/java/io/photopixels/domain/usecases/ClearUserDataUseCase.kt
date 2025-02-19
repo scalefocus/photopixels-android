@@ -18,6 +18,7 @@ class ClearUserDataUseCase @Inject constructor(
         photosRepository.clearThumbnailsTable()
         googlePhotosRepository.clearGooglePhotosTable()
         authRepository.clearGoogleAuthState()
+        serverRepository.clearLocalRevision()
 
         if (clearServerData) {
             serverRepository.clearServerData()

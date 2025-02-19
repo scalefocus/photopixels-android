@@ -38,31 +38,34 @@ fun PhotoData.toEntity() = PhotosEntity(
 
 fun ObjectResponse.toDomain() = PhotoUiData(
     id = id,
-    thumbnail = thumbnail,
     hash = hash,
     thumbnailByteArray = Base64.decode(thumbnail, Base64.DEFAULT),
     androidCloudId = androidCloudId,
-    appleCloudId = appleCloudId
+    appleCloudId = appleCloudId,
+    dateTaken = 0,
 )
 
 fun ThumbnailsEntity.toDomain() = PhotoUiData(
     id = id,
     thumbnailByteArray = thumbnailBytes,
-    thumbnail = "",
     hash = hash,
+    isNewlyUploaded = isNewlyUploaded,
     androidCloudId = androidCloudId,
-    appleCloudId = appleCloudId
+    appleCloudId = appleCloudId,
+    dateTaken = dateTaken,
 )
 
 fun PhotoUiData.toEntity() = ThumbnailsEntity(
     id = id,
     thumbnailBytes = thumbnailByteArray,
     hash = hash,
+    isNewlyUploaded = isNewlyUploaded,
     androidCloudId = androidCloudId,
     appleCloudId = appleCloudId,
     contentType = "",
     height = 0,
-    width = 0
+    width = 0,
+    dateTaken = dateTaken,
 )
 
 fun ObjectUploadResponse.toDomain() = PhotoUploadData(id, revision)

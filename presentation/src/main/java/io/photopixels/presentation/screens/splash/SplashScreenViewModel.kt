@@ -37,7 +37,7 @@ class SplashScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val serverInfo = getServerInfoUseCase.getServerAddress()
             serverInfo?.let {
-                getServerRevisionUseCase.invoke(specificRevision = 0).collect {
+                getServerRevisionUseCase.invoke(specificRevision = 0).let {
                     if (it is Response.Success) {
                         submitEvent(SplashScreenEvents.NavigateToHomeScreen)
                     } else if (it is Response.Failure) {
