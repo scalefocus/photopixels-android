@@ -42,7 +42,6 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.presentation.R
-import io.photopixels.presentation.base.composeviews.CircularIndicator
 import io.photopixels.presentation.base.composeviews.SFButton
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
 import io.photopixels.presentation.base.composeviews.previewparams.PhotoUiDataPreviewParameter
@@ -69,10 +68,6 @@ fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenAction
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (state.isLoading) {
-                CircularIndicator()
-            }
-
             state.errorMsgId?.let {
                 ShowAlertDialog(
                     title = stringResource(id = R.string.error_title),
@@ -82,12 +77,12 @@ fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenAction
                 )
             }
 
-            if (state.photoThumbnails.isEmpty()) {
+            if (state.photoThumbnails.isEmpty() && !state.isLoading) {
                 EmptyState(
                     isSyncStarted = state.isSyncStarted,
                     onBtnClick = { onSubmitActions(HomeScreenActions.OnSyncButtonClick) }
                 )
-            } else {
+            } else if (state.photoThumbnails.isNotEmpty()) {
                 ThumbnailsGrid(
                     state = state,
                     onThumbnailClick = { onSubmitActions(HomeScreenActions.OnThumbnailClick(it)) }

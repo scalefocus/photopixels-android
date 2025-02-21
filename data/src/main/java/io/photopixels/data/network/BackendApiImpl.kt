@@ -33,6 +33,8 @@ import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class BackendApiImpl @Inject constructor(
@@ -99,7 +101,7 @@ class BackendApiImpl @Inject constructor(
         Response.Success(result)
     }
 
-    override suspend fun getServerRevision(revisionNumber: Int?): Response<ServerRevision> =
+    override suspend fun getServerRevision(revisionNumber: Int): Response<ServerRevision> =
         request {
             val result = httpClient
                 .get {
@@ -116,7 +118,10 @@ class BackendApiImpl @Inject constructor(
                     setBody(ObjectsDataRequest(serverItemHashIds))
                 }.body<List<ObjectResponse>>()
 
-            Response.Success(result.map { it.toDomain() })
+            // switch to default dispatcher to avoid blocking the main thread when decoding thumbnails
+            withContext(Dispatchers.Default) {
+                Response.Success(result.map { it.toDomain() })
+            }
         }
 
     override suspend fun uploadPhoto(
