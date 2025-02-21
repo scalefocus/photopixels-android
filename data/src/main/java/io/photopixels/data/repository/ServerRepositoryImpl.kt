@@ -21,11 +21,8 @@ class ServerRepositoryImpl @Inject constructor(
             emit(result)
         }
 
-    override suspend fun getServerRevision(specificRevision: Int?): Flow<Response<ServerRevision>> =
-        flow {
-            val result = backendApi.getServerRevision()
-            emit(result)
-        }
+    override suspend fun getServerRevision(specificRevision: Int): Response<ServerRevision> =
+        backendApi.getServerRevision(specificRevision)
 
     override suspend fun setServerAddressToDataStore(serverAddress: ServerAddress) {
         userPreferencesDataStore.setServerAddress(serverAddress)
@@ -42,4 +39,12 @@ class ServerRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getServerAddress(): ServerAddress? = userPreferencesDataStore.getServerAddress()
+
+    override suspend fun setLocalRevision(revision: Int) {
+        userPreferencesDataStore.setLocalRevision(revision)
+    }
+
+    override suspend fun getLocalRevision(): Int = userPreferencesDataStore.getLocalRevision()
+
+    override suspend fun clearLocalRevision() = userPreferencesDataStore.clearLocalRevision()
 }

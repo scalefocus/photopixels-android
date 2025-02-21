@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface ServerRepository {
     suspend fun getServerStatus(serverAddress: ServerAddress): Flow<Response<ServerStatus>>
 
-    suspend fun getServerRevision(specificRevision: Int?): Flow<Response<ServerRevision>>
+    suspend fun getServerRevision(specificRevision: Int = 0): Response<ServerRevision>
 
     suspend fun setServerAddressToDataStore(serverAddress: ServerAddress)
 
@@ -20,4 +20,10 @@ interface ServerRepository {
     suspend fun getServerVersion(): String
 
     suspend fun clearServerData()
+
+    suspend fun setLocalRevision(revision: Int)
+
+    suspend fun getLocalRevision(): Int
+
+    suspend fun clearLocalRevision()
 }

@@ -9,9 +9,6 @@ import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 
 interface BackendApi {
-    companion object {
-        private const val DEFAULT_REVISION_NUMBER = 0
-    }
 
     suspend fun getServerStatus(serverAddress: ServerAddress): Response<ServerStatus>
 
@@ -23,7 +20,7 @@ interface BackendApi {
 
     suspend fun registerUser(name: String, email: String, password: String): Response<Unit>
 
-    suspend fun getServerRevision(revisionNumber: Int? = DEFAULT_REVISION_NUMBER): Response<ServerRevision>
+    suspend fun getServerRevision(revisionNumber: Int): Response<ServerRevision>
 
     suspend fun getThumbnailsByIds(serverItemHashIds: List<String>): Response<List<PhotoUiData>>
 

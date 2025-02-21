@@ -22,6 +22,9 @@ class UserPreferencesDataStore @Inject constructor(
         private val SERVER_ADDRESS_KEY = stringPreferencesKey("server_address")
         private val SERVER_VERSION_KEY = stringPreferencesKey("server_version")
         private val USER_SETTINGS_KEY = stringPreferencesKey("user_settings")
+        private val LOCAL_REVISION_KEY = stringPreferencesKey("local_revision")
+
+        private const val DEFAULT_REVISION_NUMBER = 0
     }
 
     suspend fun setServerAddress(serverAddress: ServerAddress) {
@@ -69,5 +72,22 @@ class UserPreferencesDataStore @Inject constructor(
         Gson().fromJson(jsonString, UserSettings::class.java)
     } catch (ex: NoSuchElementException) {
         null
+    }
+
+    suspend fun setLocalRevision(revision: Int) {
+        val encryptedRevision = cipherUtil.encrypt(revision.toString())
+
+        context.dataStore.edit { preferences ->
+            preferences[LOCAL_REVISION_KEY] = encryptedRevision
+        }
+    }
+
+    suspend fun getLocalRevision(): Int = context.dataStore.data.first()[LOCAL_REVISION_KEY]
+        ?.let { encryptedRevision -> cipherUtil.decrypt(encryptedRevision).toIntOrNull() } ?: DEFAULT_REVISION_NUMBER
+
+    suspend fun clearLocalRevision() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(LOCAL_REVISION_KEY)
+        }
     }
 }

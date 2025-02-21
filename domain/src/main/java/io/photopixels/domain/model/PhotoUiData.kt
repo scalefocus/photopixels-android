@@ -2,12 +2,12 @@ package io.photopixels.domain.model
 
 data class PhotoUiData(
     val id: String,
-    val thumbnail: String, // Thumbnail encoded in Base64
     val thumbnailByteArray: ByteArray,
     val hash: String,
-    var isNewlyUploaded: Boolean = false,
+    val isNewlyUploaded: Boolean = false,
     val appleCloudId: String?,
     val androidCloudId: String?,
+    val dateTaken: Long,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -15,17 +15,19 @@ data class PhotoUiData(
 
         other as PhotoUiData
 
-        if (thumbnail != other.thumbnail) return false
         if (!thumbnailByteArray.contentEquals(other.thumbnailByteArray)) return false
         if (hash != other.hash) return false
+        if (isNewlyUploaded != other.isNewlyUploaded) return false
+        if (dateTaken != other.dateTaken) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = thumbnail.hashCode()
-        result = 31 * result + thumbnailByteArray.contentHashCode()
+        var result = thumbnailByteArray.contentHashCode()
         result = 31 * result + hash.hashCode()
+        result = 31 * result + isNewlyUploaded.hashCode()
+        result = 31 * result + dateTaken.hashCode()
         return result
     }
 }

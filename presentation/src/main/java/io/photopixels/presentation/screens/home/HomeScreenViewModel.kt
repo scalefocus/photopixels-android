@@ -6,16 +6,13 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.base.Response
-import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.model.WorkerStatus
-import io.photopixels.domain.usecases.GetServerRevisionUseCase
-import io.photopixels.domain.usecases.GetServerThumbnailsUseCase
 import io.photopixels.domain.usecases.GetThumbnailsFromDbUseCase
 import io.photopixels.domain.usecases.GetUserSettingsUseCase
 import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
 import io.photopixels.domain.usecases.SavePhotosIdsInMemoryUseCase
-import io.photopixels.domain.usecases.SaveThumbnailsToDbUseCase
+import io.photopixels.domain.usecases.SyncServerThumbnails
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
@@ -29,11 +26,9 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions")
 class HomeScreenViewModel @Inject constructor(
     private val workerStarter: WorkerStarter,
-    private val getServerRevisionUseCase: GetServerRevisionUseCase,
-    private val getServerThumbnailsUseCase: GetServerThumbnailsUseCase,
+    private val syncServerThumbnails: SyncServerThumbnails,
     private val savePhotosIdsInMemoryUseCase: SavePhotosIdsInMemoryUseCase,
     private val getThumbnailsFromDbUseCase: GetThumbnailsFromDbUseCase,
-    private val saveThumbnailsToDbUseCase: SaveThumbnailsToDbUseCase,
     private val getUserSettingsUseCase: GetUserSettingsUseCase,
     private val googleAuthorization: GoogleAuthorization,
     private val saveGoogleAuthTokenUseCase: SaveGoogleAuthTokenUseCase
@@ -43,6 +38,12 @@ class HomeScreenViewModel @Inject constructor(
     private val getServerThumbnailsProgressState = MutableStateFlow(NOT_STARTED)
 
     init {
+        viewModelScope.launch {
+            getThumbnailsFromDbUseCase().collect { photoThumbnails ->
+                updateState { copy(photoThumbnails = photoThumbnails) }
+            }
+        }
+
         loadStartupData()
     }
 
@@ -98,79 +99,15 @@ class HomeScreenViewModel @Inject constructor(
     private fun getServerRevisionAndThumbnails(isUploadComplete: Boolean = false) {
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
-
-            getServerRevisionUseCase(null).collect { revisionResponse ->
-                if (revisionResponse is Response.Success) {
-                    val serverItemsIdsList = revisionResponse.result.added.map { it.key }
-                    getServerThumbnailsChunked(serverItemsIdsList, isUploadComplete)
-                } else if (revisionResponse is Response.Failure) {
-                    when (revisionResponse.error) {
-                        is PhotoPixelError.NoInternetConnection -> {
-                            val thumbnailsFromDb = getThumbnailsFromDb()
-                            updateState { copy(photoThumbnails = thumbnailsFromDb) }
-                        }
-
-                        else -> {
-                            // TODO handle with some error message later
-                        }
-                    }
-                    updateState { copy(isLoading = false) }
-                }
+            val syncResponse = syncServerThumbnails(isUploadComplete = isUploadComplete)
+            if (syncResponse is Response.Failure) {
+                // TODO handle with some error message later
+                Timber.tag(TAG).e("Unable to Sync thumbnails from the server")
             }
 
+            updateState { copy(isLoading = false) }
             getServerThumbnailsProgressState.emit(NOT_STARTED)
         }
-    }
-
-    /**
-     * Get PhotoPixels thumbnails in chunks(multiple requests) if there are more than @MAX_OBJECTS_TO_REQUEST
-     * Note: At this moment the server threshold is MAX 100 items per request
-     */
-    private suspend fun getServerThumbnailsChunked(serverItemsIdsList: List<String>, isUploadComplete: Boolean) {
-        val chunkSize = MAX_OBJECTS_TO_REQUEST
-        val serverThumbnails = mutableListOf<PhotoUiData>()
-
-        // Contains list with Pair<photosCount, List<photosIds>> to be fetched
-        val serverItemsIdsPairList = mutableListOf<Pair<Int, List<String>>>()
-        serverItemsIdsList.chunked(chunkSize) { chunkedServerItems ->
-            serverItemsIdsPairList.add(Pair(chunkedServerItems.size, chunkedServerItems.toList()))
-        }
-
-        serverItemsIdsPairList.forEach { pair ->
-            val result = getServerThumbnails(chunkedServerItemsIds = pair.second, isUploadComplete)
-            serverThumbnails.addAll(result)
-        }
-
-        val itemsToShow = serverThumbnails.reversed().distinctBy { it.hash }
-        saveThumbnailsToDbUseCase.invoke(itemsToShow)
-        updateState { HomeScreenState(isLoading = false, photoThumbnails = itemsToShow) }
-    }
-
-    private suspend fun getServerThumbnails(
-        chunkedServerItemsIds: List<String>,
-        isUploadComplete: Boolean
-    ): List<PhotoUiData> {
-        val serverThumbnailsResponse = getServerThumbnailsUseCase(chunkedServerItemsIds)
-        if (serverThumbnailsResponse is Response.Success) {
-            return if (isUploadComplete) {
-                // Determine newly added items by comparing hashes
-                val existingPhotoHashes = state.value.photoThumbnails
-                    .map { it.hash }
-                    .toSet()
-                val newItems = serverThumbnailsResponse.result.filter {
-                    !existingPhotoHashes.contains(it.hash)
-                }
-
-                newItems.forEach { it.isNewlyUploaded = true }
-                val totalItems = state.value.photoThumbnails + newItems
-
-                totalItems
-            } else {
-                serverThumbnailsResponse.result
-            }
-        }
-
-        return emptyList()
     }
 
     private fun startWorkersAndListeners() {
@@ -228,11 +165,6 @@ class HomeScreenViewModel @Inject constructor(
             getServerRevisionAndThumbnails(isUploadComplete = true)
         }
     }
-
-    // TODO Implement logic for load Thumbnails from db, when app's revision and BE revision are equal
-    // NOTE: Currently we don't have latest backend revision, until we execute /revision service
-    // Suggestion made: we can add latest backend revision to /status or /login endpoints
-    private suspend fun getThumbnailsFromDb(): List<PhotoUiData> = getThumbnailsFromDbUseCase.invoke()
 
     private fun syncLocalPhotos() {
         viewModelScope.launch {
@@ -300,7 +232,6 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     companion object {
-        private const val MAX_OBJECTS_TO_REQUEST = 90
         private const val STARTED = true
         private const val NOT_STARTED = false
         private const val TAG = "HOME_SCREEN_VIEWMODEL"

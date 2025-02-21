@@ -7,6 +7,7 @@ import io.photopixels.data.media.MediaHelper
 import io.photopixels.data.network.BackendApi
 import io.photopixels.data.storage.database.PhotosDao
 import io.photopixels.data.storage.database.ThumbnailsDao
+import io.photopixels.data.storage.database.entities.ThumbnailsEntity
 import io.photopixels.data.storage.memory.MemoryStorage
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoData
@@ -14,6 +15,7 @@ import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.repository.PhotosRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -71,11 +73,22 @@ class PhotosRepositoryImpl @Inject constructor(
         thumbnailsDao.insertThumbnailPhotos(thumbnailsList.map { it.toEntity() })
     }
 
-    override suspend fun getThumbnailsFromDb(): List<PhotoUiData> = thumbnailsDao.getAllThumbnails().map {
-        it.toDomain()
+    override fun getThumbnailsFromDb(): Flow<List<PhotoUiData>> = thumbnailsDao.getAllThumbnails().mapLatest {
+        it.map(ThumbnailsEntity::toDomain)
+    }
+
+    override suspend fun clearNewlyUploadedThumbnails() {
+        thumbnailsDao.getAllNewlyUploadedThumbnails()
+            .map { it.copy(isNewlyUploaded = false) }
+            .takeIf { it.isNotEmpty() }
+            ?.let { thumbnailsDao.updateThumbnailPhotos(it) }
     }
 
     override suspend fun getThumbnailsFromDbCount(): Int = thumbnailsDao.getThumbnailsCount()
+
+    override suspend fun deleteThumbnailsFromDb(ids: List<String>) {
+        thumbnailsDao.deletePhotos(ids)
+    }
 
     override suspend fun clearThumbnailsTable() {
         thumbnailsDao.clearTable()
