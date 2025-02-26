@@ -30,7 +30,7 @@ fun NavGraphs(navController: NavHostController, modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            if (isScreenHaveBottomBar(navHostController = navController)) {
+            if (navController.shouldAddBottomNav()) {
                 NavigationBar(navHostController = navController)
             }
         }
@@ -103,8 +103,8 @@ private fun NavigationBar(navHostController: NavHostController) {
 }
 
 @Composable
-private fun isScreenHaveBottomBar(navHostController: NavHostController): Boolean {
-    val navBackStackEntry by navHostController.currentBackStackEntryAsState()
+private fun NavHostController.shouldAddBottomNav(): Boolean {
+    val navBackStackEntry by currentBackStackEntryAsState()
     val bottomBarsRoutes = remember(navigationBarItems) { navigationBarItems.map { it.route::class } }
     return navBackStackEntry?.destination?.hasRouteIn(bottomBarsRoutes) ?: false
 }
@@ -119,15 +119,9 @@ private fun HandleScreenOrientation(currentDestination: NavDestination) {
     }
 }
 
-internal fun NavDestination.hasRouteIn(routes: List<KClass<out Any>>): Boolean {
-    routes.forEach { route ->
-        if (hasRoute(route)) {
-            return true
-        }
-    }
-
-    return false
-}
+private fun NavDestination.hasRouteIn(
+    routes: List<KClass<out Any>>
+): Boolean = routes.any { route -> hasRoute(route) }
 
 internal fun NavHostController.navigateWithoutHistory(destinationRoute: Any) {
     navigate(destinationRoute) {
