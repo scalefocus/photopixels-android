@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
@@ -47,9 +48,9 @@ import io.photopixels.presentation.base.composeviews.ShowAlertDialog
 import io.photopixels.presentation.base.composeviews.previewparams.PhotoUiDataPreviewParameter
 import io.photopixels.presentation.theme.PhotoPixelsTheme
 import io.photopixels.presentation.theme.SFSecondaryLightBlue
+import io.photopixels.presentation.utils.toThumbnailsGroupString
 import kotlinx.collections.immutable.ImmutableList
-
-private const val THUMBNAILS_GRID_COLUMNS = 5
+import java.time.YearMonth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Suppress("LambdaParameterInRestartableEffect")
@@ -95,20 +96,31 @@ fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenAction
 @Composable
 private fun ThumbnailsGrid(state: HomeScreenState, onThumbnailClick: (String) -> Unit) {
     val gridState = rememberLazyGridState()
-    LazyVerticalGrid(columns = GridCells.Fixed(THUMBNAILS_GRID_COLUMNS), state = gridState) {
-        items(count = state.photoThumbnails.size, key = { index -> state.photoThumbnails[index].id }) { index ->
-            Box(
-                modifier = Modifier
-                    .padding(1.dp)
-                    .aspectRatio(1f)
-            ) {
-                val photoData = state.photoThumbnails[index]
-                ThumbnailImage(
-                    thumbnail = photoData.thumbnailByteArray,
-                    isNewlyUploaded = photoData.isNewlyUploaded,
-                    id = photoData.id,
-                    onThumbnailClick = onThumbnailClick
+    LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 80.dp), state = gridState) {
+        state.photoThumbnails.forEach { (yearMonth, photoThumbnails) ->
+            // Month header
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                    modifier = Modifier.padding(8.dp),
+                    text = yearMonth.toThumbnailsGroupString(),
                 )
+            }
+
+            // items for the current month
+            items(count = photoThumbnails.size, key = { index -> photoThumbnails[index].id }) { index ->
+                Box(
+                    modifier = Modifier
+                        .padding(1.dp)
+                        .aspectRatio(1f)
+                ) {
+                    val photoData = photoThumbnails[index]
+                    ThumbnailImage(
+                        thumbnail = photoData.thumbnailByteArray,
+                        isNewlyUploaded = photoData.isNewlyUploaded,
+                        id = photoData.id,
+                        onThumbnailClick = onThumbnailClick
+                    )
+                }
             }
         }
     }
@@ -217,7 +229,10 @@ private fun PreviewHomeScreen(
     PhotoPixelsTheme {
         HomeScreenContent(
             state = HomeScreenState(
-                photoThumbnails = photosUiList
+                photoThumbnails = mapOf(
+                    YearMonth.now() to photosUiList,
+                    YearMonth.now().minusYears(1) to photosUiList
+                )
             ),
             onSubmitActions = {}
         )
