@@ -120,11 +120,11 @@ class HomeScreenViewModel @Inject constructor(
 
     private fun initUploadPhotosWorkerListener() {
         viewModelScope.launch {
-            workerStarter.getUploadPhotosWorkerListener().collect {
-                if (it.workerStatus == WorkerStatus.FINISHED) {
+            workerStarter.getUploadPhotosWorkerListener().collect { workerInfo ->
+                if (workerInfo.workerStatus == WorkerStatus.FINISHED) {
                     updateState { copy(isSyncStarted = false) }
-                    // Refresh thumbnails only if photos was uploaded
-                    if (it.resultData?.get(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY) as Int > 0) {
+
+                    if (workerInfo.uploadedPhotosCount > 0) {
                         refreshThumbnails()
                     }
                 }
@@ -135,7 +135,9 @@ class HomeScreenViewModel @Inject constructor(
     private fun initGooglePhotosWorkerListener() {
         viewModelScope.launch {
             workerStarter.getGooglePhotosWorkerListener().collect { workerInfo ->
-                if (workerInfo?.workerStatus == WorkerStatus.FAILED) {
+                workerInfo ?: return@collect
+
+                if (workerInfo.workerStatus == WorkerStatus.FAILED) {
                     val error = workerInfo.resultData?.get(WorkerInfo.WORKER_ERROR_RESULT_KEY) as String
 
                     if (error == PhotoPixelError.ExpiredGoogleAuthTokenError.toString()) {
@@ -143,17 +145,16 @@ class HomeScreenViewModel @Inject constructor(
                     } else {
                         handleGoogleError(PhotoPixelError.GenericGoogleError)
                     }
-                } else {
-                    if (workerInfo?.resultData?.containsKey(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY) == true &&
-                        workerInfo.resultData?.get(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY) as Int > 0
-                    ) {
-                        // Refresh Home screen thumbnails
-                        refreshThumbnails()
-                    }
+                } else if (workerInfo.uploadedPhotosCount > 0) {
+                    refreshThumbnails()
                 }
             }
         }
     }
+
+    private val WorkerInfo.uploadedPhotosCount: Int
+        get() = resultData?.get(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY)
+            ?.let { uploadPhotoResult -> uploadPhotoResult as? Int } ?: 0
 
     private suspend fun refreshThumbnails() {
         // Wait if function is already started

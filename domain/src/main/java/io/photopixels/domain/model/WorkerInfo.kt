@@ -8,6 +8,8 @@ data class WorkerInfo(
     companion object {
         const val UPLOAD_PHOTOS_WORKER_RESULT_KEY = "uploaded_photos"
         const val WORKER_ERROR_RESULT_KEY = "worker_error"
+
+        val DEFAULT_FINISHED = WorkerInfo("", WorkerStatus.FINISHED)
     }
 }
 
