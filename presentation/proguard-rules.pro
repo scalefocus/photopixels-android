@@ -39,3 +39,5 @@
 # Exclude internal (package-private) classes
 -keep public class com.auth0.android.auth.** { *; }
 
+# Keep all classes annotated with @Serializable
+-keep @kotlinx.serialization.Serializable class * {*;}
