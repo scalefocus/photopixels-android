@@ -9,6 +9,7 @@ import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.model.WorkerStatus
 import io.photopixels.domain.usecases.GetThumbnailsFromDbUseCase
+import io.photopixels.domain.usecases.GetThumbnailsGroupedByMonthUseCase
 import io.photopixels.domain.usecases.GetUserSettingsUseCase
 import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
 import io.photopixels.domain.usecases.SavePhotosIdsInMemoryUseCase
@@ -28,6 +29,7 @@ class HomeScreenViewModel @Inject constructor(
     private val workerStarter: WorkerStarter,
     private val syncServerThumbnails: SyncServerThumbnails,
     private val savePhotosIdsInMemoryUseCase: SavePhotosIdsInMemoryUseCase,
+    private val getThumbnailsGroupedByMonthUseCase: GetThumbnailsGroupedByMonthUseCase,
     private val getThumbnailsFromDbUseCase: GetThumbnailsFromDbUseCase,
     private val getUserSettingsUseCase: GetUserSettingsUseCase,
     private val googleAuthorization: GoogleAuthorization,
@@ -39,7 +41,7 @@ class HomeScreenViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getThumbnailsFromDbUseCase().collect { photoThumbnails ->
+            getThumbnailsGroupedByMonthUseCase().collect { photoThumbnails ->
                 updateState { copy(photoThumbnails = photoThumbnails) }
             }
         }
@@ -64,7 +66,7 @@ class HomeScreenViewModel @Inject constructor(
             HomeScreenActions.StartSyncWorkers -> startWorkersAndListeners()
 
             is HomeScreenActions.OnThumbnailClick -> {
-                savePhotosIdsInMemoryUseCase.invoke(state.value.photoThumbnails.map { it.id })
+                savePhotosIdsInMemoryUseCase.invoke(state.value.photoThumbnails.flatMap { it.value.map { it.id } })
                 submitEvent(HomeScreenEvents.NavigateToPreviewPhotosScreen(action.serverItemId))
             }
 
