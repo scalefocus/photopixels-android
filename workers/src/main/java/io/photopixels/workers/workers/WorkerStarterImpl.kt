@@ -10,6 +10,7 @@ import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.model.WorkerStatus
 import io.photopixels.domain.workers.WorkerStarter
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.transform
 import java.util.UUID
@@ -18,9 +19,8 @@ import javax.inject.Inject
 class WorkerStarterImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : WorkerStarter {
-    private var uniquePhotosWorkId: UUID? = null
-    private var uniqueDevicesWorkId: UUID? = null
-    private var uniqueGooglePhotosWorkId: UUID? = null
+    private val uniquePhotosWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
+    private val uniqueGooglePhotosWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
     private val workerManager = WorkManager.getInstance(context)
 
     override fun startDevicePhotosWorker() {
@@ -46,8 +46,6 @@ class WorkerStarterImpl @Inject constructor(
 
         val devicePhotosWorkRequest = getDevicePhotosWorkerRequest()
         val uploadPhotosWorkRequest = getUploadPhotosWorkerRequest()
-        uniqueDevicesWorkId = devicePhotosWorkRequest.id
-        uniquePhotosWorkId = uploadPhotosWorkRequest.id
 
         WorkManager
             .getInstance(context)
@@ -56,21 +54,22 @@ class WorkerStarterImpl @Inject constructor(
             .enqueue()
     }
 
-    override fun getUploadPhotosWorkerListener(): Flow<WorkerInfo> = WorkManager
-        .getInstance(context)
-        .getWorkInfoByIdFlow(uniquePhotosWorkId!!) // TODO this may be null, handle it better
-        .transform { workInfo ->
-            if (workInfo?.state?.isFinished == true) {
-                val workerResultData = workInfo.outputData.keyValueMap
-                emit(
-                    WorkerInfo(
-                        workerTag = workInfo.tags.first(),
-                        WorkerStatus.FINISHED,
-                        resultData = workerResultData
+    override fun getUploadPhotosWorkerListener(): Flow<WorkerInfo> = uniquePhotosWorkId?.let { workId ->
+        workerManager.getWorkInfoByIdFlow(workId)
+            .filterNotNull()
+            .transform { workInfo ->
+                if (workInfo.state.isFinished) {
+                    val workerResultData = workInfo.outputData.keyValueMap
+                    emit(
+                        WorkerInfo(
+                            workerTag = workInfo.tags.first(),
+                            workerStatus = WorkerStatus.FINISHED,
+                            resultData = workerResultData,
+                        )
                     )
-                )
+                }
             }
-        }
+    } ?: flow { emit(WorkerInfo.DEFAULT_FINISHED) } // no work in progress, so emit default finished
 
     override fun getGooglePhotosWorkerListener(): Flow<WorkerInfo?> {
         uniqueGooglePhotosWorkId?.let {
@@ -99,9 +98,8 @@ class WorkerStarterImpl @Inject constructor(
     override fun startGooglePhotosWorker() {
         if (!isWorkerFinished(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)) return
 
-        uniqueGooglePhotosWorkId = getGooglePhotosWorkerRequest()
+        getGooglePhotosWorkerRequest()
             .also { WorkManager.getInstance(context).enqueue(it) }
-            .id
     }
 
     override fun stopGooglePhotosWorker() {
@@ -125,13 +123,13 @@ class WorkerStarterImpl @Inject constructor(
         .addTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
         .build()
 
-    private fun isWorkerFinished(workerTag: String): Boolean {
-        val workInfos = workerManager.getWorkInfosByTag(workerTag).get()
-        if (workInfos.isNotEmpty()) {
-            val state = workInfos[0].state
-            return state.isFinished
+    private fun getWorkingIdByTag(workerTag: String): UUID? = workerManager.getWorkInfosByTag(workerTag).get()
+        .let { workInfos ->
+            workInfos.find { !it.state.isFinished }?.id ?: workInfos.lastOrNull()?.id
         }
 
-        return true
+    private fun isWorkerFinished(workerTag: String): Boolean {
+        val workInfos = workerManager.getWorkInfosByTag(workerTag).get()
+        return workInfos.isEmpty() || workInfos.all { it.state.isFinished }
     }
 }
