@@ -1,6 +1,7 @@
 package io.photopixels.presentation.screens.home
 
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,13 +26,17 @@ fun HomeScreen(
     val requestPermissions = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissionsMap ->
-            submitAction(viewModel = viewModel, HomeScreenActions.OnPermissionResult(permissionsMap))
+            viewModel.submitAction(HomeScreenActions.OnPermissionResult(permissionsMap))
         }
     )
 
+    val pickedMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
+//        submitAction(viewModel, HomeScreenActions.OnPickedMedia(uris))
+    }
+
     ObserverLifecycleEvents(onStart = {
         if (shouldRefresh) {
-            submitAction(viewModel, HomeScreenActions.LoadStartupData)
+            viewModel.submitAction(HomeScreenActions.LoadStartupData)
         }
     })
 
@@ -41,6 +46,8 @@ fun HomeScreen(
                 is HomeScreenEvents.RequestStoragePermissionsEvent -> {
                     if (PermissionsHelper.checkAndRequestPermissions(context, requestPermissions)) {
                         viewModel.submitAction(HomeScreenActions.StartSyncWorkers)
+
+                        pickedMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     }
                 }
 
@@ -59,11 +66,7 @@ fun HomeScreen(
     HomeScreenContent(
         state = state,
         onSubmitActions = { action ->
-            submitAction(viewModel, action)
+            viewModel.submitAction(action)
         }
     )
-}
-
-private fun submitAction(viewModel: HomeScreenViewModel, actions: HomeScreenActions) {
-    viewModel.submitAction(actions)
 }

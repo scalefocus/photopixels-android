@@ -90,7 +90,6 @@ class GoogleAuthorization @Inject constructor(
     }
 
     fun handleAuthorizationResponse(intent: Intent): StateFlow<String?> {
-        var oAuthToken: String? = null
         val authorizationResponse: AuthorizationResponse? = AuthorizationResponse.fromIntent(intent)
         val error = AuthorizationException.fromIntent(intent)
 
@@ -113,7 +112,7 @@ class GoogleAuthorization @Inject constructor(
                             jwt = JWT(it)
                         }
 
-                        oAuthToken = response.accessToken
+                        val oAuthToken = response.accessToken
                         Timber
                             .tag(TAG)
                             .d("in handleAuthorizationResponse oAuthToken:$oAuthToken")
@@ -220,6 +219,6 @@ class GoogleAuthorization @Inject constructor(
         const val CODE_VERIFIER_CHALLENGE_METHOD = "S256"
 
         // Scopes for Google Photos access (read-only)
-        val SCOPES = listOf("https://www.googleapis.com/auth/photoslibrary.readonly")
+        val SCOPES = listOf("https://www.googleapis.com/auth/photospicker.mediaitems.readonly")
     }
 }
