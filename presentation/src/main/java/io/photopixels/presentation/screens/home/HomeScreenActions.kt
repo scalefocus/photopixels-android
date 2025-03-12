@@ -9,6 +9,8 @@ sealed class HomeScreenActions {
 
     data object OnSyncButtonClick : HomeScreenActions()
 
+    data object OnPickMediaButtonClick : HomeScreenActions()
+
     data object StartSyncWorkers : HomeScreenActions()
 
     data class OnThumbnailClick(

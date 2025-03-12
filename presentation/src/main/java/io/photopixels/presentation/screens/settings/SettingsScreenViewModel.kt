@@ -1,24 +1,31 @@
 package io.photopixels.presentation.screens.settings
 
+import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.UserSettings
 import io.photopixels.domain.usecases.ClearUserDataUseCase
 import io.photopixels.domain.usecases.GetAppInfoData
 import io.photopixels.domain.usecases.GetUserSettingsUseCase
 import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
 import io.photopixels.domain.usecases.SetUserSettingsUseCase
+import io.photopixels.domain.usecases.googlephotos.GetGooglePhotosPickingSessionUseCase
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.login.GoogleAuthorization
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 @HiltViewModel
 class SettingsScreenViewModel @Inject constructor(
     private val getAppInfoDataUseCase: GetAppInfoData,
     private val clearUserDataUseCase: ClearUserDataUseCase,
+    private val getGooglePhotosPickingSessionUseCase: GetGooglePhotosPickingSessionUseCase,
     private val saveGoogleAuthTokenUseCase: SaveGoogleAuthTokenUseCase,
     private val googleAuthorization: GoogleAuthorization,
     private val getUserSettingsUseCase: GetUserSettingsUseCase,
@@ -118,7 +125,18 @@ class SettingsScreenViewModel @Inject constructor(
 
             userSettings = userSettings.copy(syncWithGoogle = true)
             setUserSettingsUseCase.invoke(userSettings)
-            workerStarter.startGooglePhotosWorker()
+//            workerStarter.startGooglePhotosWorker()
+
+
+            Timber.d("Test googleAuthToken: $googleAuthToken")
+
+            val response = getGooglePhotosPickingSessionUseCase.invoke()
+            if (response is Response.Success) {
+                val intent = CustomTabsIntent.Builder().build().intent
+                intent.setData(response.result.pickerUri.toUri())
+                submitEvent(event = SettingsScreenEvents.StartPickerIntent(intent))
+                Timber.d("Test response: ${response.result}")
+            }
         }
     }
 

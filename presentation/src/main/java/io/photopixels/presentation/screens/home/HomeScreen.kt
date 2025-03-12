@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.photopixels.presentation.base.composeviews.ObserverLifecycleEvents
 import io.photopixels.presentation.permissions.PermissionsHelper
 import kotlinx.coroutines.flow.collectLatest
+import timber.log.Timber
 
 @Suppress("LambdaParameterInRestartableEffect")
 @Composable
@@ -32,6 +33,9 @@ fun HomeScreen(
 
     val pickedMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
 //        submitAction(viewModel, HomeScreenActions.OnPickedMedia(uris))
+//        uris.map { it. }
+
+        Timber.d("Test: selected photos ${uris.joinToString { it.toString() }}")
     }
 
     ObserverLifecycleEvents(onStart = {
@@ -46,8 +50,6 @@ fun HomeScreen(
                 is HomeScreenEvents.RequestStoragePermissionsEvent -> {
                     if (PermissionsHelper.checkAndRequestPermissions(context, requestPermissions)) {
                         viewModel.submitAction(HomeScreenActions.StartSyncWorkers)
-
-                        pickedMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     }
                 }
 
@@ -59,6 +61,9 @@ fun HomeScreen(
 
                 is HomeScreenEvents.NavigateToPreviewPhotosScreen ->
                     onNavigateToPreviewPhotosScreen(it.clickedThumbnailId)
+
+                HomeScreenEvents.ShowMediaPickerEvent ->
+                    pickedMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
         }
     }

@@ -8,13 +8,16 @@ import io.photopixels.data.storage.database.GooglePhotosDao
 import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.GooglePhoto
+import io.photopixels.domain.model.PhotoPickingSession
+import io.photopixels.domain.repository.AuthRepository
 import io.photopixels.domain.repository.GooglePhotosRepository
 import javax.inject.Inject
 
 class GooglePhotosRepositoryImpl @Inject constructor(
     private val googlePhotosManager: GooglePhotosManager,
     private val googlePhotosDao: GooglePhotosDao,
-    private val backendApi: BackendApi
+    private val backendApi: BackendApi,
+    private val authRepository: AuthRepository,
 ) : GooglePhotosRepository {
     override suspend fun fetchGooglePhotos(): PhotoPixelError? = googlePhotosManager.fetchGooglePhotos()
 
@@ -30,5 +33,17 @@ class GooglePhotosRepositoryImpl @Inject constructor(
 
     override suspend fun clearGooglePhotosTable() {
         googlePhotosDao.clearTable()
+    }
+
+    override suspend fun createGooglePhotoPickingSession(): Response<PhotoPickingSession> {
+        return authRepository.getGoogleAuthToken()?.let {
+            backendApi.createGooglePhotoPickingSession(it)
+        } ?: Response.Failure(PhotoPixelError.GenericGoogleError)
+    }
+
+    override suspend fun getGooglePhotoPickingSession(sessionId: String): Response<PhotoPickingSession> {
+        return authRepository.getGoogleAuthToken()?.let {
+            backendApi.getGooglePhotoPickingSession(it, sessionId)
+        } ?: Response.Failure(PhotoPixelError.GenericGoogleError)
     }
 }

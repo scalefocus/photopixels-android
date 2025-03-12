@@ -2,6 +2,7 @@ package io.photopixels.data.network
 
 import io.photopixels.data.network.responses.LoginResponse
 import io.photopixels.domain.base.Response
+import io.photopixels.domain.model.PhotoPickingSession
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.ServerAddress
@@ -39,4 +40,8 @@ interface BackendApi {
     suspend fun downloadPhoto(photoUrl: String): Response<ByteArray>
 
     suspend fun deletePhoto(photoServerId: String): Response<Unit>
+
+    suspend fun createGooglePhotoPickingSession(googleToken: String): Response<PhotoPickingSession>
+
+    suspend fun getGooglePhotoPickingSession(googleToken: String, sessionId: String): Response<PhotoPickingSession>
 }

@@ -35,6 +35,11 @@ fun SettingsScreen(onNavigateToConnectServerScreen: () -> Unit, viewModel: Setti
             }
         }
 
+    val googlePhotoPickerLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
+            Timber.d("Test: OnActivity Result code:${result.resultCode}")
+        }
+
     LaunchedEffect(Unit) {
         viewModel.submitAction(SettingsScreenActions.LoadSettingsData(appVersion))
         viewModel.events.collect { settingsEvent ->
@@ -50,6 +55,10 @@ fun SettingsScreen(onNavigateToConnectServerScreen: () -> Unit, viewModel: Setti
 
                 is SettingsScreenEvents.StartAuthorizationIntent -> {
                     googleAuthorizationLauncher.launch(settingsEvent.authorizationIntent)
+                }
+
+                is SettingsScreenEvents.StartPickerIntent -> {
+                    googlePhotoPickerLauncher.launch(settingsEvent.photoPickerIntent)
                 }
             }
         }

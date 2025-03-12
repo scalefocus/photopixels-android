@@ -18,8 +18,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -89,6 +93,14 @@ fun HomeScreenContent(state: HomeScreenState, onSubmitActions: (HomeScreenAction
                     onThumbnailClick = { onSubmitActions(HomeScreenActions.OnThumbnailClick(it)) }
                 )
             }
+        }
+
+        FloatingActionButton(
+            modifier = Modifier.align(Alignment.BottomEnd)
+                .padding(all = 32.dp),
+            onClick = { onSubmitActions(HomeScreenActions.OnPickMediaButtonClick) }
+        ) {
+            Icon(Icons.Filled.Add, "Floating action button.")
         }
     }
 }

@@ -2,9 +2,18 @@ package io.photopixels.data.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.HttpRedirect
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.observer.ResponseObserver
 import io.ktor.client.plugins.plugin
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -12,6 +21,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.URLProtocol
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.toByteArray
 import io.photopixels.data.base.request
 import io.photopixels.data.mappers.toDomain
@@ -24,10 +34,12 @@ import io.photopixels.data.network.requests.UploadPhotoRequest
 import io.photopixels.data.network.responses.LoginResponse
 import io.photopixels.data.network.responses.ObjectResponse
 import io.photopixels.data.network.responses.ObjectUploadResponse
+import io.photopixels.data.network.responses.PhotoPickingSessionResponse
 import io.photopixels.data.network.responses.RefreshTokenRequest
 import io.photopixels.data.network.responses.ServerRevisionResponse
 import io.photopixels.data.network.responses.ServerStatusResponse
 import io.photopixels.domain.base.Response
+import io.photopixels.domain.model.PhotoPickingSession
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.ServerAddress
@@ -35,6 +47,8 @@ import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import timber.log.Timber
 import javax.inject.Inject
 
 class BackendApiImpl @Inject constructor(
@@ -187,5 +201,63 @@ class BackendApiImpl @Inject constructor(
                     url("/api/object/$photoServerId")
                 }.body<Unit>()
             Response.Success(Unit)
+        }
+
+    private val googleHttpClient = HttpClient(Android) {
+        expectSuccess = true
+
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30L * 1000L
+        }
+
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {
+                    Timber.tag("KTOR_HTTP_STATUS_TAG").v(message)
+                }
+            }
+            level = LogLevel.ALL
+        }
+
+        install(ContentNegotiation) {
+            json(
+                Json {
+                    prettyPrint = true
+                    isLenient = true
+                    ignoreUnknownKeys = true
+                    explicitNulls = false
+                }
+            )
+        }
+
+        install(ResponseObserver) {
+            onResponse { response ->
+                Timber.tag("KTOR_HTTP_STATUS_TAG").d("${response.status.value}")
+            }
+        }
+
+        install(HttpRedirect) {
+            checkHttpMethod = false
+        }
+    }
+
+    override suspend fun createGooglePhotoPickingSession(googleToken: String): Response<PhotoPickingSession> =
+        request {
+            val result = googleHttpClient.post {
+                bearerAuth(googleToken)
+                url("https://photospicker.googleapis.com/v1/sessions")
+            }.body<PhotoPickingSessionResponse>()
+            Response.Success(result.toDomain())
+        }
+
+    override suspend fun getGooglePhotoPickingSession(
+        googleToken: String, sessionId: String
+    ): Response<PhotoPickingSession> =
+        request {
+            val result = googleHttpClient.get {
+                bearerAuth(googleToken)
+                url("https://photospicker.googleapis.com/v1/sessions/$sessionId")
+            }.body<PhotoPickingSessionResponse>()
+            Response.Success(result.toDomain())
         }
 }

@@ -6,4 +6,6 @@ sealed class HomeScreenEvents {
     data object NavigateToSyncScreenEvent : HomeScreenEvents()
 
     data class NavigateToPreviewPhotosScreen(val clickedThumbnailId: String) : HomeScreenEvents()
+
+    data object ShowMediaPickerEvent : HomeScreenEvents()
 }

@@ -1,8 +1,10 @@
 package io.photopixels.data.mappers
 
 import com.google.photos.types.proto.MediaItem
+import io.photopixels.data.network.responses.PhotoPickingSessionResponse
 import io.photopixels.data.storage.database.entities.GooglePhotosEntity
 import io.photopixels.domain.model.GooglePhoto
+import io.photopixels.domain.model.PhotoPickingSession
 
 fun GooglePhotosEntity.toDomain() = GooglePhoto(
     androidCloudId = androidCloudId,
@@ -34,4 +36,22 @@ fun MediaItem.toEntity() = GooglePhotosEntity(
     hash = null,
     serverItemHashId = null,
     isAlreadyUploaded = null
+)
+
+fun PhotoPickingSessionResponse.toDomain() = PhotoPickingSession(
+    id = id,
+    expireTime = expireTime,
+    mediaItemsSet = mediaItemsSet,
+    pickerUri = pickerUri,
+    pickingConfig = pickingConfig?.let {
+        PhotoPickingSession.PickingConfig(
+            maxItemCount = pickingConfig.maxItemCount,
+        )
+    },
+    pollingConfig =pollingConfig?.let {
+        PhotoPickingSession.PollingConfig(
+            pollInterval = pollingConfig.pollInterval,
+            timeoutIn = pollingConfig.timeoutIn,
+        )
+    }
 )

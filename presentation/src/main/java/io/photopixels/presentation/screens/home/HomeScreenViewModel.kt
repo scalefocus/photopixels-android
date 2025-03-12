@@ -70,6 +70,8 @@ class HomeScreenViewModel @Inject constructor(
                 submitEvent(HomeScreenEvents.NavigateToPreviewPhotosScreen(action.serverItemId))
             }
 
+            HomeScreenActions.OnPickMediaButtonClick -> submitEvent(HomeScreenEvents.ShowMediaPickerEvent)
+
             HomeScreenActions.LoadStartupData -> {
                 loadStartupData()
             }
