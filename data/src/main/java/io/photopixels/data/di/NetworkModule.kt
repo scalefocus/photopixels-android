@@ -1,6 +1,5 @@
 package io.photopixels.data.di
 
-import android.util.Log
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,6 +15,7 @@ import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
@@ -30,6 +30,8 @@ import io.ktor.http.URLProtocol
 import io.ktor.serialization.kotlinx.json.json
 import io.photopixels.data.network.BackendApi
 import io.photopixels.data.network.BackendApiImpl
+import io.photopixels.data.network.GooglePhotosApi
+import io.photopixels.data.network.GooglePhotosApiImpl
 import io.photopixels.data.network.responses.LoginResponse
 import io.photopixels.data.network.responses.RefreshTokenRequest
 import io.photopixels.data.storage.datastore.AuthDataStore
@@ -37,6 +39,7 @@ import io.photopixels.data.storage.datastore.UserPreferencesDataStore
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import timber.log.Timber
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -47,13 +50,16 @@ class NetworkModule {
     companion object {
         private const val KTOR_REFRESH_LOGGER_TAG = "ktor_refresh_logger"
         private const val KTOR_LOGGER_TAG = "ktor_logger"
-        private const val KTOR_HTTP_STATUS_TAG_ = "http_status"
+        private const val KTOR_HTTP_STATUS_TAG = "http_status"
         private const val KTOR_REQUEST_TIMEOUT = 30L * 1000 // seconds
+        private const val REFRESH_TOKEN_HTTP_CLIENT = "refreshTokenHttpClient"
+        private const val BACKEND_API_HTTP_CLIENT = "backendApiHttpClient"
+        private const val GOOGLE_PHOTOS_API_HTTP_CLIENT = "googlePhotosApiHttpClient"
     }
 
     @Provides
     @Singleton
-    @Named("refreshTokenHttpClient")
+    @Named(REFRESH_TOKEN_HTTP_CLIENT)
     fun provideRefreshTokenHttpClient(userPreferencesDataStore: UserPreferencesDataStore): HttpClient {
         val httpClient = HttpClient(Android) {
             expectSuccess = true
@@ -88,7 +94,7 @@ class NetworkModule {
             install(Logging) {
                 logger = object : Logger {
                     override fun log(message: String) {
-                        Log.v(KTOR_REFRESH_LOGGER_TAG, message)
+                        Timber.tag(KTOR_REFRESH_LOGGER_TAG).v(message)
                     }
                 }
                 level = LogLevel.ALL
@@ -101,10 +107,11 @@ class NetworkModule {
     @OptIn(ExperimentalSerializationApi::class)
     @Provides
     @Singleton
+    @Named(BACKEND_API_HTTP_CLIENT)
     fun provideHttpClient(
         authDataStore: AuthDataStore,
         userDataStore: UserPreferencesDataStore,
-        @Named("refreshTokenHttpClient") refreshTokenHttpClient: HttpClient
+        @Named(REFRESH_TOKEN_HTTP_CLIENT) refreshTokenHttpClient: HttpClient
     ): HttpClient = HttpClient(Android) {
         expectSuccess = true
 
@@ -115,7 +122,7 @@ class NetworkModule {
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) {
-                    Log.v(KTOR_LOGGER_TAG, message)
+                    Timber.tag(KTOR_LOGGER_TAG).v(message)
                 }
             }
             level = LogLevel.ALL
@@ -168,7 +175,7 @@ class NetworkModule {
 
         install(ResponseObserver) {
             onResponse { response ->
-                Log.d(KTOR_HTTP_STATUS_TAG_, "${response.status.value}")
+                Timber.tag(KTOR_HTTP_STATUS_TAG).d("${response.status.value}")
             }
         }
 
@@ -192,13 +199,77 @@ class NetworkModule {
         }
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
+    @Provides
+    @Singleton
+    @Named(GOOGLE_PHOTOS_API_HTTP_CLIENT)
+    fun provideGooglePhotosApiHttpClient(authDataStore: AuthDataStore): HttpClient = HttpClient(Android) {
+        expectSuccess = true
+
+        install(HttpTimeout) {
+            requestTimeoutMillis = KTOR_REQUEST_TIMEOUT
+        }
+
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {
+                    Timber.tag(KTOR_HTTP_STATUS_TAG).v(message)
+                }
+            }
+            level = LogLevel.ALL
+        }
+
+        install(ContentNegotiation) {
+            json(
+                Json {
+                    prettyPrint = true
+                    isLenient = true
+                    ignoreUnknownKeys = true
+                    explicitNulls = false
+                }
+            )
+        }
+
+        install(ResponseObserver) {
+            onResponse { response ->
+                Timber.tag(KTOR_HTTP_STATUS_TAG).d("${response.status.value}")
+            }
+        }
+
+        install(Auth) {
+            bearer {
+                loadTokens {
+                    val googleAuthToken = authDataStore.getGoogleAuthToken()
+                    BearerTokens(googleAuthToken.orEmpty(), "")
+                }
+            }
+        }
+
+        defaultRequest {
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            url("https://photospicker.googleapis.com/v1/")
+        }
+
+        install(HttpRedirect) {
+            checkHttpMethod = false
+        }
+    }
+
     @Singleton
     @Provides
-    fun provideBackendApi(httpClient: HttpClient): BackendApi = BackendApiImpl(httpClient)
+    fun provideBackendApi(
+        @Named(BACKEND_API_HTTP_CLIENT) httpClient: HttpClient
+    ): BackendApi = BackendApiImpl(httpClient)
+
+    @Singleton
+    @Provides
+    fun provideGooglePhotosApi(
+        @Named(GOOGLE_PHOTOS_API_HTTP_CLIENT) httpClient: HttpClient
+    ): GooglePhotosApi = GooglePhotosApiImpl(httpClient)
 
     private suspend fun doRefreshToken(
         refreshToken: String,
-        @Named("refreshTokenHttpClient") httpClient: HttpClient,
+        httpClient: HttpClient,
         authDataStore: AuthDataStore,
     ): Pair<String, String>? = try {
         val response = httpClient
@@ -209,11 +280,11 @@ class NetworkModule {
         val newAuthToken = response.accessToken
         val newRefreshToken = response.refreshToken
 
-        Log.e("TAG", "Refresh token call successful!!!!")
+        Timber.tag(KTOR_REFRESH_LOGGER_TAG).e("Refresh token call successful!!!!")
         authDataStore.storeAuthHeaders(newAuthToken, newRefreshToken)
         Pair(newAuthToken, newRefreshToken)
     } catch (exception: ResponseException) {
-        Log.e("TAG", "Error Refresh token call:$exception!!!!")
+        Timber.tag(KTOR_REFRESH_LOGGER_TAG).e("Error Refresh token call:$exception!!!!")
         null
     }
 }
