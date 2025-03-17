@@ -20,7 +20,7 @@ interface WorkerStarter {
 
     fun stopDevicePhotosWorkers()
 
-    fun startGooglePhotosWorker()
+    fun startGooglePhotosWorker(sessionId: String, pollingInterval: String)
 
     fun stopGooglePhotosWorker()
 

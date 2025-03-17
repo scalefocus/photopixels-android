@@ -95,11 +95,17 @@ class WorkerStarterImpl @Inject constructor(
         }
     }
 
-    override fun startGooglePhotosWorker() {
+    override fun startGooglePhotosWorker(sessionId: String, pollingInterval: String) {
         if (!isWorkerFinished(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)) return
 
-        getGooglePhotosWorkerRequest()
-            .also { WorkManager.getInstance(context).enqueue(it) }
+        val inputData = GooglePhotosWorker.createInputData(sessionId, pollingInterval)
+
+        val workRequest = OneTimeWorkRequestBuilder<GooglePhotosWorker>()
+            .addTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
+            .setInputData(inputData)
+            .build()
+
+        WorkManager.getInstance(context).enqueue(workRequest)
     }
 
     override fun stopGooglePhotosWorker() {
@@ -117,10 +123,6 @@ class WorkerStarterImpl @Inject constructor(
 
     private fun getUploadPhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<UploadPhotosWorker>()
         .addTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
-        .build()
-
-    private fun getGooglePhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<GooglePhotosWorker>()
-        .addTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
         .build()
 
     private fun getWorkingIdByTag(workerTag: String): UUID? = workerManager.getWorkInfosByTag(workerTag).get()
