@@ -28,4 +28,6 @@ sealed class SettingsScreenActions {
     ) : SettingsScreenActions()
 
     data object OnGoogleOauthIntentError : SettingsScreenActions()
+
+    data object OnPickPhotoClicked : SettingsScreenActions()
 }

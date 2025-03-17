@@ -1,13 +1,17 @@
 package io.photopixels.presentation.screens.settings
 
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.UserSettings
 import io.photopixels.domain.usecases.ClearUserDataUseCase
 import io.photopixels.domain.usecases.GetAppInfoData
 import io.photopixels.domain.usecases.GetUserSettingsUseCase
 import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
 import io.photopixels.domain.usecases.SetUserSettingsUseCase
+import io.photopixels.domain.usecases.googlephotos.CreateGooglePhotosPickingSessionUseCase
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
@@ -19,6 +23,7 @@ import javax.inject.Inject
 class SettingsScreenViewModel @Inject constructor(
     private val getAppInfoDataUseCase: GetAppInfoData,
     private val clearUserDataUseCase: ClearUserDataUseCase,
+    private val createGooglePhotosPickingSessionUseCase: CreateGooglePhotosPickingSessionUseCase,
     private val saveGoogleAuthTokenUseCase: SaveGoogleAuthTokenUseCase,
     private val googleAuthorization: GoogleAuthorization,
     private val getUserSettingsUseCase: GetUserSettingsUseCase,
@@ -56,12 +61,10 @@ class SettingsScreenViewModel @Inject constructor(
 
             is SettingsScreenActions.OnGoogleOauthIntentReceived -> {
                 viewModelScope.launch {
-                    googleAuthorization.handleAuthorizationResponse(action.intent).collect { googleAuthToken ->
-                        googleAuthToken?.let {
-                            onGoogleLoginSuccess(it)
-                        }
-                        updateState { copy(isLoading = false) }
+                    googleAuthorization.handleAuthorizationResponse(action.intent)?.let { googleAuthToken ->
+                        onGoogleLoginSuccess(googleAuthToken)
                     }
+                    updateState { copy(isLoading = false) }
                 }
             }
 
@@ -80,6 +83,8 @@ class SettingsScreenViewModel @Inject constructor(
             SettingsScreenActions.OnGoogleOauthIntentError -> {
                 updateState { copy(isLoading = false, messageId = R.string.settings_screen_google_login_error) }
             }
+
+            SettingsScreenActions.OnPickPhotoClicked -> openPickingSession()
         }
     }
 
@@ -111,14 +116,33 @@ class SettingsScreenViewModel @Inject constructor(
             saveGoogleAuthTokenUseCase.invoke(googleAuthToken)
             updateState {
                 copy(
-                    messageId = R.string.settings_screen_google_login_success,
                     userSettings = userSettings.copy(syncWithGoogle = true)
                 )
             }
 
             userSettings = userSettings.copy(syncWithGoogle = true)
             setUserSettingsUseCase.invoke(userSettings)
-            workerStarter.startGooglePhotosWorker()
+            openPickingSession()
+        }
+    }
+
+    private suspend fun openPickingSession() {
+        workerStarter.stopGooglePhotosWorker()
+
+        when (val response = createGooglePhotosPickingSessionUseCase()) {
+            is Response.Success -> {
+                val session = response.result
+                if (session.pickerUri.isNotBlank()) {
+                    val intent = CustomTabsIntent.Builder().build().intent
+                    intent.setData(session.pickerUri.toUri())
+                    submitEvent(event = SettingsScreenEvents.StartPickerIntent(intent))
+                    workerStarter.startGooglePhotosWorker(session.id, session.pollInterval)
+                }
+            }
+
+            is Response.Failure -> {
+                updateState { copy(messageId = R.string.settings_screen_google_picking_error) }
+            }
         }
     }
 

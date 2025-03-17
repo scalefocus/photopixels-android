@@ -51,6 +51,10 @@ fun SettingsScreen(onNavigateToConnectServerScreen: () -> Unit, viewModel: Setti
                 is SettingsScreenEvents.StartAuthorizationIntent -> {
                     googleAuthorizationLauncher.launch(settingsEvent.authorizationIntent)
                 }
+
+                is SettingsScreenEvents.StartPickerIntent -> {
+                    context.startActivity(settingsEvent.photoPickerIntent)
+                }
             }
         }
     }
