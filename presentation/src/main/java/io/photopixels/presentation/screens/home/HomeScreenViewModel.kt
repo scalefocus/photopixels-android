@@ -4,36 +4,29 @@ import android.Manifest
 import android.annotation.SuppressLint
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.model.WorkerStatus
 import io.photopixels.domain.usecases.GetThumbnailsFromDbUseCase
 import io.photopixels.domain.usecases.GetThumbnailsGroupedByMonthUseCase
-import io.photopixels.domain.usecases.GetUserSettingsUseCase
-import io.photopixels.domain.usecases.SaveGoogleAuthTokenUseCase
 import io.photopixels.domain.usecases.SavePhotosIdsInMemoryUseCase
 import io.photopixels.domain.usecases.SyncServerThumbnails
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
-import io.photopixels.presentation.login.GoogleAuthorization
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-@Suppress("LongParameterList", "TooManyFunctions")
+@Suppress("TooManyFunctions")
 class HomeScreenViewModel @Inject constructor(
     private val workerStarter: WorkerStarter,
     private val syncServerThumbnails: SyncServerThumbnails,
     private val savePhotosIdsInMemoryUseCase: SavePhotosIdsInMemoryUseCase,
     private val getThumbnailsGroupedByMonthUseCase: GetThumbnailsGroupedByMonthUseCase,
     private val getThumbnailsFromDbUseCase: GetThumbnailsFromDbUseCase,
-    private val getUserSettingsUseCase: GetUserSettingsUseCase,
-    private val googleAuthorization: GoogleAuthorization,
-    private val saveGoogleAuthTokenUseCase: SaveGoogleAuthTokenUseCase
 ) : BaseViewModel<HomeScreenState, HomeScreenActions, HomeScreenEvents>(HomeScreenState()) {
 
     // Used to prevent multiple starting at once of getServer thumbnails function
@@ -132,26 +125,6 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    private fun initGooglePhotosWorkerListener() {
-        viewModelScope.launch {
-            workerStarter.getGooglePhotosWorkerListener().collect { workerInfo ->
-                workerInfo ?: return@collect
-
-                if (workerInfo.workerStatus == WorkerStatus.FAILED) {
-                    val error = workerInfo.resultData?.get(WorkerInfo.WORKER_ERROR_RESULT_KEY) as String
-
-                    if (error == PhotoPixelError.ExpiredGoogleAuthTokenError.toString()) {
-                        handleGoogleError(PhotoPixelError.ExpiredGoogleAuthTokenError)
-                    } else {
-                        handleGoogleError(PhotoPixelError.GenericGoogleError)
-                    }
-                } else if (workerInfo.uploadedPhotosCount > 0) {
-                    refreshThumbnails()
-                }
-            }
-        }
-    }
-
     private val WorkerInfo.uploadedPhotosCount: Int
         get() = resultData?.get(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY)
             ?.let { uploadPhotoResult -> uploadPhotoResult as? Int } ?: 0
@@ -178,54 +151,8 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    private fun syncGooglePhotos() {
-        viewModelScope.launch {
-            val isGooglePhotosSyncEnabled = getUserSettingsUseCase.invoke()?.syncWithGoogle
-
-            if (isGooglePhotosSyncEnabled == true) {
-                initGooglePhotosWorkerListener()
-                workerStarter.startGooglePhotosWorker()
-            }
-        }
-    }
-
-    private suspend fun handleGoogleError(exception: PhotoPixelError) {
-        when (exception) {
-            is PhotoPixelError.ExpiredGoogleAuthTokenError -> {
-                // Google Token expired Exception
-                performGoogleRefreshRequest()
-            }
-
-            else -> {
-                // TODO: Generic Google Error(Hidden from the user for now)
-                Timber.tag(TAG).e("Unable to Sync with Google")
-            }
-        }
-    }
-
-    private suspend fun performGoogleRefreshRequest() {
-        googleAuthorization.performRefreshTokenRequest().collect { isSuccessful ->
-            isSuccessful?.let {
-                if (it) {
-                    googleAuthorization.getGoogleAuthTokenFlow().collect { googleAuthToken ->
-                        googleAuthToken?.let {
-                            Timber.tag(TAG).d("Start Google Photos sync after token refresh process")
-
-                            // Start again Google Photos worker, when new authToken is received
-                            saveGoogleAuthTokenUseCase.invoke(googleAuthToken)
-                            workerStarter.startGooglePhotosWorker()
-                        }
-                    }
-                } else {
-                    updateState { copy(errorMsgId = R.string.error_google_token_expire) }
-                }
-            }
-        }
-    }
-
     private fun loadStartupData() {
         syncLocalPhotos()
-        syncGooglePhotos()
         // TODO Thumbnails can be stored locally in DB, and if latest revision from server is equal to local revision
         // equal -> load thumbnails from device
         // not equal -> load thumbnails from server and then store it in device
