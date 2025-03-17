@@ -1,13 +1,11 @@
 package io.photopixels.domain.repository
 
-import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.GooglePhoto
 import io.photopixels.domain.model.MediaItems
 import io.photopixels.domain.model.PhotoPickingSession
 
 interface GooglePhotosRepository {
-    suspend fun fetchGooglePhotos(): PhotoPixelError?
 
     suspend fun getPhotosForUpload(): List<GooglePhoto>
 

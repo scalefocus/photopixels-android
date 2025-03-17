@@ -1,6 +1,5 @@
 package io.photopixels.data.mappers
 
-import com.google.photos.types.proto.MediaItem
 import io.photopixels.data.network.responses.MediaItemsResponse
 import io.photopixels.data.network.responses.PhotoPickingSessionResponse
 import io.photopixels.data.storage.database.entities.GooglePhotosEntity
@@ -28,16 +27,6 @@ fun GooglePhoto.toEntity() = GooglePhotosEntity(
     isAlreadyUploaded = isAlreadyUploaded,
     fileSize = null,
     isDeleted = null
-)
-
-fun MediaItem.toEntity() = GooglePhotosEntity(
-    androidCloudId = id,
-    fileName = filename,
-    mimeType = mimeType,
-    baseUrl = baseUrl,
-    hash = null,
-    serverItemHashId = null,
-    isAlreadyUploaded = null
 )
 
 fun PhotoPickingSessionResponse.toDomain() = PhotoPickingSession(
