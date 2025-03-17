@@ -36,6 +36,7 @@ import io.photopixels.data.network.responses.LoginResponse
 import io.photopixels.data.network.responses.RefreshTokenRequest
 import io.photopixels.data.storage.datastore.AuthDataStore
 import io.photopixels.data.storage.datastore.UserPreferencesDataStore
+import io.photopixels.domain.base.GoogleAuth
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -55,6 +56,7 @@ class NetworkModule {
         private const val REFRESH_TOKEN_HTTP_CLIENT = "refreshTokenHttpClient"
         private const val BACKEND_API_HTTP_CLIENT = "backendApiHttpClient"
         private const val GOOGLE_PHOTOS_API_HTTP_CLIENT = "googlePhotosApiHttpClient"
+        private const val GOOGLE_PHOTO_PICKER_BASE_URL = "https://photospicker.googleapis.com/v1/"
     }
 
     @Provides
@@ -203,7 +205,7 @@ class NetworkModule {
     @Provides
     @Singleton
     @Named(GOOGLE_PHOTOS_API_HTTP_CLIENT)
-    fun provideGooglePhotosApiHttpClient(authDataStore: AuthDataStore): HttpClient = HttpClient(Android) {
+    fun provideGooglePhotosApiHttpClient(googleAuth: GoogleAuth): HttpClient = HttpClient(Android) {
         expectSuccess = true
 
         install(HttpTimeout) {
@@ -213,7 +215,7 @@ class NetworkModule {
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) {
-                    Timber.tag(KTOR_HTTP_STATUS_TAG).v(message)
+                    Timber.tag(KTOR_LOGGER_TAG).v(message)
                 }
             }
             level = LogLevel.ALL
@@ -239,15 +241,22 @@ class NetworkModule {
         install(Auth) {
             bearer {
                 loadTokens {
-                    val googleAuthToken = authDataStore.getGoogleAuthToken()
-                    BearerTokens(googleAuthToken.orEmpty(), "")
+                    googleAuth.getGoogleAuthToken()?.let { googleAuthToken ->
+                        BearerTokens(googleAuthToken, "")
+                    }
+                }
+
+                refreshTokens {
+                    googleAuth.performRefreshTokenRequest()?.let { googleAuthToken ->
+                        BearerTokens(googleAuthToken, "")
+                    }
                 }
             }
         }
 
         defaultRequest {
             header(HttpHeaders.ContentType, ContentType.Application.Json)
-            url("https://photospicker.googleapis.com/v1/")
+            url(GOOGLE_PHOTO_PICKER_BASE_URL)
         }
 
         install(HttpRedirect) {
