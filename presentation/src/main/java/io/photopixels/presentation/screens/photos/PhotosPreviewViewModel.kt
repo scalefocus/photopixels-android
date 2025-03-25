@@ -7,24 +7,26 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.Response
+import io.photopixels.domain.model.Thumbnail
 import io.photopixels.domain.usecases.DeletePhotoUseCase
 import io.photopixels.domain.usecases.GetAuthHeaderUseCase
-import io.photopixels.domain.usecases.GetPhotosIdsFromMemory
 import io.photopixels.domain.usecases.GetServerInfoUseCase
+import io.photopixels.domain.usecases.GetThumbnailsFromDbUseCase
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.base.routes.HomeScreens
+import io.photopixels.presentation.screens.photos.PhotosPreviewScreenState.PhotoPreview
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PhotosPreviewViewModel @Inject constructor(
-    private val getPhotosIdsInMemoryUseCase: GetPhotosIdsFromMemory,
+    private val getThumbnailsUseCase: GetThumbnailsFromDbUseCase,
     private val getServerInfoUseCase: GetServerInfoUseCase,
     private val getAuthHeaderUseCase: GetAuthHeaderUseCase,
     private val deletePhotoUseCase: DeletePhotoUseCase,
     savedState: SavedStateHandle
 ) : BaseViewModel<PhotosPreviewScreenState, PhotosPreviewActions, PhotosPreviewEvents>(PhotosPreviewScreenState()) {
-    private var photosIds = mutableListOf<String>()
 
     init {
         val route = savedState.toRoute<HomeScreens.PhotosPreview>()
@@ -47,19 +49,29 @@ class PhotosPreviewViewModel @Inject constructor(
         }
     }
 
-    private fun preparePhotoUrls(clickedThumbnailServerId: String) {
+    private fun preparePhotoUrls(clickedThumbnailId: String) {
         updateState { copy(isLoading = true) }
         viewModelScope.launch {
-            val serverAddress = getServerInfoUseCase.getServerAddress()
+            val serverAddress = getServerInfoUseCase.getServerAddress()?.toString()
             serverAddress?.let {
                 val authHeader = getAuthHeaderUseCase.invoke()
                 authHeader?.let {
-                    photosIds = getPhotosIdsInMemoryUseCase.invoke().toMutableList()
-                    val photosGlideUrls = photosIds.map { buildGlideUrl(it, serverAddress.toString(), authHeader) }
-                    val photoToLoadFirstIndex = photosIds.indexOf(clickedThumbnailServerId)
+                    val thumbnails = getThumbnailsUseCase.invoke().first()
+                    val photos = thumbnails.map {
+                        when (it) {
+                            is Thumbnail.LocalThumbnail -> PhotoPreview.Local(it.id, it.contentUri)
+                            is Thumbnail.RemoteThumbnail -> {
+                                PhotoPreview.Remote(
+                                    id = it.id,
+                                    photoUrl = buildGlideUrl(it.id, serverAddress, authHeader)
+                                )
+                            }
+                        }
+                    }
+                    val photoToLoadFirstIndex = thumbnails.indexOfFirst { it.id == clickedThumbnailId }
                     updateState {
                         copy(
-                            photosGlideUrls = photosGlideUrls,
+                            photos = photos,
                             photoToLoadFirstIndex = photoToLoadFirstIndex,
                             isLoading = false
                         )
@@ -71,22 +83,24 @@ class PhotosPreviewViewModel @Inject constructor(
 
     private suspend fun deletePhoto(imageIndex: Int) {
         updateState { copy(isLoading = true) }
-        val photoServerId = photosIds[imageIndex]
-        val result = deletePhotoUseCase.invoke(photoServerId)
+        val photoPreview = state.value.photos[imageIndex]
 
-        if (result is Response.Success) {
-            submitEvent(PhotosPreviewEvents.OnPhotoDeletedSuccessfully)
+        if (photoPreview is PhotoPreview.Remote) {
+            val result = deletePhotoUseCase.invoke(photoPreview.id)
 
-            // Update UI after photo deletion
-            val newImages: List<GlideUrl> = state.value.photosGlideUrls.toMutableList().apply {
-                removeAt(imageIndex)
+            if (result is Response.Success) {
+                submitEvent(PhotosPreviewEvents.OnPhotoDeletedSuccessfully)
+
+                // Update UI after photo deletion
+                val newPhotos: List<PhotoPreview> = state.value.photos.toMutableList().apply {
+                    removeAt(imageIndex)
+                }
+                updateState { copy(photos = newPhotos, isThereDeletedPhoto = true) }
+            } else {
+                submitEvent(PhotosPreviewEvents.OnPhotoDeleteFail)
             }
-            photosIds.removeAt(imageIndex)
-            updateState { copy(photosGlideUrls = newImages, isThereDeletedPhoto = true) }
-        } else {
-            submitEvent(PhotosPreviewEvents.OnPhotoDeleteFail)
+            updateState { copy(isLoading = false) }
         }
-        updateState { copy(isLoading = false) }
     }
 
     private fun buildGlideUrl(photoId: String, serverAddress: String, authHeader: String): GlideUrl = GlideUrl(

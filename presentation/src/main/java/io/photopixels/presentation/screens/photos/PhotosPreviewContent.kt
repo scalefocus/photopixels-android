@@ -1,12 +1,14 @@
 package io.photopixels.presentation.screens.photos
 
 import android.graphics.drawable.Drawable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -39,6 +42,7 @@ import com.bumptech.glide.request.transition.Transition
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.CircularIndicator
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
+import io.photopixels.presentation.screens.photos.PhotosPreviewScreenState.PhotoPreview
 import io.photopixels.presentation.theme.PhotoPixelsTheme
 import io.photopixels.presentation.theme.SFSecondaryLightBlue
 import net.engawapg.lib.zoomable.rememberZoomState
@@ -61,10 +65,10 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
         )
     }
 
-    if (screenState.photosGlideUrls.isNotEmpty()) {
+    if (screenState.photos.isNotEmpty()) {
         val pagerState = rememberPagerState(
             initialPage = screenState.photoToLoadFirstIndex,
-            pageCount = { screenState.photosGlideUrls.size }
+            pageCount = { screenState.photos.size }
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -73,26 +77,27 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
                     beyondViewportPageCount = BEYOND_BOUNDS_PAGE_COUNT,
-                    key = { index -> screenState.photosGlideUrls[index].toStringUrl() },
+                    key = { index -> screenState.photos[index].id },
                     pageSize = PageSize.Fill
                 ) { index ->
-                    FullScreenImage(imageGlideUrl = screenState.photosGlideUrls[index])
+                    when (val photo = screenState.photos[index]) {
+                        is PhotoPreview.Remote -> FullScreenImage(imageGlideUrl = photo.photoUrl)
+                        is PhotoPreview.Local -> ZoomableFullScreenImage(
+                            painter = rememberAsyncImagePainter(photo.contentUri)
+                        )
+                    }
                 }
 
-                Row(
+                DeleteButton(
+                    visible = screenState.photos[pagerState.currentPage] is PhotoPreview.Remote,
                     modifier = Modifier
                         .padding(bottom = 100.dp)
-                        .align(Alignment.BottomCenter)
-                ) {
-                    Image(
-                        modifier = Modifier.clickable {
-                            onSubmitActions(PhotosPreviewActions.OnDeleteIconClicked)
-                            currentImageIndex = pagerState.currentPage
-                        },
-                        painter = painterResource(id = android.R.drawable.ic_menu_delete),
-                        contentDescription = "delete",
-                    )
-                }
+                        .align(Alignment.BottomCenter),
+                    onClick = {
+                        onSubmitActions(PhotosPreviewActions.OnDeleteIconClicked)
+                        currentImageIndex = pagerState.currentPage
+                    }
+                )
                 // SwipeArrows() Arrows removed for now
             }
         }
@@ -133,13 +138,34 @@ private fun FullScreenImage(imageGlideUrl: GlideUrl) {
     }
 
     image?.let {
+        ZoomableFullScreenImage(painter = rememberAsyncImagePainter(it))
+    }
+}
+
+@Composable
+private fun ZoomableFullScreenImage(painter: Painter) {
+    Image(
+        painter = painter,
+        contentDescription = null,
+        contentScale = ContentScale.Fit,
+        modifier = Modifier
+            .fillMaxSize()
+            .zoomable(rememberZoomState())
+    )
+}
+
+@Composable
+private fun DeleteButton(visible: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    AnimatedVisibility(
+        modifier = modifier,
+        visible = visible,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
         Image(
-            painter = rememberAsyncImagePainter(it),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .fillMaxSize()
-                .zoomable(rememberZoomState())
+            modifier = Modifier.clickable(onClick = onClick),
+            painter = painterResource(id = android.R.drawable.ic_menu_delete),
+            contentDescription = "delete",
         )
     }
 }
@@ -188,8 +214,12 @@ private fun PreviewPhotosContent() {
     PhotoPixelsTheme {
         PhotosPreviewContent(
             screenState = PhotosPreviewScreenState(
-                photosGlideUrls =
-                    listOf(GlideUrl("https://www.scalefocus.com/wp-content/uploads/2022/06/SF_brand_banner.png"))
+                photos = listOf(
+                    PhotoPreview.Remote(
+                        id = "",
+                        photoUrl = GlideUrl("https://www.scalefocus.com/wp-content/uploads/2022/06/SF_brand_banner.png")
+                    )
+                )
             ),
             onSubmitActions = {}
         )
