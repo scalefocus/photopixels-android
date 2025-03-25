@@ -11,9 +11,10 @@ data class PhotosEntity(
     val fileSize: Long,
     val mimeType: String,
     val contentUri: String,
+    val dateCreated: String,
     val appleCloudId: String,
-    val androidCloudId: String, // used for fastHash created locally from the android device
-    val hash: String,
+    val androidCloudId: String?, // used for fastHash created locally from the android device
+    val hash: String?,
     val serverItemHashId: String?, // This hash is available after successful upload
     val isDeleted: Boolean?,
     /** Flag to prevent duplicate uploading on device level */

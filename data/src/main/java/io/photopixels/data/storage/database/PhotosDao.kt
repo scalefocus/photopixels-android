@@ -20,9 +20,15 @@ interface PhotosDao {
     fun getPhotosData(): Flow<PhotosEntity>
 
     @Query(
-        "Select * from device_photos where serverItemHashId is null and isDeleted is null and isAlreadyUploaded is null"
+        "Select * from device_photos where serverItemHashId is null and isDeleted is null " +
+            "and isAlreadyUploaded is null and hash is not null order by dateCreated desc"
     )
-    fun getPhotosForUpload(): List<PhotosEntity>
+    fun getPhotosForUpload(): Flow<List<PhotosEntity>>
+
+    @Query(
+        "Select * from device_photos where hash is null order by dateCreated desc"
+    )
+    suspend fun getPhotosWithMissingHashes(): List<PhotosEntity>
 
     @Update
     fun updatePhotoData(photosEntity: PhotosEntity)

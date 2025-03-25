@@ -102,6 +102,8 @@ class HomeScreenViewModel @Inject constructor(
 
             updateState { copy(isLoading = false) }
             getServerThumbnailsProgressState.emit(NOT_STARTED)
+
+            syncLocalPhotos()
         }
     }
 
@@ -145,6 +147,7 @@ class HomeScreenViewModel @Inject constructor(
     private fun syncLocalPhotos() {
         viewModelScope.launch {
             if (getThumbnailsFromDbUseCase.getThumbnailsCount() > 0) {
+                // TODO change logic to request permission to show a snakbar to notify the user that access is needed
                 // Start auto-sync photos flow if device has at least one PP thumbnail photo
                 submitEvent(HomeScreenEvents.RequestStoragePermissionsEvent)
             }
@@ -152,11 +155,6 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     private fun loadStartupData() {
-        syncLocalPhotos()
-        // TODO Thumbnails can be stored locally in DB, and if latest revision from server is equal to local revision
-        // equal -> load thumbnails from device
-        // not equal -> load thumbnails from server and then store it in device
-
         getServerThumbnailsProgressState.value = STARTED
         getServerRevisionAndThumbnails()
     }

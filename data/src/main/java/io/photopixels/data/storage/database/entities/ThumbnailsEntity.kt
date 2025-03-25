@@ -2,9 +2,10 @@ package io.photopixels.data.storage.database.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "thumbnails_photos")
+@Entity(tableName = "thumbnails_photos", indices = [Index(value = ["id", "hash", "androidCloudId"])])
 data class ThumbnailsEntity(
     @PrimaryKey
     val id: String,
@@ -17,7 +18,7 @@ data class ThumbnailsEntity(
     val androidCloudId: String?,
     val width: Int,
     val height: Int,
-    val dateTaken: Long,
+    val dateCreated: String,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -34,7 +35,7 @@ data class ThumbnailsEntity(
         if (androidCloudId != other.androidCloudId) return false
         if (width != other.width) return false
         if (height != other.height) return false
-        if (dateTaken != other.dateTaken) return false
+        if (dateCreated != other.dateCreated) return false
 
         return true
     }
@@ -49,7 +50,7 @@ data class ThumbnailsEntity(
         result = 31 * result + (androidCloudId?.hashCode() ?: 0)
         result = 31 * result + width
         result = 31 * result + height
-        result = 31 * result + dateTaken.hashCode()
+        result = 31 * result + dateCreated.hashCode()
         return result
     }
 }

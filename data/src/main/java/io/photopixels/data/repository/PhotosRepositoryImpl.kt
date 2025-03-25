@@ -34,9 +34,16 @@ class PhotosRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override fun getDevicePhotos(context: Context): List<PhotoData> = MediaHelper.scanPhotosAndGenerateHashes(context)
+    override fun getDevicePhotos(context: Context): List<PhotoData> = MediaHelper.scanPhotos(context)
 
-    override fun getPhotosDataForUploadFromDB(): List<PhotoData> = photosDao.getPhotosForUpload().map { it.toDomain() }
+    override suspend fun getPhotoByHash(hash: String): PhotoUiData? = thumbnailsDao.getThumbnailByHash(hash)?.toDomain()
+
+    override suspend fun getPhotosWithMissingHashes(): List<PhotoData> =
+        photosDao.getPhotosWithMissingHashes().map { it.toDomain() }
+
+    override fun getPhotosDataForUploadFromDB(): List<PhotoData> = photosDao.getPhotosForUpload().map { photo ->
+        photo.toDomain()
+    }
 
     override suspend fun removePhotoDataFromDB(photoId: Int) {
         photosDao.removePhotoData(photoId)

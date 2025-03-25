@@ -14,6 +14,10 @@ interface PhotosRepository {
 
     fun getDevicePhotos(context: Context): List<PhotoData>
 
+    suspend fun getPhotoByHash(hash: String): PhotoUiData?
+
+    suspend fun getPhotosWithMissingHashes(): List<PhotoData>
+
     fun getPhotosDataForUploadFromDB(): List<PhotoData>
 
     suspend fun removePhotoDataFromDB(photoId: Int)

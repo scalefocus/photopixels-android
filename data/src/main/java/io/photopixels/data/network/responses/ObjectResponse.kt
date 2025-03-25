@@ -11,5 +11,6 @@ data class ObjectResponse(
     val appleCloudId: String?,
     val androidCloudId: String?,
     val width: Int,
-    val height: Int
+    val height: Int,
+    val dateCreated: String,
 )

@@ -11,8 +11,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ThumbnailsDao {
 
-    @Query("SELECT * FROM thumbnails_photos order by dateTaken desc")
+    @Query("SELECT * FROM thumbnails_photos order by dateCreated desc")
     fun getAllThumbnails(): Flow<List<ThumbnailsEntity>>
+
+    @Query("SELECT * FROM thumbnails_photos where hash = :hash")
+    suspend fun getThumbnailByHash(hash: String): ThumbnailsEntity?
 
     @Query("SELECT * FROM thumbnails_photos where isNewlyUploaded = 1")
     suspend fun getAllNewlyUploadedThumbnails(): List<ThumbnailsEntity>
