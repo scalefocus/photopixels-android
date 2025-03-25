@@ -61,6 +61,6 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
-    // Google Photos
-    implementation(libs.bundles.google.photos)
+    // GRPC
+    implementation(libs.bundles.grpc)
 }

@@ -69,7 +69,9 @@
     <string name="settings_screen_google_photos_msg">Sync Google Photos</string>
     <string name="settings_screen_google_login_success">Login with Google was Successful</string>
     <string name="settings_screen_google_login_error">Error while Login with Google, try again later</string>
+    <string name="settings_screen_google_picking_error">Error while Opening Google Photos Picker, try again later</string>
     <string name="settings_screen_google_no_acc_error">No Google account found on the device. Please login with your Google account first.</string>
+    <string name="settings_screen_google_photos_pick_photos">Pick Photos</string>
 
     <!-- Forgot password Screen -->
 

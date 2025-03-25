@@ -10,9 +10,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
-import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.URLProtocol
-import io.ktor.util.toByteArray
 import io.photopixels.data.base.request
 import io.photopixels.data.mappers.toDomain
 import io.photopixels.data.network.requests.ForgotPasswordRequest
@@ -169,15 +167,6 @@ class BackendApiImpl @Inject constructor(
                 }.body<Unit>()
 
             Response.Success(Unit)
-        }
-
-    override suspend fun downloadPhoto(photoUrl: String): Response<ByteArray> =
-        request {
-            val result = httpClient
-                .get {
-                    url(photoUrl)
-                }.bodyAsChannel()
-            Response.Success(result.toByteArray())
         }
 
     override suspend fun deletePhoto(photoServerId: String): Response<Unit> =

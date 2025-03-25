@@ -35,10 +35,6 @@ fun SettingsScreenContent(
     screenState: SettingsScreenState,
     onSubmitAction: (SettingsScreenActions) -> Unit
 ) {
-    if (screenState.isLoading) {
-        CircularIndicator()
-    }
-
     screenState.messageId?.let {
         ShowAlertDialog(
             title = stringResource(id = R.string.settings_screen_google_photos_msg),
@@ -95,7 +91,8 @@ fun SettingsScreenContent(
                             isChecked = checked
                         )
                     )
-                }
+                },
+                onPickPhotosClick = { onSubmitAction(SettingsScreenActions.OnPickPhotoClicked) }
             )
 
             SFButton(
@@ -106,6 +103,10 @@ fun SettingsScreenContent(
                 onClick = { onSubmitAction(SettingsScreenActions.OnLogoutClicked) }
             )
         }
+    }
+
+    if (screenState.isLoading) {
+        CircularIndicator()
     }
 }
 
@@ -195,7 +196,8 @@ private fun BackgroundActivity(
 @Composable
 private fun GooglePhotos(
     googlePhotosSyncEnabled: Boolean,
-    onGooglePhotosSyncChange: (Boolean) -> Unit
+    onGooglePhotosSyncChange: (Boolean) -> Unit,
+    onPickPhotosClick: () -> Unit,
 ) {
     Column {
         Text(text = stringResource(R.string.settings_screen_google_photos), style = AppTypography.BigBlue)
@@ -208,6 +210,16 @@ private fun GooglePhotos(
                     checked = googlePhotosSyncEnabled,
                     onValueChange = onGooglePhotosSyncChange
                 )
+
+                if (googlePhotosSyncEnabled) {
+                    SFButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        text = stringResource(R.string.settings_screen_google_photos_pick_photos),
+                        onClick = onPickPhotosClick,
+                    )
+                }
             }
         }
     }

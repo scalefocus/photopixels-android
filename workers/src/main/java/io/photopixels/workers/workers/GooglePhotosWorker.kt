@@ -22,6 +22,7 @@ import io.photopixels.domain.usecases.DownloadPhotoUseCase
 import io.photopixels.domain.usecases.GetPhotosForUploadUseCase
 import io.photopixels.domain.usecases.UpdatePhotoInDbUseCase
 import io.photopixels.domain.usecases.UploadPhotoUseCase
+import io.photopixels.domain.usecases.googlephotos.DeleteGooglePhotosPickingSessionUseCase
 import io.photopixels.domain.usecases.googlephotos.GetGooglePhotosUseCase
 import io.photopixels.domain.utils.Hasher
 import io.photopixels.presentation.notifications.NotificationsHelper
@@ -38,14 +39,22 @@ class GooglePhotosWorker @AssistedInject constructor(
     private val updatePhotoInDbUseCase: UpdatePhotoInDbUseCase,
     private val notificationsHelper: NotificationsHelper,
     private val getGooglePhotosUseCase: GetGooglePhotosUseCase,
+    private val deleteGooglePhotosPickingSessionUseCase: DeleteGooglePhotosPickingSessionUseCase,
 ) : CoroutineWorker(appContext, workerParams) {
     private var uploadedPhotosCounter = 0
 
     @SuppressLint("MissingPermission")
     @SuppressWarnings("ReturnCount")
     override suspend fun doWork(): Result {
+        val sessionId = inputData.getString(SESSION_ID)
+        val initialPollInterval = inputData.getString(INITIAL_POLL_INTERVAL)
+
+        if (sessionId.isNullOrBlank() || initialPollInterval.isNullOrBlank()) {
+            return Result.failure()
+        }
+
         Timber.tag(LOG_TAG).e("GOOGLE_PHOTOS WORKER STARTED!!!")
-        var outputData: Data? = null
+        val outputData: Data?
 
         createChannel()
         createNotification(
@@ -55,7 +64,9 @@ class GooglePhotosWorker @AssistedInject constructor(
         )
 
         Timber.tag(LOG_TAG).d("Download Google photos")
-        getGooglePhotosUseCase.invoke()?.let { error ->
+        getGooglePhotosUseCase.invoke(sessionId, initialPollInterval)?.let { error ->
+            deleteGooglePhotosPickingSessionUseCase(sessionId)
+
             val output = Data
                 .Builder()
                 .putString(WorkerInfo.WORKER_ERROR_RESULT_KEY, error.toString())
@@ -78,6 +89,8 @@ class GooglePhotosWorker @AssistedInject constructor(
             }
         }
 
+        deleteGooglePhotosPickingSessionUseCase(sessionId)
+
         if (uploadedPhotosCounter > 0) { // Show notification if at least 1 photo has been uploaded
             createNotification(
                 notificationTitleId = R.string.upload_google_photos,
@@ -87,16 +100,12 @@ class GooglePhotosWorker @AssistedInject constructor(
                 autoCancel = true,
                 isForeground = false
             )
-
-            outputData =
-                Data.Builder().putInt(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY, uploadedPhotosCounter).build()
-            return Result.success(outputData)
         } else {
             Timber.tag(LOG_TAG).d("GOOGLE_PHOTOS are UP-TO date, nothing for upload to PhotoPixels cloud")
         }
 
         outputData =
-            Data.Builder().putInt(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY, 0).build()
+            Data.Builder().putInt(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY, uploadedPhotosCounter).build()
         return Result.success(outputData)
     }
 
@@ -106,7 +115,7 @@ class GooglePhotosWorker @AssistedInject constructor(
         // Uploading Photo
         val photoUploadResult = uploadPhotoUseCase.invoke(
             fileBytes = googlePhotoBytes,
-            androidCloudId = googlePhotoData.androidCloudId ?: "",
+            androidCloudId = googlePhotoData.androidCloudId,
             fileName = googlePhotoData.fileName,
             mimeType = googlePhotoData.mimeType,
             objectHash = Hasher.sha1HashBase64(googlePhotoBytes)
@@ -189,5 +198,13 @@ class GooglePhotosWorker @AssistedInject constructor(
         private const val LOG_TAG = "GooglePhotosWorker"
         private const val FOREGROUND_SERVICE_NOTIFICATION_ID = 2
         private const val NORMAL_NOTIFICATION_ID = 3
+
+        private const val SESSION_ID = "google_photos_session_id"
+        private const val INITIAL_POLL_INTERVAL = "google_photos_initial_poll_interval"
+
+        fun createInputData(sessionId: String, initialPollInterval: String): Data = Data.Builder()
+            .putString(SESSION_ID, sessionId)
+            .putString(INITIAL_POLL_INTERVAL, initialPollInterval)
+            .build()
     }
 }

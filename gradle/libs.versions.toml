@@ -45,7 +45,6 @@ credentials = "1.3.0"
 googleid = "1.1.1"
 identity-credential = "20231002"
 playServicesAuth = "21.3.0"
-googlePhotosLibraryClient = "1.7.3"
 appauth = "0.11.1"
 jwtdecode = "2.0.2"
 grpcNetty = "1.57.0"
@@ -152,7 +151,6 @@ androidx-credentials = { module = "androidx.credentials:credentials", version.re
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 identity-credential = { group = "com.android.identity", name = "identity-credential", version.ref = "identity-credential" }
-google-photos-library-client = { module = "com.google.photos.library:google-photos-library-client", version.ref = "googlePhotosLibraryClient" }
 appauth = { module = "net.openid:appauth", version.ref = "appauth" }
 jwtdecode = { module = "com.auth0.android:jwtdecode", version.ref = "jwtdecode" }
 
@@ -176,8 +174,8 @@ firebase = [
     "firebase-crashlytics", "firebase-analytics", "firebase-performance"
 ]
 
-google-photos = [
-    "google-photos-library-client", "grpc-core", "grpc-netty",
+grpc = [
+    "grpc-core", "grpc-netty",
     "grpc-okhttp", "grpc-protobuf", "grpc-stub"
 ]
 

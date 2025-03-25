@@ -6,4 +6,6 @@ sealed class SettingsScreenEvents {
     data object NavigateToConnectServerScreen : SettingsScreenEvents()
 
     data class StartAuthorizationIntent(val authorizationIntent: Intent) : SettingsScreenEvents()
+
+    data class StartPickerIntent(val photoPickerIntent: Intent) : SettingsScreenEvents()
 }

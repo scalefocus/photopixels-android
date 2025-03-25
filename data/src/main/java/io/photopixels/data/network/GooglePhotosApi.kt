@@ -1,21 +1,12 @@
-package io.photopixels.domain.repository
+package io.photopixels.data.network
 
 import io.photopixels.domain.base.Response
-import io.photopixels.domain.model.GooglePhoto
 import io.photopixels.domain.model.MediaItems
 import io.photopixels.domain.model.PhotoPickingSession
 
-interface GooglePhotosRepository {
-
-    suspend fun getPhotosForUpload(): List<GooglePhoto>
-
-    suspend fun insertPhotosToDb(googlePhotos: List<GooglePhoto>)
-
-    suspend fun updatePhotoData(googlePhoto: GooglePhoto)
+interface GooglePhotosApi {
 
     suspend fun downloadPhoto(photoUrl: String): Response<ByteArray>
-
-    suspend fun clearGooglePhotosTable()
 
     suspend fun createGooglePhotoPickingSession(): Response<PhotoPickingSession>
 
@@ -23,5 +14,5 @@ interface GooglePhotosRepository {
 
     suspend fun deleteGooglePhotoPickingSession(sessionId: String): Response<Unit>
 
-    suspend fun getMediaItems(sessionId: String, pageToken: String? = null): Response<MediaItems>
+    suspend fun getMediaItems(sessionId: String, pageToken: String?): Response<MediaItems>
 }
