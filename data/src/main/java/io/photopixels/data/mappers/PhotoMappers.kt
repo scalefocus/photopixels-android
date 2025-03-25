@@ -8,6 +8,7 @@ import io.photopixels.data.storage.database.entities.ThumbnailsEntity
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.Thumbnail
 
 fun PhotosEntity.toDomain() = PhotoData(
     id = id.toString(),
@@ -71,3 +72,18 @@ fun PhotoUiData.toEntity() = ThumbnailsEntity(
 )
 
 fun ObjectUploadResponse.toDomain() = PhotoUploadData(id, revision)
+
+fun PhotosEntity.toThumbnail() = Thumbnail.LocalThumbnail(
+    id = id.toString(),
+    contentUri = contentUri,
+    hash = hash.orEmpty(),
+    dateCreated = dateCreated,
+)
+
+fun ThumbnailsEntity.toThumbnail() = Thumbnail.RemoteThumbnail(
+    id = id,
+    thumbnailByteArray = thumbnailBytes,
+    hash = hash,
+    dateCreated = dateCreated,
+    isNewlyUploaded = isNewlyUploaded,
+)

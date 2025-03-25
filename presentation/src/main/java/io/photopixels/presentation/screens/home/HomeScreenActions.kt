@@ -12,7 +12,7 @@ sealed class HomeScreenActions {
     data object StartSyncWorkers : HomeScreenActions()
 
     data class OnThumbnailClick(
-        val serverItemId: String
+        val thumbnailId: String
     ) : HomeScreenActions()
 
     data object LoadStartupData : HomeScreenActions()

@@ -20,37 +20,37 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
-import io.photopixels.domain.model.PhotoUiData
+import io.photopixels.domain.model.Thumbnail
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.SFButton
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
-import io.photopixels.presentation.base.composeviews.previewparams.PhotoUiDataPreviewParameter
 import io.photopixels.presentation.theme.PhotoPixelsTheme
 import io.photopixels.presentation.theme.SFSecondaryLightBlue
 import io.photopixels.presentation.utils.toThumbnailsGroupString
-import kotlinx.collections.immutable.ImmutableList
-import java.time.YearMonth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Suppress("LambdaParameterInRestartableEffect")
@@ -113,11 +113,9 @@ private fun ThumbnailsGrid(state: HomeScreenState, onThumbnailClick: (String) ->
                         .padding(1.dp)
                         .aspectRatio(1f)
                 ) {
-                    val photoData = photoThumbnails[index]
+                    val photoThumbnail = photoThumbnails[index]
                     ThumbnailImage(
-                        thumbnail = photoData.thumbnailByteArray,
-                        isNewlyUploaded = photoData.isNewlyUploaded,
-                        id = photoData.id,
+                        thumbnail = photoThumbnail,
                         onThumbnailClick = onThumbnailClick
                     )
                 }
@@ -128,40 +126,76 @@ private fun ThumbnailsGrid(state: HomeScreenState, onThumbnailClick: (String) ->
 
 @Composable
 private fun ThumbnailImage(
-    id: String,
-    thumbnail: ByteArray,
-    isNewlyUploaded: Boolean,
+    thumbnail: Thumbnail,
     onThumbnailClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier
             .fillMaxSize()
-            .clickable { onThumbnailClick(id) },
+            .clickable { onThumbnailClick(thumbnail.id) },
         shape = RectangleShape
     ) {
-        Box(contentAlignment = Alignment.TopCenter) {
-            Image(
-                modifier = Modifier.fillMaxSize(),
-                painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(thumbnail)
-                        .memoryCacheKey(id)
-                        .diskCacheKey(id)
-                        .build(),
-                ),
-                contentScale = ContentScale.Crop,
-                contentDescription = null,
-            )
-
-            if (isNewlyUploaded) {
-                SmallGreenCircle(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(5.dp)
-                )
-            }
+        when (thumbnail) {
+            is Thumbnail.RemoteThumbnail -> RemoteThumbnailImage(thumbnail)
+            is Thumbnail.LocalThumbnail -> LocalThumbnailImage(thumbnail)
         }
+    }
+}
+
+@Composable
+private fun LocalThumbnailImage(
+    thumbnail: Thumbnail.LocalThumbnail,
+) {
+    Image(
+        modifier = Modifier.fillMaxSize(),
+        painter = rememberAsyncImagePainter(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(thumbnail.contentUri)
+                .memoryCacheKey(thumbnail.id)
+                .diskCacheKey(thumbnail.id)
+                .build(),
+        ),
+        contentScale = ContentScale.Crop,
+        contentDescription = null,
+    )
+}
+
+@Composable
+private fun RemoteThumbnailImage(
+    thumbnail: Thumbnail.RemoteThumbnail,
+) {
+    Box(contentAlignment = Alignment.TopCenter) {
+        Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = rememberAsyncImagePainter(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(thumbnail.thumbnailByteArray)
+                    .memoryCacheKey(thumbnail.id)
+                    .diskCacheKey(thumbnail.id)
+                    .build(),
+            ),
+            contentScale = ContentScale.Crop,
+            contentDescription = null,
+        )
+
+        if (thumbnail.isNewlyUploaded) {
+            SmallGreenCircle(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(5.dp)
+            )
+        }
+
+        Icon(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 2.dp, end = 4.dp)
+                .size(20.dp),
+            imageVector = ImageVector.vectorResource(R.drawable.outline_cloud_done_24),
+            tint = Color.White,
+            contentDescription = null,
+        )
     }
 }
 
@@ -202,9 +236,10 @@ private fun EmptyState(isSyncStarted: Boolean, onBtnClick: () -> Unit) {
 
 @Composable
 private fun SmallGreenCircle(modifier: Modifier = Modifier) {
+    val greenWithAlpha = remember { Color.Green.copy(alpha = 0.8f) }
+
     Canvas(modifier = modifier.size(10.dp)) {
         val radius = 5.dp.toPx()
-        val greenWithAlpha = Color.Green.copy(alpha = 0.8f)
 
         drawCircle(
             color = greenWithAlpha,
@@ -221,20 +256,20 @@ private fun PreviewEmptyState() {
     }
 }
 
-@Composable
-@Preview(name = "HomeScreen", showBackground = true, apiLevel = 33)
-private fun PreviewHomeScreen(
-    @PreviewParameter(PhotoUiDataPreviewParameter::class) photosUiList: ImmutableList<PhotoUiData>
-) {
-    PhotoPixelsTheme {
-        HomeScreenContent(
-            state = HomeScreenState(
-                photoThumbnails = mapOf(
-                    YearMonth.now() to photosUiList,
-                    YearMonth.now().minusYears(1) to photosUiList
-                )
-            ),
-            onSubmitActions = {}
-        )
-    }
-}
+// @Composable
+// @Preview(name = "HomeScreen", showBackground = true, apiLevel = 33)
+// private fun PreviewHomeScreen(
+//    @PreviewParameter(PhotoUiDataPreviewParameter::class) photosUiList: ImmutableList<PhotoUiData>
+// ) {
+//    PhotoPixelsTheme {
+//        HomeScreenContent(
+//            state = HomeScreenState(
+//                photoThumbnails = mapOf(
+//                    YearMonth.now() to photosUiList,
+//                    YearMonth.now().minusYears(1) to photosUiList
+//                )
+//            ),
+//            onSubmitActions = {}
+//        )
+//    }
+// }

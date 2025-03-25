@@ -5,12 +5,11 @@ import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.Thumbnail
 import kotlinx.coroutines.flow.Flow
 
 interface PhotosRepository {
     suspend fun insertPhotoDataToDB(photoDataList: List<PhotoData>)
-
-    fun getPhotosDataFromDB(): Flow<Unit>
 
     fun getDevicePhotos(context: Context): List<PhotoData>
 
@@ -18,7 +17,7 @@ interface PhotosRepository {
 
     suspend fun getPhotosWithMissingHashes(): List<PhotoData>
 
-    fun getPhotosDataForUploadFromDB(): List<PhotoData>
+    suspend fun getPhotosDataForUploadFromDB(): List<PhotoData>
 
     suspend fun removePhotoDataFromDB(photoId: Int)
 
@@ -42,7 +41,9 @@ interface PhotosRepository {
 
     suspend fun insertThumbnailsToDb(thumbnailsList: List<PhotoUiData>)
 
-    fun getThumbnailsFromDb(): Flow<List<PhotoUiData>>
+    fun getLocalThumbnailsFromDb(): Flow<List<Thumbnail.LocalThumbnail>>
+
+    fun getRemoteThumbnailsFromDb(): Flow<List<Thumbnail.RemoteThumbnail>>
 
     suspend fun clearNewlyUploadedThumbnails()
 

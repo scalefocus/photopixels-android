@@ -9,7 +9,6 @@ import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.model.WorkerStatus
 import io.photopixels.domain.usecases.GetThumbnailsFromDbUseCase
 import io.photopixels.domain.usecases.GetThumbnailsGroupedByMonthUseCase
-import io.photopixels.domain.usecases.SavePhotosIdsInMemoryUseCase
 import io.photopixels.domain.usecases.SyncServerThumbnails
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
@@ -24,7 +23,6 @@ import javax.inject.Inject
 class HomeScreenViewModel @Inject constructor(
     private val workerStarter: WorkerStarter,
     private val syncServerThumbnails: SyncServerThumbnails,
-    private val savePhotosIdsInMemoryUseCase: SavePhotosIdsInMemoryUseCase,
     private val getThumbnailsGroupedByMonthUseCase: GetThumbnailsGroupedByMonthUseCase,
     private val getThumbnailsFromDbUseCase: GetThumbnailsFromDbUseCase,
 ) : BaseViewModel<HomeScreenState, HomeScreenActions, HomeScreenEvents>(HomeScreenState()) {
@@ -59,8 +57,7 @@ class HomeScreenViewModel @Inject constructor(
             HomeScreenActions.StartSyncWorkers -> startWorkersAndListeners()
 
             is HomeScreenActions.OnThumbnailClick -> {
-                savePhotosIdsInMemoryUseCase.invoke(state.value.photoThumbnails.flatMap { it.value.map { it.id } })
-                submitEvent(HomeScreenEvents.NavigateToPreviewPhotosScreen(action.serverItemId))
+                submitEvent(HomeScreenEvents.NavigateToPreviewPhotosScreen(action.thumbnailId))
             }
 
             HomeScreenActions.LoadStartupData -> {
