@@ -20,6 +20,7 @@ import io.photopixels.domain.base.Response
 import io.photopixels.domain.extensions.readFileContent
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.WorkerInfo
+import io.photopixels.domain.usecases.DownloadThumbnailUseCase
 import io.photopixels.domain.usecases.GetPhotosForUploadUseCase
 import io.photopixels.domain.usecases.RemovePhotoDataFromDbUseCase
 import io.photopixels.domain.usecases.UpdatePhotoInDbUseCase
@@ -39,7 +40,8 @@ class UploadPhotosWorker @AssistedInject constructor(
     private val getPhotosForUploadUseCase: GetPhotosForUploadUseCase,
     private val uploadPhotoUseCase: UploadPhotoUseCase,
     private val updatePhotoInDbUseCase: UpdatePhotoInDbUseCase,
-    private val removePhotoDataFromDbUseCase: RemovePhotoDataFromDbUseCase
+    private val removePhotoDataFromDbUseCase: RemovePhotoDataFromDbUseCase,
+    private val downloadThumbnailUseCase: DownloadThumbnailUseCase,
 ) : CoroutineWorker(context, workerParams) {
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -95,6 +97,7 @@ class UploadPhotosWorker @AssistedInject constructor(
 
             when (photoUploadResult) {
                 is Response.Success -> {
+                    downloadThumbnailUseCase(photoUploadResult.result.id)
                     // Update photoData in DB
                     val updatedPhotoData =
                         photoData.copy(serverItemHashId = photoUploadResult.result.id, isAlreadyUploaded = true)

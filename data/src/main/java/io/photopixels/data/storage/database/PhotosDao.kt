@@ -13,6 +13,9 @@ interface PhotosDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertPhotoData(photosEntity: List<PhotosEntity>)
 
+    @Update
+    suspend fun updatePhotoData(photosEntity: List<PhotosEntity>)
+
     @Query("DELETE from device_photos where id=:photoId")
     suspend fun removePhotoData(photoId: Int)
 
@@ -29,6 +32,9 @@ interface PhotosDao {
         "Select * from device_photos where hash is null order by dateCreated desc"
     )
     suspend fun getPhotosWithMissingHashes(): List<PhotosEntity>
+
+    @Query("Select * from device_photos where hash in (:hashes)")
+    suspend fun getPhotosByHashes(hashes: List<String>): List<PhotosEntity>
 
     @Update
     fun updatePhotoData(photosEntity: PhotosEntity)

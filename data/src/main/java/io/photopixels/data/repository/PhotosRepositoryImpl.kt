@@ -34,7 +34,14 @@ class PhotosRepositoryImpl @Inject constructor(
         photosDao.insertPhotoData(photoDataList.map { it.toEntity() })
     }
 
+    override suspend fun updatePhotoDataToDB(photoDataList: List<PhotoData>) {
+        photosDao.updatePhotoData(photoDataList.map { it.toEntity() })
+    }
+
     override fun getDevicePhotos(context: Context): List<PhotoData> = MediaHelper.scanPhotos(context)
+
+    override suspend fun getDevicePhotosByHashes(hashes: List<String>): List<PhotoData> =
+        photosDao.getPhotosByHashes(hashes).map { it.toDomain() }
 
     override suspend fun getPhotoByHash(hash: String): PhotoUiData? = thumbnailsDao.getThumbnailByHash(hash)?.toDomain()
 

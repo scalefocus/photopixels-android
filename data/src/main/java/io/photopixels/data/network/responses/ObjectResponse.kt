@@ -7,7 +7,7 @@ data class ObjectResponse(
     val id: String,
     val thumbnail: String, // Thumbnail encoded in Base64
     val contentType: String,
-    val hash: String,
+    val originalHash: String,
     val appleCloudId: String?,
     val androidCloudId: String?,
     val width: Int,

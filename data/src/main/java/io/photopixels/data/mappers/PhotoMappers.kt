@@ -41,7 +41,7 @@ fun PhotoData.toEntity() = PhotosEntity(
 
 fun ObjectResponse.toDomain() = PhotoUiData(
     id = id,
-    hash = hash,
+    hash = originalHash,
     thumbnailByteArray = Base64.decode(thumbnail, Base64.DEFAULT),
     androidCloudId = androidCloudId,
     appleCloudId = appleCloudId,

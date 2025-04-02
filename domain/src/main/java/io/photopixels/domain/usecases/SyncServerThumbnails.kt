@@ -1,6 +1,7 @@
 package io.photopixels.domain.usecases
 
 import io.photopixels.domain.base.Response
+import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.repository.PhotosRepository
 import io.photopixels.domain.repository.ServerRepository
@@ -17,7 +18,7 @@ class SyncServerThumbnails @Inject constructor(
         photosRepository.clearNewlyUploadedThumbnails()
 
         val localRevision = serverRepository.getLocalRevision()
-        val revisionToRequest = localRevision + 1
+        val revisionToRequest = if (localRevision == 0) 0 else localRevision + 1
 
         return when (val revisionResponse = serverRepository.getServerRevision(revisionToRequest)) {
             is Response.Success -> {
@@ -68,11 +69,12 @@ class SyncServerThumbnails @Inject constructor(
                     is Response.Success -> {
                         val thumbnails = thumbnailsResponse.result.map { photoUiData ->
                             photoUiData.copy(
-                                dateTaken = added[photoUiData.id] ?: 0L,
                                 isNewlyUploaded = isUploadComplete,
                             )
                         }
                         photosRepository.insertThumbnailsToDb(thumbnails)
+
+                        updateAlreadyUploadedDevicePhotos(thumbnails)
                     }
 
                     // stop sync and return the failure
@@ -81,5 +83,17 @@ class SyncServerThumbnails @Inject constructor(
             }
 
         return Response.Success(Unit)
+    }
+
+    private suspend fun updateAlreadyUploadedDevicePhotos(thumbnails: List<PhotoUiData>) {
+        val hashToIdsMap = thumbnails.associate { thumbnail -> thumbnail.hash to thumbnail.id }
+        photosRepository.getDevicePhotosByHashes(hashToIdsMap.keys.toList())
+            .takeIf { it.isNotEmpty() }
+            ?.map { photoData ->
+                photoData.copy(
+                    isAlreadyUploaded = true,
+                    serverItemHashId = hashToIdsMap[photoData.hash]
+                )
+            }?.let { photosRepository.updatePhotoDataToDB(it) }
     }
 }

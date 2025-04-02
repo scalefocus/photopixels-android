@@ -11,7 +11,11 @@ import kotlinx.coroutines.flow.Flow
 interface PhotosRepository {
     suspend fun insertPhotoDataToDB(photoDataList: List<PhotoData>)
 
+    suspend fun updatePhotoDataToDB(photoDataList: List<PhotoData>)
+
     fun getDevicePhotos(context: Context): List<PhotoData>
+
+    suspend fun getDevicePhotosByHashes(hashes: List<String>): List<PhotoData>
 
     suspend fun getPhotoByHash(hash: String): PhotoUiData?
 
