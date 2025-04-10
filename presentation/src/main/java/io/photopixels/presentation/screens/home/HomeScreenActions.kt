@@ -1,9 +1,11 @@
 package io.photopixels.presentation.screens.home
 
+import io.photopixels.presentation.permissions.StorageAccess
+
 sealed class HomeScreenActions {
-    data class OnPermissionResult(
-        val permissionsMap: Map<String, Boolean>
-    ) : HomeScreenActions()
+    data class UpdateStorageAccess(val storageAccess: StorageAccess) : HomeScreenActions()
+
+    data class OnPermissionResult(val storageAccess: StorageAccess) : HomeScreenActions()
 
     data object CloseErrorDialog : HomeScreenActions()
 
