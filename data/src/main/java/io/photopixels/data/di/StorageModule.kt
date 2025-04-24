@@ -14,7 +14,6 @@ import io.photopixels.data.storage.database.ThumbnailsDao
 import io.photopixels.data.storage.datastore.AuthDataStore
 import io.photopixels.data.storage.datastore.CipherUtil
 import io.photopixels.data.storage.datastore.UserPreferencesDataStore
-import io.photopixels.data.storage.memory.MemoryStorage
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -67,8 +66,4 @@ class StorageModule {
         applicationContext,
         cipherUtil
     )
-
-    @Provides
-    @Singleton
-    fun providesMemoryStorage() = MemoryStorage()
 }

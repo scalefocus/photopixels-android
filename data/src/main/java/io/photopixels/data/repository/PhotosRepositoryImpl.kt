@@ -10,7 +10,6 @@ import io.photopixels.data.storage.database.PhotosDao
 import io.photopixels.data.storage.database.ThumbnailsDao
 import io.photopixels.data.storage.database.entities.PhotosEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
-import io.photopixels.data.storage.memory.MemoryStorage
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.PhotoUiData
@@ -27,7 +26,6 @@ class PhotosRepositoryImpl @Inject constructor(
     private val photosDao: PhotosDao,
     private val thumbnailsDao: ThumbnailsDao,
     private val backendApi: BackendApi,
-    private val memoryStorage: MemoryStorage
 ) : PhotosRepository {
 
     override suspend fun insertPhotoDataToDB(photoDataList: List<PhotoData>) {
@@ -73,12 +71,6 @@ class PhotosRepositoryImpl @Inject constructor(
         androidCloudId: String,
         objectHash: String
     ): Response<PhotoUploadData> = backendApi.uploadPhoto(fileBytes, fileName, mimeType, androidCloudId, objectHash)
-
-    override suspend fun setAllPreviewPhotosIdsInMemory(photosIds: List<String>) {
-        memoryStorage.addPhotosServerIdsList(photosIds)
-    }
-
-    override suspend fun getAllPreviewPhotosIdsFromMemory(): List<String> = memoryStorage.photosIdsList
 
     override suspend fun clearPhotosTable() {
         photosDao.clearPhotosTable()

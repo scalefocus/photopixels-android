@@ -37,10 +37,6 @@ interface PhotosRepository {
         objectHash: String
     ): Response<PhotoUploadData>
 
-    suspend fun setAllPreviewPhotosIdsInMemory(photosIds: List<String>)
-
-    suspend fun getAllPreviewPhotosIdsFromMemory(): List<String>
-
     suspend fun clearPhotosTable()
 
     suspend fun insertThumbnailsToDb(thumbnailsList: List<PhotoUiData>)
