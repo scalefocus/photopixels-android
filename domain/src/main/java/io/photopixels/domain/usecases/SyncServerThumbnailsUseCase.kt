@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 private const val MAX_OBJECTS_TO_REQUEST = 90
 
-class SyncServerThumbnails @Inject constructor(
+class SyncServerThumbnailsUseCase @Inject constructor(
     private val serverRepository: ServerRepository,
     private val photosRepository: PhotosRepository,
 ) {

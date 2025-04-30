@@ -1,6 +1,7 @@
 package io.photopixels.data.di
 
 import android.content.Context
+import android.provider.MediaStore
 import androidx.room.Room
 import dagger.Module
 import dagger.Provides
@@ -66,4 +67,8 @@ class StorageModule {
         applicationContext,
         cipherUtil
     )
+
+    @Provides
+    @Singleton
+    fun provideContentResolverUri() = MediaStore.Images.Media.EXTERNAL_CONTENT_URI // Adjust for filtering if needed
 }

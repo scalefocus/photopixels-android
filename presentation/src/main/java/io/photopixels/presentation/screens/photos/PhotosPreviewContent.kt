@@ -89,7 +89,7 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
                 }
 
                 DeleteButton(
-                    visible = screenState.photos[pagerState.currentPage] is PhotoPreview.Remote,
+                    visible = screenState.photos.getOrNull(pagerState.currentPage) is PhotoPreview.Remote,
                     modifier = Modifier
                         .padding(bottom = 100.dp)
                         .align(Alignment.BottomCenter),

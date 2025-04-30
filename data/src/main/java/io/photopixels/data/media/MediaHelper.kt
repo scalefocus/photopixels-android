@@ -8,8 +8,9 @@ import android.provider.MediaStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.utils.DateHelper
+import javax.inject.Inject
 
-object MediaHelper {
+class MediaHelper @Inject constructor(private val uri: Uri) {
 
     fun scanPhotos(
         @ApplicationContext context: Context
@@ -18,9 +19,8 @@ object MediaHelper {
 
         val contentResolver = context.contentResolver
 
-        val query = MediaStore.Images.Media.EXTERNAL_CONTENT_URI.toString() // Adjust for filtering if needed
         val cursor = contentResolver.query(
-            Uri.parse(query),
+            uri,
             arrayOf(
                 MediaStore.Images.Media._ID, // MediaStore ID
                 MediaStore.Images.Media.DISPLAY_NAME, // Filename

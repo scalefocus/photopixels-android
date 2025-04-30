@@ -19,6 +19,9 @@ interface PhotosDao {
     @Query("DELETE from device_photos where id=:photoId")
     suspend fun removePhotoData(photoId: Int)
 
+    @Query("DELETE from device_photos where id in (:photoIds)")
+    suspend fun removePhotoData(photoIds: List<Int>)
+
     @Query("Select * from device_photos")
     fun getPhotosData(): Flow<PhotosEntity>
 
@@ -38,6 +41,9 @@ interface PhotosDao {
 
     @Update
     fun updatePhotoData(photosEntity: PhotosEntity)
+
+    @Query("Select id from device_photos")
+    suspend fun getPhotosIds(): List<Int>
 
     @Query("DELETE from device_photos")
     suspend fun clearPhotosTable()

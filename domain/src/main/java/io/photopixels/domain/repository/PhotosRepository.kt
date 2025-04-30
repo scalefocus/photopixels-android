@@ -25,6 +25,10 @@ interface PhotosRepository {
 
     suspend fun removePhotoDataFromDB(photoId: Int)
 
+    suspend fun removePhotosDataFromDB(photoIds: List<Int>)
+
+    suspend fun getPhotosDataIdsFromDB(): List<Int>
+
     suspend fun updatePhotoData(photoData: PhotoData)
 
     suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<PhotoUiData>>

@@ -26,6 +26,7 @@ class PhotosRepositoryImpl @Inject constructor(
     private val photosDao: PhotosDao,
     private val thumbnailsDao: ThumbnailsDao,
     private val backendApi: BackendApi,
+    private val mediaHelper: MediaHelper,
 ) : PhotosRepository {
 
     override suspend fun insertPhotoDataToDB(photoDataList: List<PhotoData>) {
@@ -36,7 +37,7 @@ class PhotosRepositoryImpl @Inject constructor(
         photosDao.updatePhotoData(photoDataList.map { it.toEntity() })
     }
 
-    override fun getDevicePhotos(context: Context): List<PhotoData> = MediaHelper.scanPhotos(context)
+    override fun getDevicePhotos(context: Context): List<PhotoData> = mediaHelper.scanPhotos(context)
 
     override suspend fun getDevicePhotosByHashes(hashes: List<String>): List<PhotoData> =
         photosDao.getPhotosByHashes(hashes).map { it.toDomain() }
@@ -54,6 +55,12 @@ class PhotosRepositoryImpl @Inject constructor(
     override suspend fun removePhotoDataFromDB(photoId: Int) {
         photosDao.removePhotoData(photoId)
     }
+
+    override suspend fun removePhotosDataFromDB(photoIds: List<Int>) {
+        photosDao.removePhotoData(photoIds)
+    }
+
+    override suspend fun getPhotosDataIdsFromDB(): List<Int> = photosDao.getPhotosIds()
 
     override suspend fun updatePhotoData(photoData: PhotoData) {
         photosDao.updatePhotoData(photoData.toEntity())

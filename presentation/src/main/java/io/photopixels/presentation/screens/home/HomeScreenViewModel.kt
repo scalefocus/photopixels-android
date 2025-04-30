@@ -1,16 +1,19 @@
 package io.photopixels.presentation.screens.home
 
+import android.database.ContentObserver
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.model.WorkerStatus
 import io.photopixels.domain.usecases.GetThumbnailsGroupedByMonthUseCase
-import io.photopixels.domain.usecases.SyncServerThumbnails
+import io.photopixels.domain.usecases.ScanDevicePhotosUseCase
+import io.photopixels.domain.usecases.SyncServerThumbnailsUseCase
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.permissions.StorageAccess
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -20,14 +23,26 @@ import javax.inject.Inject
 @Suppress("TooManyFunctions")
 class HomeScreenViewModel @Inject constructor(
     private val workerStarter: WorkerStarter,
-    private val syncServerThumbnails: SyncServerThumbnails,
+    private val syncServerThumbnailsUseCase: SyncServerThumbnailsUseCase,
     private val getThumbnailsGroupedByMonthUseCase: GetThumbnailsGroupedByMonthUseCase,
+    private val scanDevicePhotosUseCase: ScanDevicePhotosUseCase,
+    private val mediaObserver: MediaObserverHelper,
 ) : BaseViewModel<HomeScreenState, HomeScreenActions, HomeScreenEvents>(HomeScreenState()) {
 
     // Used to prevent multiple starting at once of getServer thumbnails function
     private val getServerThumbnailsProgressState = MutableStateFlow(NOT_STARTED)
 
     private var storageAccess = StorageAccess.Denied
+        set(value) {
+            field = value
+            if (value != StorageAccess.Denied) {
+                registerContentObserver()
+            }
+        }
+
+    private var scanDevicePhotosJob: Job? = null
+    private var isDirty = false
+    private var contentObserver: ContentObserver? = null
 
     init {
         viewModelScope.launch {
@@ -35,8 +50,26 @@ class HomeScreenViewModel @Inject constructor(
                 updateState { copy(photoThumbnails = photoThumbnails) }
             }
         }
+    }
 
-        loadStartupData(isUserAction = false)
+    private fun scanDeviceMedia() {
+        if (scanDevicePhotosJob == null) {
+            scanDevicePhotosJob = viewModelScope.launch {
+                scanDevicePhotosUseCase()
+                scanDevicePhotosJob = null
+
+                if (isDirty) {
+                    isDirty = false
+                    scanDeviceMedia()
+                }
+            }
+        } else {
+            isDirty = true
+        }
+    }
+
+    override fun onCleared() {
+        contentObserver?.let(mediaObserver::unregisterObserver)
     }
 
     override suspend fun handleActions(action: HomeScreenActions) {
@@ -68,6 +101,16 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
+    private fun registerContentObserver() {
+        if (contentObserver == null) {
+            contentObserver = mediaObserver.registerObserver {
+                scanDeviceMedia()
+            }
+
+            loadStartupData(isUserAction = false)
+        }
+    }
+
     private fun handlePermissions(storageAccess: StorageAccess) {
         if (storageAccess == StorageAccess.Denied) {
             updateState { copy(errorMsgId = R.string.error_permission_denied) }
@@ -78,7 +121,7 @@ class HomeScreenViewModel @Inject constructor(
 
     private suspend fun getServerRevisionAndThumbnails(isUploadComplete: Boolean = false) {
         updateState { copy(isLoading = true) }
-        val syncResponse = syncServerThumbnails(isUploadComplete = isUploadComplete)
+        val syncResponse = syncServerThumbnailsUseCase(isUploadComplete = isUploadComplete)
         if (syncResponse is Response.Failure) {
             // TODO handle with some error message later
             Timber.tag(TAG).e("Unable to Sync thumbnails from the server")
