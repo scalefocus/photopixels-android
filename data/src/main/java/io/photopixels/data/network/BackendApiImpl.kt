@@ -14,15 +14,12 @@ import io.ktor.http.URLProtocol
 import io.photopixels.data.base.request
 import io.photopixels.data.mappers.toDomain
 import io.photopixels.data.network.requests.ForgotPasswordRequest
-import io.photopixels.data.network.requests.LoginRequest
 import io.photopixels.data.network.requests.ObjectsDataRequest
 import io.photopixels.data.network.requests.RegisterRequest
 import io.photopixels.data.network.requests.ResetPasswordRequest
 import io.photopixels.data.network.requests.UploadPhotoRequest
-import io.photopixels.data.network.responses.LoginResponse
 import io.photopixels.data.network.responses.ObjectResponse
 import io.photopixels.data.network.responses.ObjectUploadResponse
-import io.photopixels.data.network.responses.RefreshTokenRequest
 import io.photopixels.data.network.responses.ServerRevisionResponse
 import io.photopixels.data.network.responses.ServerStatusResponse
 import io.photopixels.domain.base.Response
@@ -54,17 +51,6 @@ class BackendApiImpl @Inject constructor(
             Response.Success(result.toDomain())
         }
 
-    override suspend fun loginUser(email: String, password: String): Response<LoginResponse> =
-        request {
-            val result = httpClient
-                .post {
-                    url("/api/user/login")
-                    setBody(LoginRequest(email, password))
-                }.body<LoginResponse>()
-            clearBearerTokens() // Clear the old tokens, so the new ones can be loaded on the next request
-            Response.Success(result)
-        }
-
     override suspend fun clearBearerTokens() {
         httpClient
             .plugin(Auth)
@@ -73,17 +59,6 @@ class BackendApiImpl @Inject constructor(
             .firstOrNull()
             ?.clearToken()
     }
-
-    override suspend fun refreshToken(refreshToken: String): Response<LoginResponse> =
-        request {
-            val result = httpClient
-                .post {
-                    url("/api/user/refresh")
-                    setBody(RefreshTokenRequest(refreshToken))
-                }.body<LoginResponse>()
-
-            Response.Success(result)
-        }
 
     override suspend fun registerUser(
         name: String,
