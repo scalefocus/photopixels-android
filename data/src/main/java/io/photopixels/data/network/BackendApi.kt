@@ -1,6 +1,5 @@
 package io.photopixels.data.network
 
-import io.photopixels.data.network.responses.LoginResponse
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
@@ -12,11 +11,7 @@ interface BackendApi {
 
     suspend fun getServerStatus(serverAddress: ServerAddress): Response<ServerStatus>
 
-    suspend fun loginUser(email: String, password: String): Response<LoginResponse>
-
     suspend fun clearBearerTokens()
-
-    suspend fun refreshToken(refreshToken: String): Response<LoginResponse>
 
     suspend fun registerUser(name: String, email: String, password: String): Response<Unit>
 

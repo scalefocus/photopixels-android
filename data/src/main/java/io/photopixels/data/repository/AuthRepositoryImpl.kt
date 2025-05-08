@@ -1,5 +1,6 @@
 package io.photopixels.data.repository
 
+import io.photopixels.data.network.AuthApi
 import io.photopixels.data.network.BackendApi
 import io.photopixels.data.storage.datastore.AuthDataStore
 import io.photopixels.domain.base.Response
@@ -9,13 +10,15 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
+    private val authApi: AuthApi,
     private val backendApi: BackendApi,
     private val authDataStore: AuthDataStore
 ) : AuthRepository {
 
     override suspend fun loginUser(email: String, password: String): Flow<Response<Unit>> =
         flow {
-            val result = backendApi.loginUser(email, password)
+            clearBearerTokens() // Clear the old tokens, so the new ones can be loaded on the next request
+            val result = authApi.loginUser(email, password)
             if (result is Response.Success) {
                 authDataStore.storeUsername(email)
                 authDataStore.storeAuthHeaders(result.result.accessToken, refreshToken = result.result.refreshToken)
