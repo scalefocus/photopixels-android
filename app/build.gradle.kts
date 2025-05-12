@@ -44,6 +44,10 @@ dependencies {
     implementation(project(":data"))
     implementation(project(":workers"))
 
+    // Coil
+    implementation(libs.coil)
+    implementation(libs.coil.network.ktor)
+
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
 

@@ -52,7 +52,7 @@ class NetworkModule {
         private const val KTOR_HTTP_STATUS_TAG = "http_status"
         private const val KTOR_REQUEST_TIMEOUT = 30L * 1000 // seconds
         private const val REFRESH_TOKEN_HTTP_CLIENT = "refreshTokenHttpClient"
-        private const val BACKEND_API_HTTP_CLIENT = "backendApiHttpClient"
+        const val BACKEND_API_HTTP_CLIENT = "backendApiHttpClient"
         private const val GOOGLE_PHOTOS_API_HTTP_CLIENT = "googlePhotosApiHttpClient"
         private const val GOOGLE_PHOTO_PICKER_BASE_URL = "https://photospicker.googleapis.com/v1/"
     }
