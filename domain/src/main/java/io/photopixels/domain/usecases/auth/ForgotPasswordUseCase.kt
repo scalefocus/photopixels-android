@@ -10,6 +10,10 @@ class ForgotPasswordUseCase @Inject constructor(private val authRepository: Auth
     }
 
     suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit> {
-        return authRepository.resetPassword(email, newPassword, verificationCode)
+        return authRepository.resetPassword(
+            email = email,
+            newPassword = newPassword,
+            verificationCode = verificationCode
+        )
     }
 }

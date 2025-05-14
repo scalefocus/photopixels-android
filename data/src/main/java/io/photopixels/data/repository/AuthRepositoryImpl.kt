@@ -63,12 +63,11 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun forgotPassword(email: String): Response<Unit> = backendApi.forgotPassword(email)
 
     override suspend fun resetPassword(email: String, newPassword: String, verificationCode: String): Response<Unit> =
-        backendApi
-            .resetPassword(
-                email,
-                newPassword,
-                verificationCode
-            )
+        backendApi.resetPassword(
+            email = email,
+            newPassword = newPassword,
+            verificationCode = verificationCode
+        )
 
     override suspend fun storeGoogleAuthState(authState: String) {
         authDataStore.storeGoogleAuthState(authState)
