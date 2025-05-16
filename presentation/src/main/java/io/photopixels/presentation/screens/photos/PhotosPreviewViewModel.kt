@@ -3,13 +3,10 @@ package io.photopixels.presentation.screens.photos
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.Thumbnail
 import io.photopixels.domain.usecases.DeletePhotoUseCase
-import io.photopixels.domain.usecases.GetAuthHeaderUseCase
 import io.photopixels.domain.usecases.GetServerInfoUseCase
 import io.photopixels.domain.usecases.GetThumbnailsFromDbUseCase
 import io.photopixels.presentation.base.BaseViewModel
@@ -23,7 +20,6 @@ import javax.inject.Inject
 class PhotosPreviewViewModel @Inject constructor(
     private val getThumbnailsUseCase: GetThumbnailsFromDbUseCase,
     private val getServerInfoUseCase: GetServerInfoUseCase,
-    private val getAuthHeaderUseCase: GetAuthHeaderUseCase,
     private val deletePhotoUseCase: DeletePhotoUseCase,
     savedState: SavedStateHandle
 ) : BaseViewModel<PhotosPreviewScreenState, PhotosPreviewActions, PhotosPreviewEvents>(PhotosPreviewScreenState()) {
@@ -54,28 +50,25 @@ class PhotosPreviewViewModel @Inject constructor(
         viewModelScope.launch {
             val serverAddress = getServerInfoUseCase.getServerAddress()?.toString()
             serverAddress?.let {
-                val authHeader = getAuthHeaderUseCase.invoke()
-                authHeader?.let {
-                    val thumbnails = getThumbnailsUseCase.invoke().first()
-                    val photos = thumbnails.map {
-                        when (it) {
-                            is Thumbnail.LocalThumbnail -> PhotoPreview.Local(it.id, it.contentUri)
-                            is Thumbnail.RemoteThumbnail -> {
-                                PhotoPreview.Remote(
-                                    id = it.id,
-                                    photoUrl = buildGlideUrl(it.id, serverAddress, authHeader)
-                                )
-                            }
+                val thumbnails = getThumbnailsUseCase.invoke().first()
+                val photos = thumbnails.map {
+                    when (it) {
+                        is Thumbnail.LocalThumbnail -> PhotoPreview.Local(it.id, it.contentUri)
+                        is Thumbnail.RemoteThumbnail -> {
+                            PhotoPreview.Remote(
+                                id = it.id,
+                                photoUrl = formatRemoteUrl(it.id, serverAddress)
+                            )
                         }
                     }
-                    val photoToLoadFirstIndex = thumbnails.indexOfFirst { it.id == clickedThumbnailId }
-                    updateState {
-                        copy(
-                            photos = photos,
-                            photoToLoadFirstIndex = photoToLoadFirstIndex,
-                            isLoading = false
-                        )
-                    }
+                }
+                val photoToLoadFirstIndex = thumbnails.indexOfFirst { it.id == clickedThumbnailId }
+                updateState {
+                    copy(
+                        photos = photos,
+                        photoToLoadFirstIndex = photoToLoadFirstIndex,
+                        isLoading = false
+                    )
                 }
             }
         }
@@ -103,13 +96,5 @@ class PhotosPreviewViewModel @Inject constructor(
         }
     }
 
-    private fun buildGlideUrl(photoId: String, serverAddress: String, authHeader: String): GlideUrl = GlideUrl(
-        "$serverAddress/api/object/$photoId",
-        LazyHeaders
-            .Builder()
-            .addHeader(
-                "Authorization",
-                "Bearer $authHeader"
-            ).build()
-    )
+    private fun formatRemoteUrl(photoId: String, serverAddress: String): String = "$serverAddress/api/object/$photoId"
 }

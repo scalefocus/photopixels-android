@@ -42,10 +42,6 @@ dependencies {
 
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.coil.compose)
-    implementation(libs.glide)
-    implementation(libs.glide.compose)
-    ksp(libs.glide.compiler)
-    ksp(libs.glide.ksp)
     implementation(libs.zoomable)
 
     // App auth - library

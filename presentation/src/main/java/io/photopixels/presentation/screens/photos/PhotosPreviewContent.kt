@@ -1,6 +1,5 @@
 package io.photopixels.presentation.screens.photos
 
-import android.graphics.drawable.Drawable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -17,10 +16,8 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -28,17 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.CircularIndicator
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
@@ -81,7 +72,10 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
                     pageSize = PageSize.Fill
                 ) { index ->
                     when (val photo = screenState.photos[index]) {
-                        is PhotoPreview.Remote -> FullScreenImage(imageGlideUrl = photo.photoUrl)
+                        is PhotoPreview.Remote -> ZoomableFullScreenImage(
+                            painter = rememberAsyncImagePainter(photo.photoUrl)
+                        )
+
                         is PhotoPreview.Local -> ZoomableFullScreenImage(
                             painter = rememberAsyncImagePainter(photo.contentUri)
                         )
@@ -101,44 +95,6 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
                 // SwipeArrows() Arrows removed for now
             }
         }
-    }
-}
-
-@Composable
-private fun FullScreenImage(imageGlideUrl: GlideUrl) {
-    var image by remember { mutableStateOf<Drawable?>(null) }
-    var showLoading by remember { mutableStateOf(true) }
-    val context = LocalContext.current.applicationContext
-
-    // Make image call only once per imageId
-    LaunchedEffect(key1 = imageGlideUrl) {
-        Glide
-            .with(context)
-            .load(imageGlideUrl)
-            .apply(RequestOptions().centerCrop())
-            .into(object : CustomTarget<Drawable>() {
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable>?
-                ) {
-                    if (image == null || image !== resource) {
-                        showLoading = false
-                        image = resource
-                    }
-                }
-
-                @Suppress("EmptyFunctionBlock")
-                override fun onLoadCleared(placeholder: Drawable?) {
-                }
-            })
-    }
-
-    if (showLoading) {
-        CircularIndicator()
-    }
-
-    image?.let {
-        ZoomableFullScreenImage(painter = rememberAsyncImagePainter(it))
     }
 }
 
@@ -217,7 +173,7 @@ private fun PreviewPhotosContent() {
                 photos = listOf(
                     PhotoPreview.Remote(
                         id = "",
-                        photoUrl = GlideUrl("https://www.scalefocus.com/wp-content/uploads/2022/06/SF_brand_banner.png")
+                        photoUrl = "https://www.scalefocus.com/wp-content/uploads/2022/06/SF_brand_banner.png"
                     )
                 )
             ),

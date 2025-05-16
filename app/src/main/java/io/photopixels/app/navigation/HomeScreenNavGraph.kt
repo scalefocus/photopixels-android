@@ -24,6 +24,7 @@ internal fun NavGraphBuilder.homeScreenNavGraph(navHostController: NavHostContro
 internal fun NavGraphBuilder.homeScreen(navHostController: NavHostController) {
     composable<HomeScreens.Home> { navBackResult ->
         val shouldRefresh = navBackResult.savedStateHandle.get<Boolean>(HOME_SHOULD_REFRESH_BACK_RESULT) ?: false
+        navBackResult.savedStateHandle.remove<Boolean>(HOME_SHOULD_REFRESH_BACK_RESULT)
         HomeScreen(
             shouldRefresh = shouldRefresh,
             onNavigateToSyncScreen = {
