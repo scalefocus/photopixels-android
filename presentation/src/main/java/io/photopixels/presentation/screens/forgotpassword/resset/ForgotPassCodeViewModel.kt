@@ -49,7 +49,11 @@ class ForgotPassCodeViewModel @Inject constructor(
         private suspend fun resetPassword(email: String, verificationCode: String) {
             updateState { copy(isLoading = true) }
 
-            val result = forgotPasswordUseCase.resetPassword(email, verificationCode, state.value.password.value)
+            val result = forgotPasswordUseCase.resetPassword(
+                email = email,
+                newPassword = state.value.password.value,
+                verificationCode = verificationCode
+            )
 
             if (result is Response.Success) {
                 updateState { copy(isLoading = false, successMsgId = R.string.forgot_pass_success_msg) }

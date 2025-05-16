@@ -138,7 +138,13 @@ class BackendApiImpl @Inject constructor(
             httpClient
                 .post {
                     url("/api/user/resetpassword")
-                    setBody(ResetPasswordRequest(email, newPassword, verificationCode))
+                    setBody(
+                        ResetPasswordRequest(
+                            email = email,
+                            newPassword = newPassword,
+                            verificationCode = verificationCode
+                        )
+                    )
                 }.body<Unit>()
 
             Response.Success(Unit)
