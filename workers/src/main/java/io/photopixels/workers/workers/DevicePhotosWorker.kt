@@ -13,8 +13,9 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import io.photopixels.domain.usecases.GenerateMissingLocalHashes
 import io.photopixels.domain.usecases.GetDevicePhotosUseCase
-import io.photopixels.domain.usecases.SavePhotosDataToDbUseCase
+import io.photopixels.domain.usecases.UpdatePhotosDataToDbUseCase
 import io.photopixels.workers.R
 import timber.log.Timber
 
@@ -26,8 +27,9 @@ import timber.log.Timber
 class DevicePhotosWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParams: WorkerParameters,
-    private val savePhotosUseCase: SavePhotosDataToDbUseCase,
-    private val getDevicePhotosUseCase: GetDevicePhotosUseCase
+    private val updatePhotosUseCase: UpdatePhotosDataToDbUseCase,
+    private val getDevicePhotosUseCase: GetDevicePhotosUseCase,
+    private val generateMissingLocalHashes: GenerateMissingLocalHashes,
 ) : CoroutineWorker(context, workerParams) {
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -48,8 +50,12 @@ class DevicePhotosWorker @AssistedInject constructor(
         }
 
         return try {
+            Timber.tag(LOG_TAG).d("DevicePhotosWorker() getDevicePhotosUseCase invoked")
             val photos = getDevicePhotosUseCase.invoke(context)
-            savePhotosUseCase.invoke(photos)
+            Timber.tag(LOG_TAG).d("DevicePhotosWorker() updatePhotosUseCase invoked")
+            updatePhotosUseCase.invoke(photos)
+            Timber.tag(LOG_TAG).d("DevicePhotosWorker() GenerateMissingLocalHashes invoked")
+            generateMissingLocalHashes(context)
             Timber.tag(LOG_TAG).d("DevicePhotosWorker() Completed!!!!")
             Result.success()
         } catch (exception: Exception) {

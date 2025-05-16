@@ -3,18 +3,21 @@ package io.photopixels.data.repository
 import android.content.Context
 import io.photopixels.data.mappers.toDomain
 import io.photopixels.data.mappers.toEntity
+import io.photopixels.data.mappers.toThumbnail
 import io.photopixels.data.media.MediaHelper
 import io.photopixels.data.network.BackendApi
 import io.photopixels.data.storage.database.PhotosDao
 import io.photopixels.data.storage.database.ThumbnailsDao
+import io.photopixels.data.storage.database.entities.PhotosEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
-import io.photopixels.data.storage.memory.MemoryStorage
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.Thumbnail
 import io.photopixels.domain.repository.PhotosRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
@@ -23,24 +26,41 @@ class PhotosRepositoryImpl @Inject constructor(
     private val photosDao: PhotosDao,
     private val thumbnailsDao: ThumbnailsDao,
     private val backendApi: BackendApi,
-    private val memoryStorage: MemoryStorage
+    private val mediaHelper: MediaHelper,
 ) : PhotosRepository {
 
     override suspend fun insertPhotoDataToDB(photoDataList: List<PhotoData>) {
         photosDao.insertPhotoData(photoDataList.map { it.toEntity() })
     }
 
-    override fun getPhotosDataFromDB(): Flow<Unit> {
-        TODO("Not yet implemented")
+    override suspend fun updatePhotoDataToDB(photoDataList: List<PhotoData>) {
+        photosDao.updatePhotoData(photoDataList.map { it.toEntity() })
     }
 
-    override fun getDevicePhotos(context: Context): List<PhotoData> = MediaHelper.scanPhotosAndGenerateHashes(context)
+    override fun getDevicePhotos(context: Context): List<PhotoData> = mediaHelper.scanPhotos(context)
 
-    override fun getPhotosDataForUploadFromDB(): List<PhotoData> = photosDao.getPhotosForUpload().map { it.toDomain() }
+    override suspend fun getDevicePhotosByHashes(hashes: List<String>): List<PhotoData> =
+        photosDao.getPhotosByHashes(hashes).map { it.toDomain() }
+
+    override suspend fun getPhotoByHash(hash: String): PhotoUiData? = thumbnailsDao.getThumbnailByHash(hash)?.toDomain()
+
+    override suspend fun getPhotosWithMissingHashes(): List<PhotoData> =
+        photosDao.getPhotosWithMissingHashes().map { it.toDomain() }
+
+    override suspend fun getPhotosDataForUploadFromDB(): List<PhotoData> =
+        photosDao.getPhotosForUpload().first().map { photo ->
+            photo.toDomain()
+        }
 
     override suspend fun removePhotoDataFromDB(photoId: Int) {
         photosDao.removePhotoData(photoId)
     }
+
+    override suspend fun removePhotosDataFromDB(photoIds: List<Int>) {
+        photosDao.removePhotoData(photoIds)
+    }
+
+    override suspend fun getPhotosDataIdsFromDB(): List<Int> = photosDao.getPhotosIds()
 
     override suspend fun updatePhotoData(photoData: PhotoData) {
         photosDao.updatePhotoData(photoData.toEntity())
@@ -59,12 +79,6 @@ class PhotosRepositoryImpl @Inject constructor(
         objectHash: String
     ): Response<PhotoUploadData> = backendApi.uploadPhoto(fileBytes, fileName, mimeType, androidCloudId, objectHash)
 
-    override suspend fun setAllPreviewPhotosIdsInMemory(photosIds: List<String>) {
-        memoryStorage.addPhotosServerIdsList(photosIds)
-    }
-
-    override suspend fun getAllPreviewPhotosIdsFromMemory(): List<String> = memoryStorage.photosIdsList
-
     override suspend fun clearPhotosTable() {
         photosDao.clearPhotosTable()
     }
@@ -73,9 +87,15 @@ class PhotosRepositoryImpl @Inject constructor(
         thumbnailsDao.insertThumbnailPhotos(thumbnailsList.map { it.toEntity() })
     }
 
-    override fun getThumbnailsFromDb(): Flow<List<PhotoUiData>> = thumbnailsDao.getAllThumbnails().mapLatest {
-        it.map(ThumbnailsEntity::toDomain)
-    }
+    override fun getLocalThumbnailsFromDb(): Flow<List<Thumbnail.LocalThumbnail>> =
+        photosDao.getPhotosForUpload().mapLatest {
+            it.map(PhotosEntity::toThumbnail)
+        }
+
+    override fun getRemoteThumbnailsFromDb(): Flow<List<Thumbnail.RemoteThumbnail>> =
+        thumbnailsDao.getAllThumbnails().mapLatest {
+            it.map(ThumbnailsEntity::toThumbnail)
+        }
 
     override suspend fun clearNewlyUploadedThumbnails() {
         thumbnailsDao.getAllNewlyUploadedThumbnails()

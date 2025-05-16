@@ -1,6 +1,7 @@
 package io.photopixels.data.di
 
 import android.content.Context
+import android.provider.MediaStore
 import androidx.room.Room
 import dagger.Module
 import dagger.Provides
@@ -14,7 +15,6 @@ import io.photopixels.data.storage.database.ThumbnailsDao
 import io.photopixels.data.storage.datastore.AuthDataStore
 import io.photopixels.data.storage.datastore.CipherUtil
 import io.photopixels.data.storage.datastore.UserPreferencesDataStore
-import io.photopixels.data.storage.memory.MemoryStorage
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -70,5 +70,5 @@ class StorageModule {
 
     @Provides
     @Singleton
-    fun providesMemoryStorage() = MemoryStorage()
+    fun provideContentResolverUri() = MediaStore.Images.Media.EXTERNAL_CONTENT_URI // Adjust for filtering if needed
 }

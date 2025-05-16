@@ -37,7 +37,7 @@ object PermissionsHelper {
         return currentPermission == StorageAccess.Full || currentPermission == StorageAccess.Partial
     }
 
-    private fun getStorageAccess(context: Context): StorageAccess {
+    fun getStorageAccess(context: Context): StorageAccess {
         return if (
             checkSelfPermission(context, READ_MEDIA_IMAGES) == PERMISSION_GRANTED ||
             checkSelfPermission(context, READ_MEDIA_VIDEO) == PERMISSION_GRANTED

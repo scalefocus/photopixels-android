@@ -1,19 +1,19 @@
 package io.photopixels.presentation.screens.home
 
-import android.Manifest
-import android.annotation.SuppressLint
+import android.database.ContentObserver
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.model.WorkerStatus
-import io.photopixels.domain.usecases.GetThumbnailsFromDbUseCase
 import io.photopixels.domain.usecases.GetThumbnailsGroupedByMonthUseCase
-import io.photopixels.domain.usecases.SavePhotosIdsInMemoryUseCase
-import io.photopixels.domain.usecases.SyncServerThumbnails
+import io.photopixels.domain.usecases.ScanDevicePhotosUseCase
+import io.photopixels.domain.usecases.SyncServerThumbnailsUseCase
 import io.photopixels.domain.workers.WorkerStarter
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.BaseViewModel
+import io.photopixels.presentation.permissions.StorageAccess
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -23,14 +23,26 @@ import javax.inject.Inject
 @Suppress("TooManyFunctions")
 class HomeScreenViewModel @Inject constructor(
     private val workerStarter: WorkerStarter,
-    private val syncServerThumbnails: SyncServerThumbnails,
-    private val savePhotosIdsInMemoryUseCase: SavePhotosIdsInMemoryUseCase,
+    private val syncServerThumbnailsUseCase: SyncServerThumbnailsUseCase,
     private val getThumbnailsGroupedByMonthUseCase: GetThumbnailsGroupedByMonthUseCase,
-    private val getThumbnailsFromDbUseCase: GetThumbnailsFromDbUseCase,
+    private val scanDevicePhotosUseCase: ScanDevicePhotosUseCase,
+    private val mediaObserver: MediaObserverHelper,
 ) : BaseViewModel<HomeScreenState, HomeScreenActions, HomeScreenEvents>(HomeScreenState()) {
 
     // Used to prevent multiple starting at once of getServer thumbnails function
     private val getServerThumbnailsProgressState = MutableStateFlow(NOT_STARTED)
+
+    private var storageAccess = StorageAccess.Denied
+        set(value) {
+            field = value
+            if (value != StorageAccess.Denied) {
+                registerContentObserver()
+            }
+        }
+
+    private var scanDevicePhotosJob: Job? = null
+    private var isDirty = false
+    private var contentObserver: ContentObserver? = null
 
     init {
         viewModelScope.launch {
@@ -38,14 +50,35 @@ class HomeScreenViewModel @Inject constructor(
                 updateState { copy(photoThumbnails = photoThumbnails) }
             }
         }
+    }
 
-        loadStartupData()
+    private fun scanDeviceMedia() {
+        if (scanDevicePhotosJob == null) {
+            scanDevicePhotosJob = viewModelScope.launch {
+                scanDevicePhotosUseCase()
+                scanDevicePhotosJob = null
+
+                if (isDirty) {
+                    isDirty = false
+                    scanDeviceMedia()
+                }
+            }
+        } else {
+            isDirty = true
+        }
+    }
+
+    override fun onCleared() {
+        contentObserver?.let(mediaObserver::unregisterObserver)
     }
 
     override suspend fun handleActions(action: HomeScreenActions) {
         when (action) {
+            is HomeScreenActions.UpdateStorageAccess -> storageAccess = action.storageAccess
+
             is HomeScreenActions.OnPermissionResult -> {
-                handlePermissions(action.permissionsMap)
+                storageAccess = action.storageAccess
+                handlePermissions(action.storageAccess)
             }
 
             HomeScreenActions.CloseErrorDialog -> {
@@ -53,14 +86,13 @@ class HomeScreenViewModel @Inject constructor(
             }
 
             HomeScreenActions.OnSyncButtonClick -> {
-                submitEvent(HomeScreenEvents.RequestStoragePermissionsEvent)
+                syncLocalPhotos()
             }
 
             HomeScreenActions.StartSyncWorkers -> startWorkersAndListeners()
 
             is HomeScreenActions.OnThumbnailClick -> {
-                savePhotosIdsInMemoryUseCase.invoke(state.value.photoThumbnails.flatMap { it.value.map { it.id } })
-                submitEvent(HomeScreenEvents.NavigateToPreviewPhotosScreen(action.serverItemId))
+                submitEvent(HomeScreenEvents.NavigateToPreviewPhotosScreen(action.thumbnailId))
             }
 
             HomeScreenActions.LoadStartupData -> {
@@ -69,40 +101,34 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    @SuppressLint("InlinedApi")
-    private fun handlePermissions(permissionsMap: Map<String, Boolean>) {
-        var isGranted = true
-
-        if (permissionsMap.size == 1) {
-            isGranted = permissionsMap.values.first()
-        } else {
-            val readFullMediaGranted = permissionsMap[Manifest.permission.READ_MEDIA_IMAGES]
-            val readPartialMediaGranted = permissionsMap[Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED]
-
-            if (!readFullMediaGranted!! && !readPartialMediaGranted!!) {
-                isGranted = false
+    private fun registerContentObserver() {
+        if (contentObserver == null) {
+            contentObserver = mediaObserver.registerObserver {
+                scanDeviceMedia()
             }
-        }
 
-        if (!isGranted) {
+            loadStartupData(isUserAction = false)
+        }
+    }
+
+    private fun handlePermissions(storageAccess: StorageAccess) {
+        if (storageAccess == StorageAccess.Denied) {
             updateState { copy(errorMsgId = R.string.error_permission_denied) }
         } else {
             startWorkersAndListeners()
         }
     }
 
-    private fun getServerRevisionAndThumbnails(isUploadComplete: Boolean = false) {
-        viewModelScope.launch {
-            updateState { copy(isLoading = true) }
-            val syncResponse = syncServerThumbnails(isUploadComplete = isUploadComplete)
-            if (syncResponse is Response.Failure) {
-                // TODO handle with some error message later
-                Timber.tag(TAG).e("Unable to Sync thumbnails from the server")
-            }
-
-            updateState { copy(isLoading = false) }
-            getServerThumbnailsProgressState.emit(NOT_STARTED)
+    private suspend fun getServerRevisionAndThumbnails(isUploadComplete: Boolean = false) {
+        updateState { copy(isLoading = true) }
+        val syncResponse = syncServerThumbnailsUseCase(isUploadComplete = isUploadComplete)
+        if (syncResponse is Response.Failure) {
+            // TODO handle with some error message later
+            Timber.tag(TAG).e("Unable to Sync thumbnails from the server")
         }
+
+        updateState { copy(isLoading = false) }
+        getServerThumbnailsProgressState.emit(NOT_STARTED)
     }
 
     private fun startWorkersAndListeners() {
@@ -142,23 +168,21 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    private fun syncLocalPhotos() {
-        viewModelScope.launch {
-            if (getThumbnailsFromDbUseCase.getThumbnailsCount() > 0) {
-                // Start auto-sync photos flow if device has at least one PP thumbnail photo
-                submitEvent(HomeScreenEvents.RequestStoragePermissionsEvent)
-            }
+    private fun syncLocalPhotos(isUserAction: Boolean = true) {
+        if (storageAccess == StorageAccess.Denied) {
+            if (isUserAction) submitEvent(HomeScreenEvents.RequestStoragePermissionsEvent)
+        } else {
+            startWorkersAndListeners()
         }
     }
 
-    private fun loadStartupData() {
-        syncLocalPhotos()
-        // TODO Thumbnails can be stored locally in DB, and if latest revision from server is equal to local revision
-        // equal -> load thumbnails from device
-        // not equal -> load thumbnails from server and then store it in device
-
+    private fun loadStartupData(isUserAction: Boolean = true) {
         getServerThumbnailsProgressState.value = STARTED
-        getServerRevisionAndThumbnails()
+        viewModelScope.launch {
+            getServerRevisionAndThumbnails()
+
+            syncLocalPhotos(isUserAction)
+        }
     }
 
     companion object {

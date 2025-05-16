@@ -5,18 +5,29 @@ import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.Thumbnail
 import kotlinx.coroutines.flow.Flow
 
 interface PhotosRepository {
     suspend fun insertPhotoDataToDB(photoDataList: List<PhotoData>)
 
-    fun getPhotosDataFromDB(): Flow<Unit>
+    suspend fun updatePhotoDataToDB(photoDataList: List<PhotoData>)
 
     fun getDevicePhotos(context: Context): List<PhotoData>
 
-    fun getPhotosDataForUploadFromDB(): List<PhotoData>
+    suspend fun getDevicePhotosByHashes(hashes: List<String>): List<PhotoData>
+
+    suspend fun getPhotoByHash(hash: String): PhotoUiData?
+
+    suspend fun getPhotosWithMissingHashes(): List<PhotoData>
+
+    suspend fun getPhotosDataForUploadFromDB(): List<PhotoData>
 
     suspend fun removePhotoDataFromDB(photoId: Int)
+
+    suspend fun removePhotosDataFromDB(photoIds: List<Int>)
+
+    suspend fun getPhotosDataIdsFromDB(): List<Int>
 
     suspend fun updatePhotoData(photoData: PhotoData)
 
@@ -30,15 +41,13 @@ interface PhotosRepository {
         objectHash: String
     ): Response<PhotoUploadData>
 
-    suspend fun setAllPreviewPhotosIdsInMemory(photosIds: List<String>)
-
-    suspend fun getAllPreviewPhotosIdsFromMemory(): List<String>
-
     suspend fun clearPhotosTable()
 
     suspend fun insertThumbnailsToDb(thumbnailsList: List<PhotoUiData>)
 
-    fun getThumbnailsFromDb(): Flow<List<PhotoUiData>>
+    fun getLocalThumbnailsFromDb(): Flow<List<Thumbnail.LocalThumbnail>>
+
+    fun getRemoteThumbnailsFromDb(): Flow<List<Thumbnail.RemoteThumbnail>>
 
     suspend fun clearNewlyUploadedThumbnails()
 

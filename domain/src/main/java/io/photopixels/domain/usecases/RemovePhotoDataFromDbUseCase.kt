@@ -6,4 +6,6 @@ import javax.inject.Inject
 class RemovePhotoDataFromDbUseCase @Inject constructor(private val photosRepository: PhotosRepository) {
 
     suspend fun invoke(photoId: Int) = photosRepository.removePhotoDataFromDB(photoId)
+
+    suspend fun invoke(photoIds: List<Int>) = photosRepository.removePhotosDataFromDB(photoIds)
 }

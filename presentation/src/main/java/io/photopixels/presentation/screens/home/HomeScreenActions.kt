@@ -1,9 +1,11 @@
 package io.photopixels.presentation.screens.home
 
+import io.photopixels.presentation.permissions.StorageAccess
+
 sealed class HomeScreenActions {
-    data class OnPermissionResult(
-        val permissionsMap: Map<String, Boolean>
-    ) : HomeScreenActions()
+    data class UpdateStorageAccess(val storageAccess: StorageAccess) : HomeScreenActions()
+
+    data class OnPermissionResult(val storageAccess: StorageAccess) : HomeScreenActions()
 
     data object CloseErrorDialog : HomeScreenActions()
 
@@ -12,7 +14,7 @@ sealed class HomeScreenActions {
     data object StartSyncWorkers : HomeScreenActions()
 
     data class OnThumbnailClick(
-        val serverItemId: String
+        val thumbnailId: String
     ) : HomeScreenActions()
 
     data object LoadStartupData : HomeScreenActions()

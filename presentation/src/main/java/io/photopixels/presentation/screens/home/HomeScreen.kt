@@ -22,16 +22,22 @@ fun HomeScreen(
     val state = viewModel.state.collectAsStateWithLifecycle().value
     val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        val storageAccess = PermissionsHelper.getStorageAccess(context)
+        viewModel.submitAction(HomeScreenActions.UpdateStorageAccess(storageAccess))
+    }
+
     val requestPermissions = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
-        onResult = { permissionsMap ->
-            submitAction(viewModel = viewModel, HomeScreenActions.OnPermissionResult(permissionsMap))
+        onResult = { _ ->
+            val storageAccess = PermissionsHelper.getStorageAccess(context)
+            viewModel.submitAction(HomeScreenActions.OnPermissionResult(storageAccess))
         }
     )
 
     ObserverLifecycleEvents(onStart = {
         if (shouldRefresh) {
-            submitAction(viewModel, HomeScreenActions.LoadStartupData)
+            viewModel.submitAction(HomeScreenActions.LoadStartupData)
         }
     })
 
@@ -59,11 +65,7 @@ fun HomeScreen(
     HomeScreenContent(
         state = state,
         onSubmitActions = { action ->
-            submitAction(viewModel, action)
+            viewModel.submitAction(action)
         }
     )
-}
-
-private fun submitAction(viewModel: HomeScreenViewModel, actions: HomeScreenActions) {
-    viewModel.submitAction(actions)
 }

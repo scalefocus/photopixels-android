@@ -17,8 +17,10 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.base.Response
+import io.photopixels.domain.extensions.readFileContent
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.WorkerInfo
+import io.photopixels.domain.usecases.DownloadThumbnailUseCase
 import io.photopixels.domain.usecases.GetPhotosForUploadUseCase
 import io.photopixels.domain.usecases.RemovePhotoDataFromDbUseCase
 import io.photopixels.domain.usecases.UpdatePhotoInDbUseCase
@@ -26,7 +28,6 @@ import io.photopixels.domain.usecases.UploadPhotoUseCase
 import io.photopixels.domain.utils.Hasher
 import io.photopixels.workers.R
 import timber.log.Timber
-import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 
 /**
@@ -39,7 +40,8 @@ class UploadPhotosWorker @AssistedInject constructor(
     private val getPhotosForUploadUseCase: GetPhotosForUploadUseCase,
     private val uploadPhotoUseCase: UploadPhotoUseCase,
     private val updatePhotoInDbUseCase: UpdatePhotoInDbUseCase,
-    private val removePhotoDataFromDbUseCase: RemovePhotoDataFromDbUseCase
+    private val removePhotoDataFromDbUseCase: RemovePhotoDataFromDbUseCase,
+    private val downloadThumbnailUseCase: DownloadThumbnailUseCase,
 ) : CoroutineWorker(context, workerParams) {
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -82,7 +84,7 @@ class UploadPhotosWorker @AssistedInject constructor(
 
     private suspend fun processPhotoData(photoData: PhotoData, onUploadSuccess: () -> Unit) {
         try {
-            val fileBytes = readFileContent(context, Uri.parse(photoData.contentUri)) ?: return
+            val fileBytes = context.contentResolver.readFileContent(Uri.parse(photoData.contentUri)) ?: return
 
             // Uploading Photo
             val photoUploadResult = uploadPhotoUseCase.invoke(
@@ -90,11 +92,12 @@ class UploadPhotosWorker @AssistedInject constructor(
                 androidCloudId = photoData.androidCloudId ?: "",
                 fileName = photoData.fileName,
                 mimeType = photoData.mimeType,
-                objectHash = Hasher.sha1HashBase64(fileBytes)
+                objectHash = photoData.hash ?: Hasher.sha1HashBase64(fileBytes)
             )
 
             when (photoUploadResult) {
                 is Response.Success -> {
+                    downloadThumbnailUseCase(photoUploadResult.result.id)
                     // Update photoData in DB
                     val updatedPhotoData =
                         photoData.copy(serverItemHashId = photoUploadResult.result.id, isAlreadyUploaded = true)
@@ -115,20 +118,6 @@ class UploadPhotosWorker @AssistedInject constructor(
             Timber.tag(LOG_TAG).e("File not found while uploading: $exception")
             removePhotoDataFromDbUseCase.invoke(photoData.id.toInt())
         }
-    }
-
-    private fun readFileContent(context: Context, uri: Uri): ByteArray? {
-        context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            val buffer = ByteArrayOutputStream()
-            val data = ByteArray(READ_BUFFER_SIZE)
-            var nRead: Int
-            while (inputStream.read(data).also { nRead = it } != -1) {
-                buffer.write(data, 0, nRead)
-            }
-            buffer.flush()
-            return buffer.toByteArray()
-        }
-        return null
     }
 
     private fun createNotificationChannel() {
@@ -154,6 +143,5 @@ class UploadPhotosWorker @AssistedInject constructor(
     companion object {
         private const val UPLOAD_NOTIFICATION_CHANNEL_ID = "upload_photos_channel"
         private const val LOG_TAG = "UploadPhotosWorker"
-        private const val READ_BUFFER_SIZE = 1024
     }
 }

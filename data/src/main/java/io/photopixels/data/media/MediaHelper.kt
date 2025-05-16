@@ -2,43 +2,46 @@ package io.photopixels.data.media
 
 import android.content.ContentUris
 import android.content.Context
+import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.photopixels.domain.model.PhotoData
-import io.photopixels.domain.utils.Hasher
+import io.photopixels.domain.utils.DateHelper
+import javax.inject.Inject
 
-object MediaHelper {
+class MediaHelper @Inject constructor(private val uri: Uri) {
 
-    fun scanPhotosAndGenerateHashes(
+    fun scanPhotos(
         @ApplicationContext context: Context
     ): List<PhotoData> {
         val photosData = mutableListOf<PhotoData>()
 
         val contentResolver = context.contentResolver
 
-        val query = MediaStore.Images.Media.EXTERNAL_CONTENT_URI.toString() // Adjust for filtering if needed
         val cursor = contentResolver.query(
-            Uri.parse(query),
+            uri,
             arrayOf(
                 MediaStore.Images.Media._ID, // MediaStore ID
                 MediaStore.Images.Media.DISPLAY_NAME, // Filename
                 MediaStore.Images.Media.SIZE, // Filesize
-                MediaStore.Images.Media.MIME_TYPE
+                MediaStore.Images.Media.MIME_TYPE,
+                MediaStore.Images.Media.DATE_ADDED, // Date the media was added to the device
+                MediaStore.Images.Media.DATE_TAKEN, // dateTimeOriginal from Exif if present
             ),
             null, // No selection criteria
             null, // No selection arguments
             MediaStore.Images.Media.DATE_ADDED + " DESC" // Order by date added descending
         ) ?: return emptyList()
 
-        try {
+        cursor.use {
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID))
                 val filename = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME))
                 val fileSize = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE))
                 val mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE))
+                val dateCreated = cursor.getDateCreated()
                 val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
-                val fastHash = Hasher.generateFastHash(contentResolver, contentUri) ?: ""
 
                 photosData.add(
                     PhotoData(
@@ -46,15 +49,24 @@ object MediaHelper {
                         fileName = filename,
                         fileSize = fileSize,
                         mimeType = mimeType,
-                        androidCloudId = fastHash,
-                        contentUri = contentUri.toString()
+                        contentUri = contentUri.toString(),
+                        dateCreated = dateCreated,
                     )
                 ) // Use toString() for string representation
             }
-        } finally {
-            cursor.close()
         }
 
         return photosData
+    }
+
+    private fun Cursor.getDateCreated(): String {
+        val dateTakenEpochMilli = getLong(getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN))
+        val dateAddedEpochSeconds = getLong(getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED))
+
+        return if (dateTakenEpochMilli > 0) {
+            DateHelper.epochMilliToDateTimeString(dateTakenEpochMilli)
+        } else {
+            DateHelper.epochSecondsToDateTimeString(dateAddedEpochSeconds)
+        }
     }
 }

@@ -21,10 +21,9 @@ import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.usecases.DownloadPhotoUseCase
 import io.photopixels.domain.usecases.GetPhotosForUploadUseCase
 import io.photopixels.domain.usecases.UpdatePhotoInDbUseCase
-import io.photopixels.domain.usecases.UploadPhotoUseCase
+import io.photopixels.domain.usecases.UploadGooglePhotoUseCase
 import io.photopixels.domain.usecases.googlephotos.DeleteGooglePhotosPickingSessionUseCase
 import io.photopixels.domain.usecases.googlephotos.GetGooglePhotosUseCase
-import io.photopixels.domain.utils.Hasher
 import io.photopixels.presentation.notifications.NotificationsHelper
 import io.photopixels.workers.R
 import timber.log.Timber
@@ -35,7 +34,7 @@ class GooglePhotosWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val getPhotosForUploadUseCase: GetPhotosForUploadUseCase,
     private val downloadPhotoUseCase: DownloadPhotoUseCase,
-    private val uploadPhotoUseCase: UploadPhotoUseCase,
+    private val uploadGooglePhotoUseCase: UploadGooglePhotoUseCase,
     private val updatePhotoInDbUseCase: UpdatePhotoInDbUseCase,
     private val notificationsHelper: NotificationsHelper,
     private val getGooglePhotosUseCase: GetGooglePhotosUseCase,
@@ -113,12 +112,9 @@ class GooglePhotosWorker @AssistedInject constructor(
         Timber.tag(LOG_TAG).d("Trying to upload googlePhoto:${googlePhotoData.fileName} to PhotoPixel")
 
         // Uploading Photo
-        val photoUploadResult = uploadPhotoUseCase.invoke(
-            fileBytes = googlePhotoBytes,
-            androidCloudId = googlePhotoData.androidCloudId,
-            fileName = googlePhotoData.fileName,
-            mimeType = googlePhotoData.mimeType,
-            objectHash = Hasher.sha1HashBase64(googlePhotoBytes)
+        val photoUploadResult = uploadGooglePhotoUseCase.invoke(
+            googlePhotoData = googlePhotoData,
+            googlePhotoBytes = googlePhotoBytes,
         )
 
         updateGooglePhotoInDB(photoUploadResult, googlePhotoData)

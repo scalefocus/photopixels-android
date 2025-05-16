@@ -12,7 +12,7 @@ class PhotoUiDataPreviewParameter : PreviewParameterProvider<PhotoUiData> {
                 thumbnailByteArray = byteArrayOf(),
                 appleCloudId = "",
                 androidCloudId = "",
-                dateTaken = 0,
+                dateCreated = "",
             ),
             PhotoUiData(
                 id = "asd1",
@@ -21,7 +21,7 @@ class PhotoUiDataPreviewParameter : PreviewParameterProvider<PhotoUiData> {
                 isNewlyUploaded = true,
                 appleCloudId = "",
                 androidCloudId = "",
-                dateTaken = 0,
+                dateCreated = "",
             ),
             PhotoUiData(
                 id = "njh",
@@ -29,7 +29,7 @@ class PhotoUiDataPreviewParameter : PreviewParameterProvider<PhotoUiData> {
                 thumbnailByteArray = byteArrayOf(),
                 appleCloudId = "",
                 androidCloudId = "",
-                dateTaken = 0,
+                dateCreated = "",
             ),
             PhotoUiData(
                 id = "asda",
@@ -37,7 +37,7 @@ class PhotoUiDataPreviewParameter : PreviewParameterProvider<PhotoUiData> {
                 thumbnailByteArray = byteArrayOf(),
                 appleCloudId = "",
                 androidCloudId = "",
-                dateTaken = 0,
+                dateCreated = "",
             )
         )
 }

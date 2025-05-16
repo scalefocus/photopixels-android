@@ -7,7 +7,7 @@ data class PhotoUiData(
     val isNewlyUploaded: Boolean = false,
     val appleCloudId: String?,
     val androidCloudId: String?,
-    val dateTaken: Long,
+    val dateCreated: String,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -18,7 +18,7 @@ data class PhotoUiData(
         if (!thumbnailByteArray.contentEquals(other.thumbnailByteArray)) return false
         if (hash != other.hash) return false
         if (isNewlyUploaded != other.isNewlyUploaded) return false
-        if (dateTaken != other.dateTaken) return false
+        if (dateCreated != other.dateCreated) return false
 
         return true
     }
@@ -27,7 +27,7 @@ data class PhotoUiData(
         var result = thumbnailByteArray.contentHashCode()
         result = 31 * result + hash.hashCode()
         result = 31 * result + isNewlyUploaded.hashCode()
-        result = 31 * result + dateTaken.hashCode()
+        result = 31 * result + dateCreated.hashCode()
         return result
     }
 }
