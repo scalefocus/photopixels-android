@@ -6,7 +6,7 @@ import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
-import coil3.network.ktor2.KtorNetworkFetcherFactory
+import coil3.network.ktor3.KtorNetworkFetcherFactory
 import dagger.hilt.android.HiltAndroidApp
 import io.ktor.client.HttpClient
 import io.photopixels.data.di.NetworkModule.Companion.BACKEND_API_HTTP_CLIENT

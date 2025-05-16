@@ -2,9 +2,8 @@ package io.photopixels.data.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.authProvider
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
-import io.ktor.client.plugins.plugin
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -53,10 +52,7 @@ class BackendApiImpl @Inject constructor(
 
     override suspend fun clearBearerTokens() {
         httpClient
-            .plugin(Auth)
-            .providers
-            .filterIsInstance<BearerAuthProvider>()
-            .firstOrNull()
+            .authProvider<BearerAuthProvider>()
             ?.clearToken()
     }
 
