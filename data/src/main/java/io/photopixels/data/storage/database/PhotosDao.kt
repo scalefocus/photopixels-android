@@ -16,35 +16,35 @@ interface PhotosDao {
     @Update
     suspend fun updatePhotoData(photosEntity: List<PhotosEntity>)
 
-    @Query("DELETE from device_photos where id=:photoId")
+    @Query("DELETE FROM device_photos WHERE id=:photoId")
     suspend fun removePhotoData(photoId: Int)
 
-    @Query("DELETE from device_photos where id in (:photoIds)")
+    @Query("DELETE FROM device_photos WHERE id in (:photoIds)")
     suspend fun removePhotoData(photoIds: List<Int>)
 
-    @Query("Select * from device_photos")
+    @Query("SELECT * FROM device_photos")
     fun getPhotosData(): Flow<PhotosEntity>
 
     @Query(
-        "Select * from device_photos where serverItemHashId is null and isDeleted is null " +
-            "and isAlreadyUploaded is null and hash is not null order by dateCreated desc"
+        "SELECT * FROM device_photos WHERE serverItemHashId IS NULL AND isDeleted IS NULL AND " +
+            "isAlreadyUploaded IS NULL AND hash IS NOT NULL ORDER BY dateCreated DESC"
     )
     fun getPhotosForUpload(): Flow<List<PhotosEntity>>
 
     @Query(
-        "Select * from device_photos where hash is null order by dateCreated desc"
+        "SELECT * FROM device_photos WHERE hash IS NULL ORDER BY dateCreated DESC"
     )
     suspend fun getPhotosWithMissingHashes(): List<PhotosEntity>
 
-    @Query("Select * from device_photos where hash in (:hashes)")
+    @Query("SELECT * FROM device_photos WHERE hash IN (:hashes)")
     suspend fun getPhotosByHashes(hashes: List<String>): List<PhotosEntity>
 
     @Update
     fun updatePhotoData(photosEntity: PhotosEntity)
 
-    @Query("Select id from device_photos")
+    @Query("SELECT id FROM device_photos")
     suspend fun getPhotosIds(): List<Int>
 
-    @Query("DELETE from device_photos")
+    @Query("DELETE FROM device_photos")
     suspend fun clearPhotosTable()
 }

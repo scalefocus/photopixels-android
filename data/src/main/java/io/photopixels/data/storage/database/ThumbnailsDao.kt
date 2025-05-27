@@ -11,13 +11,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ThumbnailsDao {
 
-    @Query("SELECT * FROM thumbnails_photos order by dateCreated desc")
+    @Query("SELECT * FROM thumbnails_photos ORDER BY dateCreated DESC")
     fun getAllThumbnails(): Flow<List<ThumbnailsEntity>>
 
-    @Query("SELECT * FROM thumbnails_photos where hash = :hash")
+    @Query("SELECT * FROM thumbnails_photos WHERE hash = :hash")
     suspend fun getThumbnailByHash(hash: String): ThumbnailsEntity?
 
-    @Query("SELECT * FROM thumbnails_photos where isNewlyUploaded = 1")
+    @Query("SELECT * FROM thumbnails_photos WHERE isNewlyUploaded = 1")
     suspend fun getAllNewlyUploadedThumbnails(): List<ThumbnailsEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -26,12 +26,12 @@ interface ThumbnailsDao {
     @Update
     suspend fun updateThumbnailPhotos(thumbnailsList: List<ThumbnailsEntity>)
 
-    @Query("Select count(*) from thumbnails_photos")
+    @Query("SELECT count(*) FROM thumbnails_photos")
     suspend fun getThumbnailsCount(): Int
 
-    @Query("DELETE from thumbnails_photos where id in (:ids)")
+    @Query("DELETE FROM thumbnails_photos WHERE id IN (:ids)")
     suspend fun deletePhotos(ids: List<String>)
 
-    @Query("DELETE from thumbnails_photos")
+    @Query("DELETE FROM thumbnails_photos")
     suspend fun clearTable()
 }

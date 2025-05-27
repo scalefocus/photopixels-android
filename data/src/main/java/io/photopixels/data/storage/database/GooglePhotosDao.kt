@@ -21,7 +21,7 @@ interface GooglePhotosDao {
 
     @Query(
         "SELECT * FROM google_photos " +
-            "WHERE serverItemHashId IS null AND isDeleted IS null AND isAlreadyUploaded IS null"
+            "WHERE serverItemHashId IS NULL AND isDeleted IS NULL AND isAlreadyUploaded IS NULL"
     )
     fun getPhotosForUpload(): List<GooglePhotosEntity>
 
