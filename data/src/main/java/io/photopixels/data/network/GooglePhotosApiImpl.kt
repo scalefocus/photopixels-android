@@ -8,7 +8,7 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.util.toByteArray
+import io.ktor.utils.io.toByteArray
 import io.photopixels.data.base.request
 import io.photopixels.data.mappers.toDomain
 import io.photopixels.data.network.responses.MediaItemsResponse
