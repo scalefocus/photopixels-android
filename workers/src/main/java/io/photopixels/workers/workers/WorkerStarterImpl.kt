@@ -1,8 +1,12 @@
 package io.photopixels.workers.workers
 
 import android.content.Context
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -14,7 +18,11 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.transform
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+
+private const val BACKGROUND_SYNC_INTERVAL_IN_HOURS = 3L
+private const val BACKGROUND_SYNC_WORK_NAME = "backgroundSyncWork"
 
 class WorkerStarterImpl @Inject constructor(
     @ApplicationContext private val context: Context
@@ -52,6 +60,25 @@ class WorkerStarterImpl @Inject constructor(
             .beginWith(devicePhotosWorkRequest)
             .then(uploadPhotosWorkRequest)
             .enqueue()
+    }
+
+    override fun schedulePeriodicSyncWorker() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiresBatteryNotLow(true)
+            .build()
+
+        val periodicSyncWorker =
+            PeriodicWorkRequestBuilder<PeriodicSyncWorker>(BACKGROUND_SYNC_INTERVAL_IN_HOURS, TimeUnit.HOURS)
+                .setConstraints(constraints)
+                .build()
+
+        WorkManager.getInstance(context)
+            .enqueueUniquePeriodicWork(
+                BACKGROUND_SYNC_WORK_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                periodicSyncWorker,
+            )
     }
 
     override fun getUploadPhotosWorkerListener(): Flow<WorkerInfo> = uniquePhotosWorkId?.let { workId ->
@@ -115,6 +142,7 @@ class WorkerStarterImpl @Inject constructor(
     override fun stopDevicePhotosWorkers() {
         WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.DEVICE_PHOTOS_WORKER_TAG)
         WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
+        WorkManager.getInstance(context).cancelUniqueWork(BACKGROUND_SYNC_WORK_NAME)
     }
 
     private fun getDevicePhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<DevicePhotosWorker>()

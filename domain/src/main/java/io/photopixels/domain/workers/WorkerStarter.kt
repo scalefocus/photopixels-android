@@ -16,6 +16,8 @@ interface WorkerStarter {
 
     fun startDeviceAndUploadWorkers()
 
+    fun schedulePeriodicSyncWorker()
+
     fun getUploadPhotosWorkerListener(): Flow<WorkerInfo>
 
     fun stopDevicePhotosWorkers()
