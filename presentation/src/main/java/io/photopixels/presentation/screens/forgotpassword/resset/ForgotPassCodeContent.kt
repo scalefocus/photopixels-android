@@ -31,6 +31,7 @@ import io.photopixels.presentation.base.composeviews.SFButton
 import io.photopixels.presentation.base.composeviews.SFDefaultTextField
 import io.photopixels.presentation.base.composeviews.SFPasswordTextField
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
+import io.photopixels.presentation.base.composeviews.ShowToast
 import io.photopixels.presentation.theme.PhotoPixelsTheme
 
 @Composable
@@ -49,6 +50,10 @@ fun ForgotPassCodeContent(
             description = stringResource(id = it),
             onPositiveClick = { onSubmitActions(ForgotPassCodeActions.CloseErrorDialog) }
         )
+    }
+
+    state.successMsgId?.let {
+        ShowToast(messageId = it)
     }
 
     Box {
