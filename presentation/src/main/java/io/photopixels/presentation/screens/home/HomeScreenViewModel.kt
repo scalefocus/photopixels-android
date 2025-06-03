@@ -41,7 +41,7 @@ class HomeScreenViewModel @Inject constructor(
         }
 
     private var scanDevicePhotosJob: Job? = null
-    private var isDirty = false
+    private var hasLocalMediaChanges = false
     private var contentObserver: ContentObserver? = null
 
     init {
@@ -54,17 +54,23 @@ class HomeScreenViewModel @Inject constructor(
 
     private fun scanDeviceMedia() {
         if (scanDevicePhotosJob == null) {
+            // start scanning device media
             scanDevicePhotosJob = viewModelScope.launch {
                 scanDevicePhotosUseCase()
                 scanDevicePhotosJob = null
 
-                if (isDirty) {
-                    isDirty = false
+                if (hasLocalMediaChanges) {
+                    // there are new changes in device media, sync them
+                    hasLocalMediaChanges = false
                     scanDeviceMedia()
+                } else {
+                    // device media is synced, start upload worker
+                    workerStarter.startUploadPhotosWorker()
                 }
             }
         } else {
-            isDirty = true
+            // device media job is already running, wait for it to finish
+            hasLocalMediaChanges = true
         }
     }
 
@@ -115,6 +121,7 @@ class HomeScreenViewModel @Inject constructor(
         if (storageAccess == StorageAccess.Denied) {
             updateState { copy(errorMsgId = R.string.error_permission_denied) }
         } else {
+            workerStarter.schedulePeriodicSyncWorker()
             startWorkersAndListeners()
         }
     }
