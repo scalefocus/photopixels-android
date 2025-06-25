@@ -4,31 +4,28 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.pm.ServiceInfo
-import android.net.Uri
-import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.net.toUri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
-import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.photopixels.domain.base.PhotoPixelError
-import io.photopixels.domain.base.Response
-import io.photopixels.domain.extensions.readFileContent
+import io.photopixels.domain.exceptions.ResumableUploadException
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.WorkerInfo
-import io.photopixels.domain.usecases.DownloadThumbnailUseCase
 import io.photopixels.domain.usecases.GetPhotosForUploadUseCase
 import io.photopixels.domain.usecases.RemovePhotoDataFromDbUseCase
+import io.photopixels.domain.usecases.SyncServerThumbnailsUseCase
 import io.photopixels.domain.usecases.UpdatePhotoInDbUseCase
 import io.photopixels.domain.usecases.UploadPhotoUseCase
-import io.photopixels.domain.utils.Hasher
 import io.photopixels.workers.R
 import timber.log.Timber
 import java.io.FileNotFoundException
+import java.io.IOException
+import kotlin.math.roundToInt
 
 /**
  * Upload photos worker. This worker is responsible for uploading new device photos to PhotoPixel backend
@@ -41,7 +38,7 @@ class UploadPhotosWorker @AssistedInject constructor(
     private val uploadPhotoUseCase: UploadPhotoUseCase,
     private val updatePhotoInDbUseCase: UpdatePhotoInDbUseCase,
     private val removePhotoDataFromDbUseCase: RemovePhotoDataFromDbUseCase,
-    private val downloadThumbnailUseCase: DownloadThumbnailUseCase,
+    private val syncServerThumbnailsUseCase: SyncServerThumbnailsUseCase,
 ) : CoroutineWorker(context, workerParams) {
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -54,17 +51,15 @@ class UploadPhotosWorker @AssistedInject constructor(
 
         val notification = createNotification()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            setForegroundAsync(ForegroundInfo(0, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC))
-        } else {
-            setForegroundAsync(ForegroundInfo(0, notification))
-        }
+        setForegroundNotificationAsync(notification)
 
         val photosDataList = getPhotosForUploadUseCase.invoke()
         Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photos for Upload: $photosDataList")
-        photosDataList.forEach { photoData ->
+        photosDataList.forEachIndexed { index, photoData ->
             processPhotoData(
                 photoData = photoData,
+                currentFileIndex = index,
+                fileCount = photosDataList.size,
                 onUploadSuccess = {
                     uploadedPhotosCount++
                 }
@@ -82,41 +77,40 @@ class UploadPhotosWorker @AssistedInject constructor(
         return Result.success(output)
     }
 
-    private suspend fun processPhotoData(photoData: PhotoData, onUploadSuccess: () -> Unit) {
+    private suspend fun processPhotoData(
+        photoData: PhotoData,
+        onUploadSuccess: () -> Unit,
+        currentFileIndex: Int,
+        fileCount: Int
+    ) {
         try {
-            val fileBytes = context.contentResolver.readFileContent(Uri.parse(photoData.contentUri)) ?: return
-
             // Uploading Photo
-            val photoUploadResult = uploadPhotoUseCase.invoke(
-                fileBytes = fileBytes,
-                androidCloudId = photoData.androidCloudId ?: "",
-                fileName = photoData.fileName,
-                mimeType = photoData.mimeType,
-                objectHash = photoData.hash ?: Hasher.sha1HashBase64(fileBytes)
-            )
-
-            when (photoUploadResult) {
-                is Response.Success -> {
-                    downloadThumbnailUseCase(photoUploadResult.result.id)
-                    // Update photoData in DB
-                    val updatedPhotoData =
-                        photoData.copy(serverItemHashId = photoUploadResult.result.id, isAlreadyUploaded = true)
-                    updatePhotoInDbUseCase.invoke(updatedPhotoData)
-                    onUploadSuccess()
+            Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photo uploading: ${photoData.hash}")
+            uploadPhotoUseCase.invoke(photoData.contentUri.toUri(), photoData.fileName, photoData.hash.orEmpty())
+                .collect { progress ->
+                    setForegroundNotificationAsync(
+                        createProgressNotification(progress.roundToInt(), currentFileIndex, fileCount)
+                    )
                 }
 
-                is Response.Failure -> {
-                    Timber.tag(LOG_TAG).e("Error uploading photo, ${photoData.fileName}")
-                    if (photoUploadResult.error is PhotoPixelError.DuplicatePhotoError) {
-                        // Photo is already uploaded
-                        val updatedPhotoData = photoData.copy(isAlreadyUploaded = true)
-                        updatePhotoInDbUseCase.invoke(updatedPhotoData)
-                    }
-                }
-            }
+            Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photo uploaded: ${photoData.hash}")
+
+            // photo uploaded successfully
+            onUploadSuccess()
+            syncServerThumbnailsUseCase(isUploadComplete = true)
         } catch (exception: FileNotFoundException) {
             Timber.tag(LOG_TAG).e("File not found while uploading: $exception")
             removePhotoDataFromDbUseCase.invoke(photoData.id.toInt())
+        } catch (exception: ResumableUploadException) {
+            if (exception.error is PhotoPixelError.DuplicatePhotoError) {
+                // Photo is already uploaded
+                val updatedPhotoData = photoData.copy(isAlreadyUploaded = true)
+                updatePhotoInDbUseCase.invoke(updatedPhotoData)
+            } else {
+                Timber.tag(LOG_TAG).e(exception.cause, "Server error while uploading the file")
+            }
+        } catch (exception: IOException) {
+            Timber.tag(LOG_TAG).e(exception, "Other error while uploading the file")
         }
     }
 
@@ -134,14 +128,27 @@ class UploadPhotosWorker @AssistedInject constructor(
         .Builder(
             applicationContext,
             UPLOAD_NOTIFICATION_CHANNEL_ID
-        ).setContentTitle(context.getString(R.string.upload_photos))
+        ).setContentTitle(context.getString(R.string.upload_photos_title))
         .setContentText(context.getString(R.string.upload_photos_description))
         .setSmallIcon(android.R.drawable.ic_popup_sync)
+        .setOngoing(true)
+        .build()
+
+    private fun createProgressNotification(
+        uploadProgress: Int,
+        currentFileIndex: Int,
+        fileCount: Int,
+    ): Notification = NotificationCompat.Builder(applicationContext, UPLOAD_NOTIFICATION_CHANNEL_ID)
+        .setContentTitle(context.getString(R.string.upload_photos_title))
+        .setContentText(context.getString(R.string.upload_file_progress_description, currentFileIndex + 1, fileCount))
+        .setSmallIcon(android.R.drawable.ic_popup_sync)
+        .setProgress(MAX_PROGRESS, uploadProgress, false)
         .setOngoing(true)
         .build()
 
     companion object {
         private const val UPLOAD_NOTIFICATION_CHANNEL_ID = "upload_photos_channel"
         private const val LOG_TAG = "UploadPhotosWorker"
+        private const val MAX_PROGRESS = 100
     }
 }

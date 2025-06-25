@@ -4,12 +4,9 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
-import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -42,12 +39,7 @@ class DevicePhotosWorker @AssistedInject constructor(
         createNotificationChannel()
 
         val notification = createNotification()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            setForegroundAsync(ForegroundInfo(0, notification, FOREGROUND_SERVICE_TYPE_DATA_SYNC))
-        } else {
-            setForegroundAsync(ForegroundInfo(0, notification))
-        }
+        setForegroundNotificationAsync(notification)
 
         return try {
             Timber.tag(LOG_TAG).d("DevicePhotosWorker() getDevicePhotosUseCase invoked")

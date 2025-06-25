@@ -1,5 +1,6 @@
 package io.photopixels.domain.usecases
 
+import android.net.Uri
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.repository.PhotosRepository
@@ -16,4 +17,10 @@ class UploadPhotoUseCase @Inject constructor(private val photosRepository: Photo
     ): Response<PhotoUploadData> {
         return photosRepository.uploadPhoto(fileBytes, fileName, mimeType, androidCloudId, objectHash)
     }
+
+    suspend fun invoke(
+        uri: Uri,
+        fileName: String,
+        objectHash: String,
+    ) = photosRepository.uploadPhoto(uri, fileName, objectHash)
 }
