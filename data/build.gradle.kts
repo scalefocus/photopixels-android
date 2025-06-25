@@ -63,4 +63,8 @@ dependencies {
 
     // GRPC
     implementation(libs.bundles.grpc)
+
+    // TUS
+    implementation(libs.tus.java.client)
+    implementation(libs.tus.android.client)
 }
