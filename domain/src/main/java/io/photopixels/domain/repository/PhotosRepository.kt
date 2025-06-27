@@ -4,8 +4,8 @@ import android.content.Context
 import android.net.Uri
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.DeviceMedia
-import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.Thumbnail
 import kotlinx.coroutines.flow.Flow
 
@@ -18,7 +18,7 @@ interface PhotosRepository {
 
     suspend fun getDevicePhotosByHashes(hashes: List<String>): List<DeviceMedia>
 
-    suspend fun getPhotoByHash(hash: String): PhotoUiData?
+    suspend fun getPhotoByHash(hash: String): ServerMedia?
 
     suspend fun getPhotosWithMissingHashes(): List<DeviceMedia>
 
@@ -32,7 +32,7 @@ interface PhotosRepository {
 
     suspend fun updatePhotoData(deviceMedia: DeviceMedia)
 
-    suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<PhotoUiData>>
+    suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<ServerMedia>>
 
     suspend fun uploadPhoto(
         fileBytes: ByteArray,
@@ -50,7 +50,7 @@ interface PhotosRepository {
 
     suspend fun clearPhotosTable()
 
-    suspend fun insertThumbnailsToDb(thumbnailsList: List<PhotoUiData>)
+    suspend fun insertThumbnailsToDb(thumbnailsList: List<ServerMedia>)
 
     fun getLocalThumbnailsFromDb(): Flow<List<Thumbnail.LocalThumbnail>>
 

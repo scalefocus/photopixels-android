@@ -14,8 +14,8 @@ import io.photopixels.data.storage.database.entities.DeviceMediaEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.DeviceMedia
-import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.Thumbnail
 import io.photopixels.domain.repository.PhotosRepository
 import kotlinx.coroutines.flow.Flow
@@ -45,7 +45,7 @@ class PhotosRepositoryImpl @Inject constructor(
     override suspend fun getDevicePhotosByHashes(hashes: List<String>): List<DeviceMedia> =
         deviceMediaDao.getMediaByHashes(hashes).map { it.toDomain() }
 
-    override suspend fun getPhotoByHash(hash: String): PhotoUiData? = thumbnailsDao.getThumbnailByHash(hash)?.toDomain()
+    override suspend fun getPhotoByHash(hash: String): ServerMedia? = thumbnailsDao.getThumbnailByHash(hash)?.toDomain()
 
     override suspend fun getPhotosWithMissingHashes(): List<DeviceMedia> =
         deviceMediaDao.getMediaWithMissingHashes().map { it.toDomain() }
@@ -69,7 +69,7 @@ class PhotosRepositoryImpl @Inject constructor(
         deviceMediaDao.updateMediaData(deviceMedia.toEntity())
     }
 
-    override suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<PhotoUiData>> = backendApi
+    override suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<ServerMedia>> = backendApi
         .getThumbnailsByIds(
             serverItemHashIds
         )
@@ -92,7 +92,7 @@ class PhotosRepositoryImpl @Inject constructor(
         deviceMediaDao.clearMediaTable()
     }
 
-    override suspend fun insertThumbnailsToDb(thumbnailsList: List<PhotoUiData>) {
+    override suspend fun insertThumbnailsToDb(thumbnailsList: List<ServerMedia>) {
         thumbnailsDao.insertThumbnailPhotos(thumbnailsList.map { it.toEntity() })
     }
 

@@ -6,8 +6,8 @@ import io.photopixels.data.network.responses.ObjectUploadResponse
 import io.photopixels.data.storage.database.entities.DeviceMediaEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
 import io.photopixels.domain.model.DeviceMedia
-import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.Thumbnail
 
 fun DeviceMediaEntity.toDomain() = DeviceMedia(
@@ -39,7 +39,7 @@ fun DeviceMedia.toEntity() = DeviceMediaEntity(
     isAlreadyUploaded = isAlreadyUploaded
 )
 
-fun ObjectResponse.toDomain() = PhotoUiData(
+fun ObjectResponse.toDomain() = ServerMedia(
     id = id,
     hash = originalHash,
     thumbnailByteArray = Base64.decode(thumbnail, Base64.DEFAULT),
@@ -48,7 +48,7 @@ fun ObjectResponse.toDomain() = PhotoUiData(
     dateCreated = dateCreated,
 )
 
-fun ThumbnailsEntity.toDomain() = PhotoUiData(
+fun ThumbnailsEntity.toDomain() = ServerMedia(
     id = id,
     thumbnailByteArray = thumbnailBytes,
     hash = hash,
@@ -58,7 +58,7 @@ fun ThumbnailsEntity.toDomain() = PhotoUiData(
     dateCreated = dateCreated,
 )
 
-fun PhotoUiData.toEntity() = ThumbnailsEntity(
+fun ServerMedia.toEntity() = ThumbnailsEntity(
     id = id,
     thumbnailBytes = thumbnailByteArray,
     hash = hash,

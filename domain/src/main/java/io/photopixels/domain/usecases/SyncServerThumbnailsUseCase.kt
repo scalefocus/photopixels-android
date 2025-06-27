@@ -1,7 +1,7 @@
 package io.photopixels.domain.usecases
 
 import io.photopixels.domain.base.Response
-import io.photopixels.domain.model.PhotoUiData
+import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.repository.PhotosRepository
 import io.photopixels.domain.repository.ServerRepository
@@ -85,7 +85,7 @@ class SyncServerThumbnailsUseCase @Inject constructor(
         return Response.Success(Unit)
     }
 
-    private suspend fun updateAlreadyUploadedDevicePhotos(thumbnails: List<PhotoUiData>) {
+    private suspend fun updateAlreadyUploadedDevicePhotos(thumbnails: List<ServerMedia>) {
         val hashToIdsMap = thumbnails.associate { thumbnail -> thumbnail.hash to thumbnail.id }
         photosRepository.getDevicePhotosByHashes(hashToIdsMap.keys.toList())
             .takeIf { it.isNotEmpty() }

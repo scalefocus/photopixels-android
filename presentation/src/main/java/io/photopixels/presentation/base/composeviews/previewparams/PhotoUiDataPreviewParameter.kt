@@ -1,12 +1,12 @@
 package io.photopixels.presentation.base.composeviews.previewparams
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import io.photopixels.domain.model.PhotoUiData
+import io.photopixels.domain.model.ServerMedia
 
-class PhotoUiDataPreviewParameter : PreviewParameterProvider<PhotoUiData> {
-    override val values: Sequence<PhotoUiData>
+class PhotoUiDataPreviewParameter : PreviewParameterProvider<ServerMedia> {
+    override val values: Sequence<ServerMedia>
         get() = sequenceOf(
-            PhotoUiData(
+            ServerMedia(
                 id = "123",
                 hash = "asd",
                 thumbnailByteArray = byteArrayOf(),
@@ -14,7 +14,7 @@ class PhotoUiDataPreviewParameter : PreviewParameterProvider<PhotoUiData> {
                 androidCloudId = "",
                 dateCreated = "",
             ),
-            PhotoUiData(
+            ServerMedia(
                 id = "asd1",
                 hash = "asd1",
                 thumbnailByteArray = byteArrayOf(),
@@ -23,7 +23,7 @@ class PhotoUiDataPreviewParameter : PreviewParameterProvider<PhotoUiData> {
                 androidCloudId = "",
                 dateCreated = "",
             ),
-            PhotoUiData(
+            ServerMedia(
                 id = "njh",
                 hash = "asd2",
                 thumbnailByteArray = byteArrayOf(),
@@ -31,7 +31,7 @@ class PhotoUiDataPreviewParameter : PreviewParameterProvider<PhotoUiData> {
                 androidCloudId = "",
                 dateCreated = "",
             ),
-            PhotoUiData(
+            ServerMedia(
                 id = "asda",
                 hash = "asd3",
                 thumbnailByteArray = byteArrayOf(),
