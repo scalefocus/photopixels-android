@@ -13,7 +13,7 @@ import io.photopixels.data.storage.database.ThumbnailsDao
 import io.photopixels.data.storage.database.entities.DeviceMediaEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
 import io.photopixels.domain.base.Response
-import io.photopixels.domain.model.PhotoData
+import io.photopixels.domain.model.DeviceMedia
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.Thumbnail
@@ -32,25 +32,25 @@ class PhotosRepositoryImpl @Inject constructor(
     private val mediaHelper: MediaHelper,
 ) : PhotosRepository {
 
-    override suspend fun insertPhotoDataToDB(photoDataList: List<PhotoData>) {
-        deviceMediaDao.insertMediaData(photoDataList.map { it.toEntity() })
+    override suspend fun insertPhotoDataToDB(deviceMediaList: List<DeviceMedia>) {
+        deviceMediaDao.insertMediaData(deviceMediaList.map { it.toEntity() })
     }
 
-    override suspend fun updatePhotoDataToDB(photoDataList: List<PhotoData>) {
-        deviceMediaDao.updateMediaData(photoDataList.map { it.toEntity() })
+    override suspend fun updatePhotoDataToDB(deviceMediaList: List<DeviceMedia>) {
+        deviceMediaDao.updateMediaData(deviceMediaList.map { it.toEntity() })
     }
 
-    override fun getDevicePhotos(context: Context): List<PhotoData> = mediaHelper.scanPhotos(context)
+    override fun getDeviceMedia(context: Context): List<DeviceMedia> = mediaHelper.scanPhotos(context)
 
-    override suspend fun getDevicePhotosByHashes(hashes: List<String>): List<PhotoData> =
+    override suspend fun getDevicePhotosByHashes(hashes: List<String>): List<DeviceMedia> =
         deviceMediaDao.getMediaByHashes(hashes).map { it.toDomain() }
 
     override suspend fun getPhotoByHash(hash: String): PhotoUiData? = thumbnailsDao.getThumbnailByHash(hash)?.toDomain()
 
-    override suspend fun getPhotosWithMissingHashes(): List<PhotoData> =
+    override suspend fun getPhotosWithMissingHashes(): List<DeviceMedia> =
         deviceMediaDao.getMediaWithMissingHashes().map { it.toDomain() }
 
-    override suspend fun getPhotosDataForUploadFromDB(): List<PhotoData> =
+    override suspend fun getPhotosDataForUploadFromDB(): List<DeviceMedia> =
         deviceMediaDao.getMediaForUpload().first().map { photo ->
             photo.toDomain()
         }
@@ -65,8 +65,8 @@ class PhotosRepositoryImpl @Inject constructor(
 
     override suspend fun getPhotosDataIdsFromDB(): List<Int> = deviceMediaDao.getMediaIds()
 
-    override suspend fun updatePhotoData(photoData: PhotoData) {
-        deviceMediaDao.updateMediaData(photoData.toEntity())
+    override suspend fun updatePhotoData(deviceMedia: DeviceMedia) {
+        deviceMediaDao.updateMediaData(deviceMedia.toEntity())
     }
 
     override suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<PhotoUiData>> = backendApi

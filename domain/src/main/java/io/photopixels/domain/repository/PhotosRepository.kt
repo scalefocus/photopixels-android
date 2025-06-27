@@ -3,26 +3,26 @@ package io.photopixels.domain.repository
 import android.content.Context
 import android.net.Uri
 import io.photopixels.domain.base.Response
-import io.photopixels.domain.model.PhotoData
+import io.photopixels.domain.model.DeviceMedia
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.Thumbnail
 import kotlinx.coroutines.flow.Flow
 
 interface PhotosRepository {
-    suspend fun insertPhotoDataToDB(photoDataList: List<PhotoData>)
+    suspend fun insertPhotoDataToDB(deviceMediaList: List<DeviceMedia>)
 
-    suspend fun updatePhotoDataToDB(photoDataList: List<PhotoData>)
+    suspend fun updatePhotoDataToDB(deviceMediaList: List<DeviceMedia>)
 
-    fun getDevicePhotos(context: Context): List<PhotoData>
+    fun getDeviceMedia(context: Context): List<DeviceMedia>
 
-    suspend fun getDevicePhotosByHashes(hashes: List<String>): List<PhotoData>
+    suspend fun getDevicePhotosByHashes(hashes: List<String>): List<DeviceMedia>
 
     suspend fun getPhotoByHash(hash: String): PhotoUiData?
 
-    suspend fun getPhotosWithMissingHashes(): List<PhotoData>
+    suspend fun getPhotosWithMissingHashes(): List<DeviceMedia>
 
-    suspend fun getPhotosDataForUploadFromDB(): List<PhotoData>
+    suspend fun getPhotosDataForUploadFromDB(): List<DeviceMedia>
 
     suspend fun removePhotoDataFromDB(mediaId: Int)
 
@@ -30,7 +30,7 @@ interface PhotosRepository {
 
     suspend fun getPhotosDataIdsFromDB(): List<Int>
 
-    suspend fun updatePhotoData(photoData: PhotoData)
+    suspend fun updatePhotoData(deviceMedia: DeviceMedia)
 
     suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<PhotoUiData>>
 

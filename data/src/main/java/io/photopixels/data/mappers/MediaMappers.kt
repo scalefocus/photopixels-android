@@ -5,12 +5,12 @@ import io.photopixels.data.network.responses.ObjectResponse
 import io.photopixels.data.network.responses.ObjectUploadResponse
 import io.photopixels.data.storage.database.entities.DeviceMediaEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
-import io.photopixels.domain.model.PhotoData
+import io.photopixels.domain.model.DeviceMedia
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.Thumbnail
 
-fun DeviceMediaEntity.toDomain() = PhotoData(
+fun DeviceMediaEntity.toDomain() = DeviceMedia(
     id = id.toString(),
     fileName = fileName,
     fileSize = fileSize,
@@ -24,7 +24,7 @@ fun DeviceMediaEntity.toDomain() = PhotoData(
     isDeleted = isDeleted
 )
 
-fun PhotoData.toEntity() = DeviceMediaEntity(
+fun DeviceMedia.toEntity() = DeviceMediaEntity(
     id = id.toLong(),
     fileName = fileName,
     contentUri = contentUri,

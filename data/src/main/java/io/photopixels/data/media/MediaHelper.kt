@@ -6,7 +6,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.photopixels.domain.model.PhotoData
+import io.photopixels.domain.model.DeviceMedia
 import io.photopixels.domain.utils.DateHelper
 import javax.inject.Inject
 
@@ -14,8 +14,8 @@ class MediaHelper @Inject constructor(private val uri: Uri) {
 
     fun scanPhotos(
         @ApplicationContext context: Context
-    ): List<PhotoData> {
-        val photosData = mutableListOf<PhotoData>()
+    ): List<DeviceMedia> {
+        val photosData = mutableListOf<DeviceMedia>()
 
         val contentResolver = context.contentResolver
 
@@ -44,7 +44,7 @@ class MediaHelper @Inject constructor(private val uri: Uri) {
                 val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
 
                 photosData.add(
-                    PhotoData(
+                    DeviceMedia(
                         id = id.toString(),
                         fileName = filename,
                         fileSize = fileSize,
