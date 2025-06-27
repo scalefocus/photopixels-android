@@ -3,14 +3,14 @@ package io.photopixels.data.mappers
 import android.util.Base64
 import io.photopixels.data.network.responses.ObjectResponse
 import io.photopixels.data.network.responses.ObjectUploadResponse
-import io.photopixels.data.storage.database.entities.PhotosEntity
+import io.photopixels.data.storage.database.entities.DeviceMediaEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.Thumbnail
 
-fun PhotosEntity.toDomain() = PhotoData(
+fun DeviceMediaEntity.toDomain() = PhotoData(
     id = id.toString(),
     fileName = fileName,
     fileSize = fileSize,
@@ -24,8 +24,8 @@ fun PhotosEntity.toDomain() = PhotoData(
     isDeleted = isDeleted
 )
 
-fun PhotoData.toEntity() = PhotosEntity(
-    id = Integer.valueOf(id),
+fun PhotoData.toEntity() = DeviceMediaEntity(
+    id = id.toLong(),
     fileName = fileName,
     contentUri = contentUri,
     fileSize = fileSize,
@@ -73,7 +73,7 @@ fun PhotoUiData.toEntity() = ThumbnailsEntity(
 
 fun ObjectUploadResponse.toDomain() = PhotoUploadData(id, revision)
 
-fun PhotosEntity.toThumbnail() = Thumbnail.LocalThumbnail(
+fun DeviceMediaEntity.toThumbnail() = Thumbnail.LocalThumbnail(
     id = id.toString(),
     contentUri = contentUri,
     hash = hash.orEmpty(),

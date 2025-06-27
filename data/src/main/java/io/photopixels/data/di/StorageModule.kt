@@ -9,8 +9,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.photopixels.data.storage.database.AppDatabase
+import io.photopixels.data.storage.database.DeviceMediaDao
 import io.photopixels.data.storage.database.GooglePhotosDao
-import io.photopixels.data.storage.database.PhotosDao
 import io.photopixels.data.storage.database.ThumbnailsDao
 import io.photopixels.data.storage.datastore.AuthDataStore
 import io.photopixels.data.storage.datastore.CipherUtil
@@ -34,7 +34,7 @@ class StorageModule {
 
     @Provides
     @Singleton
-    fun providePhotosDao(appDatabase: AppDatabase): PhotosDao = appDatabase.photosDao()
+    fun provideDeviceMediaDao(appDatabase: AppDatabase): DeviceMediaDao = appDatabase.deviceMediaDao()
 
     @Provides
     @Singleton

@@ -3,10 +3,10 @@ package io.photopixels.data.storage.database.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "device_photos")
-data class PhotosEntity(
+@Entity(tableName = "device_media")
+data class DeviceMediaEntity(
     @PrimaryKey
-    var id: Int, //  This is from MediaStore.Images.Media._ID
+    var id: Long, //  This is from MediaStore.Images.Media._ID
     val fileName: String,
     val fileSize: Long,
     val mimeType: String,

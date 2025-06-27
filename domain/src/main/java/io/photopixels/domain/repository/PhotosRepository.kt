@@ -24,9 +24,9 @@ interface PhotosRepository {
 
     suspend fun getPhotosDataForUploadFromDB(): List<PhotoData>
 
-    suspend fun removePhotoDataFromDB(photoId: Int)
+    suspend fun removePhotoDataFromDB(mediaId: Int)
 
-    suspend fun removePhotosDataFromDB(photoIds: List<Int>)
+    suspend fun removePhotosDataFromDB(mediaIds: List<Int>)
 
     suspend fun getPhotosDataIdsFromDB(): List<Int>
 

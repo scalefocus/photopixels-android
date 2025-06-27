@@ -8,9 +8,9 @@ import io.photopixels.data.mappers.toThumbnail
 import io.photopixels.data.media.MediaHelper
 import io.photopixels.data.network.BackendApi
 import io.photopixels.data.network.tus.ResumableUploadApi
-import io.photopixels.data.storage.database.PhotosDao
+import io.photopixels.data.storage.database.DeviceMediaDao
 import io.photopixels.data.storage.database.ThumbnailsDao
-import io.photopixels.data.storage.database.entities.PhotosEntity
+import io.photopixels.data.storage.database.entities.DeviceMediaEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoData
@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 class PhotosRepositoryImpl @Inject constructor(
-    private val photosDao: PhotosDao,
+    private val deviceMediaDao: DeviceMediaDao,
     private val thumbnailsDao: ThumbnailsDao,
     private val backendApi: BackendApi,
     private val resumableUploadApi: ResumableUploadApi,
@@ -33,40 +33,40 @@ class PhotosRepositoryImpl @Inject constructor(
 ) : PhotosRepository {
 
     override suspend fun insertPhotoDataToDB(photoDataList: List<PhotoData>) {
-        photosDao.insertPhotoData(photoDataList.map { it.toEntity() })
+        deviceMediaDao.insertMediaData(photoDataList.map { it.toEntity() })
     }
 
     override suspend fun updatePhotoDataToDB(photoDataList: List<PhotoData>) {
-        photosDao.updatePhotoData(photoDataList.map { it.toEntity() })
+        deviceMediaDao.updateMediaData(photoDataList.map { it.toEntity() })
     }
 
     override fun getDevicePhotos(context: Context): List<PhotoData> = mediaHelper.scanPhotos(context)
 
     override suspend fun getDevicePhotosByHashes(hashes: List<String>): List<PhotoData> =
-        photosDao.getPhotosByHashes(hashes).map { it.toDomain() }
+        deviceMediaDao.getMediaByHashes(hashes).map { it.toDomain() }
 
     override suspend fun getPhotoByHash(hash: String): PhotoUiData? = thumbnailsDao.getThumbnailByHash(hash)?.toDomain()
 
     override suspend fun getPhotosWithMissingHashes(): List<PhotoData> =
-        photosDao.getPhotosWithMissingHashes().map { it.toDomain() }
+        deviceMediaDao.getMediaWithMissingHashes().map { it.toDomain() }
 
     override suspend fun getPhotosDataForUploadFromDB(): List<PhotoData> =
-        photosDao.getPhotosForUpload().first().map { photo ->
+        deviceMediaDao.getMediaForUpload().first().map { photo ->
             photo.toDomain()
         }
 
-    override suspend fun removePhotoDataFromDB(photoId: Int) {
-        photosDao.removePhotoData(photoId)
+    override suspend fun removePhotoDataFromDB(mediaId: Int) {
+        deviceMediaDao.removeMediaData(mediaId)
     }
 
-    override suspend fun removePhotosDataFromDB(photoIds: List<Int>) {
-        photosDao.removePhotoData(photoIds)
+    override suspend fun removePhotosDataFromDB(mediaIds: List<Int>) {
+        deviceMediaDao.removeMediaData(mediaIds)
     }
 
-    override suspend fun getPhotosDataIdsFromDB(): List<Int> = photosDao.getPhotosIds()
+    override suspend fun getPhotosDataIdsFromDB(): List<Int> = deviceMediaDao.getMediaIds()
 
     override suspend fun updatePhotoData(photoData: PhotoData) {
-        photosDao.updatePhotoData(photoData.toEntity())
+        deviceMediaDao.updateMediaData(photoData.toEntity())
     }
 
     override suspend fun getServerThumbnails(serverItemHashIds: List<String>): Response<List<PhotoUiData>> = backendApi
@@ -89,7 +89,7 @@ class PhotosRepositoryImpl @Inject constructor(
     ) = resumableUploadApi.uploadFile(uri, fileName, objectHash)
 
     override suspend fun clearPhotosTable() {
-        photosDao.clearPhotosTable()
+        deviceMediaDao.clearMediaTable()
     }
 
     override suspend fun insertThumbnailsToDb(thumbnailsList: List<PhotoUiData>) {
@@ -97,8 +97,8 @@ class PhotosRepositoryImpl @Inject constructor(
     }
 
     override fun getLocalThumbnailsFromDb(): Flow<List<Thumbnail.LocalThumbnail>> =
-        photosDao.getPhotosForUpload().mapLatest {
-            it.map(PhotosEntity::toThumbnail)
+        deviceMediaDao.getMediaForUpload().mapLatest {
+            it.map(DeviceMediaEntity::toThumbnail)
         }
 
     override fun getRemoteThumbnailsFromDb(): Flow<List<Thumbnail.RemoteThumbnail>> =
