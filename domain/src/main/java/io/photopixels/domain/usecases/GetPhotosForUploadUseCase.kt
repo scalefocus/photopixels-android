@@ -1,15 +1,15 @@
 package io.photopixels.domain.usecases
 
 import io.photopixels.domain.model.DeviceMedia
+import io.photopixels.domain.repository.DeviceMediaRepository
 import io.photopixels.domain.repository.GooglePhotosRepository
-import io.photopixels.domain.repository.PhotosRepository
 import javax.inject.Inject
 
 class GetPhotosForUploadUseCase @Inject constructor(
-    private val photosRepository: PhotosRepository,
+    private val deviceMediaRepository: DeviceMediaRepository,
     private val googlePhotosRepository: GooglePhotosRepository
 ) {
-    suspend fun invoke(): List<DeviceMedia> = photosRepository.getPhotosDataForUploadFromDB()
+    suspend fun invoke(): List<DeviceMedia> = deviceMediaRepository.getMediaDataForUploadFromDB()
 
     suspend fun getGooglePhotosFromDB() = googlePhotosRepository.getPhotosForUpload()
 }

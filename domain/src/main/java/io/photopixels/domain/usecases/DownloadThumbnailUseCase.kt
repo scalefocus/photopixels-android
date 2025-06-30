@@ -2,15 +2,15 @@ package io.photopixels.domain.usecases
 
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.ServerMedia
-import io.photopixels.domain.repository.PhotosRepository
+import io.photopixels.domain.repository.ServerMediaRepository
 import javax.inject.Inject
 
-class DownloadThumbnailUseCase @Inject constructor(private val photosRepository: PhotosRepository) {
+class DownloadThumbnailUseCase @Inject constructor(private val serverMediaRepository: ServerMediaRepository) {
 
     suspend operator fun invoke(thumbnailId: String): Response<List<ServerMedia>> {
-        val response = photosRepository.getServerThumbnails(listOf(thumbnailId))
+        val response = serverMediaRepository.getServerThumbnails(listOf(thumbnailId))
         if (response is Response.Success) {
-            photosRepository.insertThumbnailsToDb(
+            serverMediaRepository.insertThumbnailsToDb(
                 response.result.map {
                     it.copy(isNewlyUploaded = true)
                 }

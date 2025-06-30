@@ -1,11 +1,11 @@
 package io.photopixels.domain.usecases
 
 import io.photopixels.domain.model.ServerMedia
-import io.photopixels.domain.repository.PhotosRepository
+import io.photopixels.domain.repository.ServerMediaRepository
 import javax.inject.Inject
 
-class SaveThumbnailsToDbUseCase @Inject constructor(private val photosRepository: PhotosRepository) {
+class SaveThumbnailsToDbUseCase @Inject constructor(private val serverMediaRepository: ServerMediaRepository) {
     suspend fun invoke(thumbnailsList: List<ServerMedia>) {
-        photosRepository.insertThumbnailsToDb(thumbnailsList)
+        serverMediaRepository.insertThumbnailsToDb(thumbnailsList)
     }
 }

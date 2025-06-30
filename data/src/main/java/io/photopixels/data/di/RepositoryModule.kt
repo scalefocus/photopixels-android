@@ -5,13 +5,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.photopixels.data.repository.AuthRepositoryImpl
+import io.photopixels.data.repository.DeviceMediaRepositoryImpl
 import io.photopixels.data.repository.GooglePhotosRepositoryImpl
-import io.photopixels.data.repository.PhotosRepositoryImpl
+import io.photopixels.data.repository.ServerMediaRepositoryImpl
 import io.photopixels.data.repository.ServerRepositoryImpl
 import io.photopixels.data.repository.UserSettingsRepositoryImpl
 import io.photopixels.domain.repository.AuthRepository
+import io.photopixels.domain.repository.DeviceMediaRepository
 import io.photopixels.domain.repository.GooglePhotosRepository
-import io.photopixels.domain.repository.PhotosRepository
+import io.photopixels.domain.repository.ServerMediaRepository
 import io.photopixels.domain.repository.ServerRepository
 import io.photopixels.domain.repository.UserSettingsRepository
 import javax.inject.Singleton
@@ -26,7 +28,11 @@ class RepositoryModule {
 
     @Provides
     @Singleton
-    fun providePhotosRepository(impl: PhotosRepositoryImpl): PhotosRepository = impl
+    internal fun provideDeviceMediaRepository(impl: DeviceMediaRepositoryImpl): DeviceMediaRepository = impl
+
+    @Provides
+    @Singleton
+    internal fun provideServerMediaRepository(impl: ServerMediaRepositoryImpl): ServerMediaRepository = impl
 
     @Provides
     @Singleton
