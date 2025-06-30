@@ -1,6 +1,7 @@
 package io.photopixels.domain.repository
 
 import android.content.Context
+import android.net.Uri
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.PhotoData
 import io.photopixels.domain.model.PhotoUiData
@@ -40,6 +41,12 @@ interface PhotosRepository {
         androidCloudId: String,
         objectHash: String
     ): Response<PhotoUploadData>
+
+    suspend fun uploadPhoto(
+        uri: Uri,
+        fileName: String,
+        objectHash: String,
+    ): Flow<Double>
 
     suspend fun clearPhotosTable()
 

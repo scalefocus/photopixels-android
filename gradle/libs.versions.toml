@@ -53,6 +53,8 @@ firebase-crashlytics-plugin = "3.0.3"
 firebase-performance-plugin = "1.4.2"
 firebaseAppdistribution = "5.1.1"
 firebaseCrashlyticsGradle = "3.0.3"
+tus-java-client = "0.5.1"
+tus-android-client = "0.1.12"
 
 [libraries]
 
@@ -131,6 +133,8 @@ grpc-netty = { module = "io.grpc:grpc-netty", version.ref = "grpcNetty" }
 grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpcOkhttp" }
 grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpcNetty" }
 grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpcNetty" }
+tus-java-client = { module = "io.tus.java.client:tus-java-client", version.ref = "tus-java-client" }
+tus-android-client = { module = "io.tus.android.client:tus-android-client", version.ref = "tus-android-client" }
 
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work-runtime-ktx" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }

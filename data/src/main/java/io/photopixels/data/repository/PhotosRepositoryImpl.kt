@@ -1,11 +1,13 @@
 package io.photopixels.data.repository
 
 import android.content.Context
+import android.net.Uri
 import io.photopixels.data.mappers.toDomain
 import io.photopixels.data.mappers.toEntity
 import io.photopixels.data.mappers.toThumbnail
 import io.photopixels.data.media.MediaHelper
 import io.photopixels.data.network.BackendApi
+import io.photopixels.data.network.tus.ResumableUploadApi
 import io.photopixels.data.storage.database.PhotosDao
 import io.photopixels.data.storage.database.ThumbnailsDao
 import io.photopixels.data.storage.database.entities.PhotosEntity
@@ -26,6 +28,7 @@ class PhotosRepositoryImpl @Inject constructor(
     private val photosDao: PhotosDao,
     private val thumbnailsDao: ThumbnailsDao,
     private val backendApi: BackendApi,
+    private val resumableUploadApi: ResumableUploadApi,
     private val mediaHelper: MediaHelper,
 ) : PhotosRepository {
 
@@ -78,6 +81,12 @@ class PhotosRepositoryImpl @Inject constructor(
         androidCloudId: String,
         objectHash: String
     ): Response<PhotoUploadData> = backendApi.uploadPhoto(fileBytes, fileName, mimeType, androidCloudId, objectHash)
+
+    override suspend fun uploadPhoto(
+        uri: Uri,
+        fileName: String,
+        objectHash: String,
+    ) = resumableUploadApi.uploadFile(uri, fileName, objectHash)
 
     override suspend fun clearPhotosTable() {
         photosDao.clearPhotosTable()
