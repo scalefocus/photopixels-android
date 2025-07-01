@@ -96,6 +96,6 @@ class SyncServerThumbnailsUseCase @Inject constructor(
                     isAlreadyUploaded = true,
                     serverItemHashId = hashToIdsMap[photoData.hash]
                 )
-            }?.let { deviceMediaRepository.updateMediaDataToDB(it) }
+            }?.let { deviceMediaRepository.updateMediaDataToDb(it) }
     }
 }

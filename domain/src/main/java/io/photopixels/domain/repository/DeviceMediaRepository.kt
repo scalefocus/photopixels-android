@@ -6,9 +6,9 @@ import io.photopixels.domain.model.Thumbnail
 import kotlinx.coroutines.flow.Flow
 
 interface DeviceMediaRepository {
-    suspend fun insertMediaDataToDB(deviceMediaList: List<DeviceMedia>)
+    suspend fun insertMediaDataToDb(deviceMediaList: List<DeviceMedia>)
 
-    suspend fun updateMediaDataToDB(deviceMediaList: List<DeviceMedia>)
+    suspend fun updateMediaDataToDb(deviceMediaList: List<DeviceMedia>)
 
     fun getDeviceMedia(context: Context): List<DeviceMedia>
 
@@ -16,13 +16,13 @@ interface DeviceMediaRepository {
 
     suspend fun getMediaWithMissingHashes(): List<DeviceMedia>
 
-    suspend fun getMediaDataForUploadFromDB(): List<DeviceMedia>
+    suspend fun getMediaDataForUploadFromDb(): List<DeviceMedia>
 
-    suspend fun removeMediaDataFromDB(mediaId: Int)
+    suspend fun removeMediaDataFromDb(mediaId: Int)
 
-    suspend fun removeMediaDataFromDB(mediaIds: List<Int>)
+    suspend fun removeMediaDataFromDb(mediaIds: List<Int>)
 
-    suspend fun getMediaDataIdsFromDB(): List<Int>
+    suspend fun getMediaDataIdsFromDb(): List<Int>
 
     suspend fun updateMediaData(deviceMedia: DeviceMedia)
 

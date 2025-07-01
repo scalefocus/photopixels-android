@@ -20,11 +20,11 @@ internal class DeviceMediaRepositoryImpl @Inject constructor(
     private val mediaHelper: MediaHelper,
 ) : DeviceMediaRepository {
 
-    override suspend fun insertMediaDataToDB(deviceMediaList: List<DeviceMedia>) {
+    override suspend fun insertMediaDataToDb(deviceMediaList: List<DeviceMedia>) {
         deviceMediaDao.insertMediaData(deviceMediaList.map { it.toEntity() })
     }
 
-    override suspend fun updateMediaDataToDB(deviceMediaList: List<DeviceMedia>) {
+    override suspend fun updateMediaDataToDb(deviceMediaList: List<DeviceMedia>) {
         deviceMediaDao.updateMediaData(deviceMediaList.map { it.toEntity() })
     }
 
@@ -36,20 +36,20 @@ internal class DeviceMediaRepositoryImpl @Inject constructor(
     override suspend fun getMediaWithMissingHashes(): List<DeviceMedia> =
         deviceMediaDao.getMediaWithMissingHashes().map { it.toDomain() }
 
-    override suspend fun getMediaDataForUploadFromDB(): List<DeviceMedia> =
+    override suspend fun getMediaDataForUploadFromDb(): List<DeviceMedia> =
         deviceMediaDao.getMediaForUpload().first().map { photo ->
             photo.toDomain()
         }
 
-    override suspend fun removeMediaDataFromDB(mediaId: Int) {
+    override suspend fun removeMediaDataFromDb(mediaId: Int) {
         deviceMediaDao.removeMediaData(mediaId)
     }
 
-    override suspend fun removeMediaDataFromDB(mediaIds: List<Int>) {
+    override suspend fun removeMediaDataFromDb(mediaIds: List<Int>) {
         deviceMediaDao.removeMediaData(mediaIds)
     }
 
-    override suspend fun getMediaDataIdsFromDB(): List<Int> = deviceMediaDao.getMediaIds()
+    override suspend fun getMediaDataIdsFromDb(): List<Int> = deviceMediaDao.getMediaIds()
 
     override suspend fun updateMediaData(deviceMedia: DeviceMedia) {
         deviceMediaDao.updateMediaData(deviceMedia.toEntity())

@@ -9,7 +9,7 @@ class GetPhotosForUploadUseCase @Inject constructor(
     private val deviceMediaRepository: DeviceMediaRepository,
     private val googlePhotosRepository: GooglePhotosRepository
 ) {
-    suspend fun invoke(): List<DeviceMedia> = deviceMediaRepository.getMediaDataForUploadFromDB()
+    suspend fun invoke(): List<DeviceMedia> = deviceMediaRepository.getMediaDataForUploadFromDb()
 
     suspend fun getGooglePhotosFromDB() = googlePhotosRepository.getPhotosForUpload()
 }

@@ -8,16 +8,16 @@ class UpdatePhotosDataToDbUseCase @Inject constructor(private val deviceMediaRep
     suspend fun invoke(photosDataList: List<DeviceMedia>) {
         removeDeletedDevicePhotos(photosDataList)
 
-        deviceMediaRepository.insertMediaDataToDB(photosDataList)
+        deviceMediaRepository.insertMediaDataToDb(photosDataList)
     }
 
     private suspend fun removeDeletedDevicePhotos(photosDataList: List<DeviceMedia>) {
-        val idsFromDb = deviceMediaRepository.getMediaDataIdsFromDB()
+        val idsFromDb = deviceMediaRepository.getMediaDataIdsFromDb()
 
         val idsFromMediaStore = photosDataList.map { it.id.toInt() }.toSet()
 
         (idsFromDb - idsFromMediaStore).takeIf { it.isNotEmpty() }?.let { idsToRemove ->
-            deviceMediaRepository.removeMediaDataFromDB(idsToRemove)
+            deviceMediaRepository.removeMediaDataFromDb(idsToRemove)
         }
     }
 }
