@@ -3,14 +3,14 @@ package io.photopixels.data.mappers
 import android.util.Base64
 import io.photopixels.data.network.responses.ObjectResponse
 import io.photopixels.data.network.responses.ObjectUploadResponse
-import io.photopixels.data.storage.database.entities.PhotosEntity
+import io.photopixels.data.storage.database.entities.DeviceMediaEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
-import io.photopixels.domain.model.PhotoData
-import io.photopixels.domain.model.PhotoUiData
+import io.photopixels.domain.model.DeviceMedia
 import io.photopixels.domain.model.PhotoUploadData
+import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.Thumbnail
 
-fun PhotosEntity.toDomain() = PhotoData(
+fun DeviceMediaEntity.toDomain() = DeviceMedia(
     id = id.toString(),
     fileName = fileName,
     fileSize = fileSize,
@@ -24,8 +24,8 @@ fun PhotosEntity.toDomain() = PhotoData(
     isDeleted = isDeleted
 )
 
-fun PhotoData.toEntity() = PhotosEntity(
-    id = Integer.valueOf(id),
+fun DeviceMedia.toEntity() = DeviceMediaEntity(
+    id = id.toLong(),
     fileName = fileName,
     contentUri = contentUri,
     fileSize = fileSize,
@@ -39,7 +39,7 @@ fun PhotoData.toEntity() = PhotosEntity(
     isAlreadyUploaded = isAlreadyUploaded
 )
 
-fun ObjectResponse.toDomain() = PhotoUiData(
+fun ObjectResponse.toDomain() = ServerMedia(
     id = id,
     hash = originalHash,
     thumbnailByteArray = Base64.decode(thumbnail, Base64.DEFAULT),
@@ -48,7 +48,7 @@ fun ObjectResponse.toDomain() = PhotoUiData(
     dateCreated = dateCreated,
 )
 
-fun ThumbnailsEntity.toDomain() = PhotoUiData(
+fun ThumbnailsEntity.toDomain() = ServerMedia(
     id = id,
     thumbnailByteArray = thumbnailBytes,
     hash = hash,
@@ -58,7 +58,7 @@ fun ThumbnailsEntity.toDomain() = PhotoUiData(
     dateCreated = dateCreated,
 )
 
-fun PhotoUiData.toEntity() = ThumbnailsEntity(
+fun ServerMedia.toEntity() = ThumbnailsEntity(
     id = id,
     thumbnailBytes = thumbnailByteArray,
     hash = hash,
@@ -73,7 +73,7 @@ fun PhotoUiData.toEntity() = ThumbnailsEntity(
 
 fun ObjectUploadResponse.toDomain() = PhotoUploadData(id, revision)
 
-fun PhotosEntity.toThumbnail() = Thumbnail.LocalThumbnail(
+fun DeviceMediaEntity.toThumbnail() = Thumbnail.LocalThumbnail(
     id = id.toString(),
     contentUri = contentUri,
     hash = hash.orEmpty(),

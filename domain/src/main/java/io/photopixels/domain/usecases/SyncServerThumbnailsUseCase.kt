@@ -1,9 +1,10 @@
 package io.photopixels.domain.usecases
 
 import io.photopixels.domain.base.Response
-import io.photopixels.domain.model.PhotoUiData
+import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.ServerRevision
-import io.photopixels.domain.repository.PhotosRepository
+import io.photopixels.domain.repository.DeviceMediaRepository
+import io.photopixels.domain.repository.ServerMediaRepository
 import io.photopixels.domain.repository.ServerRepository
 import javax.inject.Inject
 
@@ -11,11 +12,12 @@ private const val MAX_OBJECTS_TO_REQUEST = 90
 
 class SyncServerThumbnailsUseCase @Inject constructor(
     private val serverRepository: ServerRepository,
-    private val photosRepository: PhotosRepository,
+    private val serverMediaRepository: ServerMediaRepository,
+    private val deviceMediaRepository: DeviceMediaRepository,
 ) {
 
     suspend operator fun invoke(isUploadComplete: Boolean): Response<Unit> {
-        photosRepository.clearNewlyUploadedThumbnails()
+        serverMediaRepository.clearNewlyUploadedThumbnails()
 
         val localRevision = serverRepository.getLocalRevision()
         val revisionToRequest = if (localRevision == 0) 0 else localRevision + 1
@@ -39,7 +41,7 @@ class SyncServerThumbnailsUseCase @Inject constructor(
     ): Response<Unit> {
         serverRevision.deleted
             ?.takeIf { it.isNotEmpty() }
-            ?.let { deletedIds -> photosRepository.deleteThumbnailsFromDb(deletedIds) }
+            ?.let { deletedIds -> serverMediaRepository.deleteThumbnailsFromDb(deletedIds) }
 
         val response = getServerThumbnailsChunked(
             added = serverRevision.added,
@@ -64,7 +66,7 @@ class SyncServerThumbnailsUseCase @Inject constructor(
             .chunked(MAX_OBJECTS_TO_REQUEST)
             .forEach {
                 val serverIdsToFetch = it.map { (id, _) -> id }
-                val thumbnailsResponse = photosRepository.getServerThumbnails(serverIdsToFetch)
+                val thumbnailsResponse = serverMediaRepository.getServerThumbnails(serverIdsToFetch)
                 when (thumbnailsResponse) {
                     is Response.Success -> {
                         val thumbnails = thumbnailsResponse.result.map { photoUiData ->
@@ -72,7 +74,7 @@ class SyncServerThumbnailsUseCase @Inject constructor(
                                 isNewlyUploaded = isUploadComplete,
                             )
                         }
-                        photosRepository.insertThumbnailsToDb(thumbnails)
+                        serverMediaRepository.insertThumbnailsToDb(thumbnails)
 
                         updateAlreadyUploadedDevicePhotos(thumbnails)
                     }
@@ -85,15 +87,15 @@ class SyncServerThumbnailsUseCase @Inject constructor(
         return Response.Success(Unit)
     }
 
-    private suspend fun updateAlreadyUploadedDevicePhotos(thumbnails: List<PhotoUiData>) {
+    private suspend fun updateAlreadyUploadedDevicePhotos(thumbnails: List<ServerMedia>) {
         val hashToIdsMap = thumbnails.associate { thumbnail -> thumbnail.hash to thumbnail.id }
-        photosRepository.getDevicePhotosByHashes(hashToIdsMap.keys.toList())
+        deviceMediaRepository.getDeviceMediaByHashes(hashToIdsMap.keys.toList())
             .takeIf { it.isNotEmpty() }
             ?.map { photoData ->
                 photoData.copy(
                     isAlreadyUploaded = true,
                     serverItemHashId = hashToIdsMap[photoData.hash]
                 )
-            }?.let { photosRepository.updatePhotoDataToDB(it) }
+            }?.let { deviceMediaRepository.updateMediaDataToDb(it) }
     }
 }

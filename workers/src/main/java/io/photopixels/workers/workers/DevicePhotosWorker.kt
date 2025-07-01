@@ -11,7 +11,7 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.photopixels.domain.usecases.GenerateMissingLocalHashes
-import io.photopixels.domain.usecases.GetDevicePhotosUseCase
+import io.photopixels.domain.usecases.GetDeviceMediaUseCase
 import io.photopixels.domain.usecases.UpdatePhotosDataToDbUseCase
 import io.photopixels.workers.R
 import timber.log.Timber
@@ -25,7 +25,7 @@ class DevicePhotosWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParams: WorkerParameters,
     private val updatePhotosUseCase: UpdatePhotosDataToDbUseCase,
-    private val getDevicePhotosUseCase: GetDevicePhotosUseCase,
+    private val getDeviceMediaUseCase: GetDeviceMediaUseCase,
     private val generateMissingLocalHashes: GenerateMissingLocalHashes,
 ) : CoroutineWorker(context, workerParams) {
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -43,7 +43,7 @@ class DevicePhotosWorker @AssistedInject constructor(
 
         return try {
             Timber.tag(LOG_TAG).d("DevicePhotosWorker() getDevicePhotosUseCase invoked")
-            val photos = getDevicePhotosUseCase.invoke(context)
+            val photos = getDeviceMediaUseCase.invoke(context)
             Timber.tag(LOG_TAG).d("DevicePhotosWorker() updatePhotosUseCase invoked")
             updatePhotosUseCase.invoke(photos)
             Timber.tag(LOG_TAG).d("DevicePhotosWorker() GenerateMissingLocalHashes invoked")

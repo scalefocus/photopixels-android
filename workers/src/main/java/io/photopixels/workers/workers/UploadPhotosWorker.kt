@@ -14,7 +14,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.exceptions.ResumableUploadException
-import io.photopixels.domain.model.PhotoData
+import io.photopixels.domain.model.DeviceMedia
 import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.usecases.GetPhotosForUploadUseCase
 import io.photopixels.domain.usecases.RemovePhotoDataFromDbUseCase
@@ -57,7 +57,7 @@ class UploadPhotosWorker @AssistedInject constructor(
         Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photos for Upload: $photosDataList")
         photosDataList.forEachIndexed { index, photoData ->
             processPhotoData(
-                photoData = photoData,
+                deviceMedia = photoData,
                 currentFileIndex = index,
                 fileCount = photosDataList.size,
                 onUploadSuccess = {
@@ -78,33 +78,33 @@ class UploadPhotosWorker @AssistedInject constructor(
     }
 
     private suspend fun processPhotoData(
-        photoData: PhotoData,
+        deviceMedia: DeviceMedia,
         onUploadSuccess: () -> Unit,
         currentFileIndex: Int,
         fileCount: Int
     ) {
         try {
             // Uploading Photo
-            Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photo uploading: ${photoData.hash}")
-            uploadPhotoUseCase.invoke(photoData.contentUri.toUri(), photoData.fileName, photoData.hash.orEmpty())
+            Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photo uploading: ${deviceMedia.hash}")
+            uploadPhotoUseCase.invoke(deviceMedia.contentUri.toUri(), deviceMedia.fileName, deviceMedia.hash.orEmpty())
                 .collect { progress ->
                     setForegroundNotificationAsync(
                         createProgressNotification(progress.roundToInt(), currentFileIndex, fileCount)
                     )
                 }
 
-            Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photo uploaded: ${photoData.hash}")
+            Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photo uploaded: ${deviceMedia.hash}")
 
             // photo uploaded successfully
             onUploadSuccess()
             syncServerThumbnailsUseCase(isUploadComplete = true)
         } catch (exception: FileNotFoundException) {
             Timber.tag(LOG_TAG).e("File not found while uploading: $exception")
-            removePhotoDataFromDbUseCase.invoke(photoData.id.toInt())
+            removePhotoDataFromDbUseCase.invoke(deviceMedia.id.toInt())
         } catch (exception: ResumableUploadException) {
             if (exception.error is PhotoPixelError.DuplicatePhotoError) {
                 // Photo is already uploaded
-                val updatedPhotoData = photoData.copy(isAlreadyUploaded = true)
+                val updatedPhotoData = deviceMedia.copy(isAlreadyUploaded = true)
                 updatePhotoInDbUseCase.invoke(updatedPhotoData)
             } else {
                 Timber.tag(LOG_TAG).e(exception.cause, "Server error while uploading the file")

@@ -1,10 +1,10 @@
 package io.photopixels.domain.usecases
 
-import io.photopixels.domain.repository.PhotosRepository
+import io.photopixels.domain.repository.ServerMediaRepository
 import javax.inject.Inject
 
-class RemoveThumbnailsFromDbUseCase @Inject constructor(private val photosRepository: PhotosRepository) {
+class RemoveThumbnailsFromDbUseCase @Inject constructor(private val serverMediaRepository: ServerMediaRepository) {
     suspend fun invoke() {
-        photosRepository.clearThumbnailsTable()
+        serverMediaRepository.clearThumbnailsTable()
     }
 }

@@ -1,9 +1,9 @@
 package io.photopixels.data.network
 
 import io.photopixels.domain.base.Response
-import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.ServerAddress
+import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 
@@ -17,7 +17,7 @@ interface BackendApi {
 
     suspend fun getServerRevision(revisionNumber: Int): Response<ServerRevision>
 
-    suspend fun getThumbnailsByIds(serverItemHashIds: List<String>): Response<List<PhotoUiData>>
+    suspend fun getThumbnailsByIds(serverItemHashIds: List<String>): Response<List<ServerMedia>>
 
     suspend fun uploadPhoto(
         fileBytes: ByteArray,

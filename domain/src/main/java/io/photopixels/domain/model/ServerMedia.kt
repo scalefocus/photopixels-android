@@ -1,6 +1,6 @@
 package io.photopixels.domain.model
 
-data class PhotoUiData(
+data class ServerMedia(
     val id: String,
     val thumbnailByteArray: ByteArray,
     val hash: String,
@@ -13,7 +13,7 @@ data class PhotoUiData(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as PhotoUiData
+        other as ServerMedia
 
         if (!thumbnailByteArray.contentEquals(other.thumbnailByteArray)) return false
         if (hash != other.hash) return false

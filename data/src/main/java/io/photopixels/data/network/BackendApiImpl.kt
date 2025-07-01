@@ -22,9 +22,9 @@ import io.photopixels.data.network.responses.ObjectUploadResponse
 import io.photopixels.data.network.responses.ServerRevisionResponse
 import io.photopixels.data.network.responses.ServerStatusResponse
 import io.photopixels.domain.base.Response
-import io.photopixels.domain.model.PhotoUiData
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.ServerAddress
+import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 import kotlinx.coroutines.Dispatchers
@@ -79,7 +79,7 @@ class BackendApiImpl @Inject constructor(
             Response.Success(result.toDomain())
         }
 
-    override suspend fun getThumbnailsByIds(serverItemHashIds: List<String>): Response<List<PhotoUiData>> =
+    override suspend fun getThumbnailsByIds(serverItemHashIds: List<String>): Response<List<ServerMedia>> =
         request {
             val result = httpClient
                 .post {

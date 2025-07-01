@@ -1,6 +1,6 @@
 package io.photopixels.domain.model
 
-data class PhotoData(
+data class DeviceMedia(
     val id: String,
     val fileName: String,
     val fileSize: Long,

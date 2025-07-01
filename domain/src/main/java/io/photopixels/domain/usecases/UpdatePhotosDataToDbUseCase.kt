@@ -1,23 +1,23 @@
 package io.photopixels.domain.usecases
 
-import io.photopixels.domain.model.PhotoData
-import io.photopixels.domain.repository.PhotosRepository
+import io.photopixels.domain.model.DeviceMedia
+import io.photopixels.domain.repository.DeviceMediaRepository
 import javax.inject.Inject
 
-class UpdatePhotosDataToDbUseCase @Inject constructor(private val photosRepository: PhotosRepository) {
-    suspend fun invoke(photosDataList: List<PhotoData>) {
+class UpdatePhotosDataToDbUseCase @Inject constructor(private val deviceMediaRepository: DeviceMediaRepository) {
+    suspend fun invoke(photosDataList: List<DeviceMedia>) {
         removeDeletedDevicePhotos(photosDataList)
 
-        photosRepository.insertPhotoDataToDB(photosDataList)
+        deviceMediaRepository.insertMediaDataToDb(photosDataList)
     }
 
-    private suspend fun removeDeletedDevicePhotos(photosDataList: List<PhotoData>) {
-        val idsFromDb = photosRepository.getPhotosDataIdsFromDB()
+    private suspend fun removeDeletedDevicePhotos(photosDataList: List<DeviceMedia>) {
+        val idsFromDb = deviceMediaRepository.getMediaDataIdsFromDb()
 
         val idsFromMediaStore = photosDataList.map { it.id.toInt() }.toSet()
 
         (idsFromDb - idsFromMediaStore).takeIf { it.isNotEmpty() }?.let { idsToRemove ->
-            photosRepository.removePhotosDataFromDB(idsToRemove)
+            deviceMediaRepository.removeMediaDataFromDb(idsToRemove)
         }
     }
 }

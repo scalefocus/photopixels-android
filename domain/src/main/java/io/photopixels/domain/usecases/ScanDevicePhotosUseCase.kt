@@ -8,13 +8,13 @@ import javax.inject.Inject
 
 class ScanDevicePhotosUseCase @Inject constructor(
     private val updatePhotosUseCase: UpdatePhotosDataToDbUseCase,
-    private val getDevicePhotosUseCase: GetDevicePhotosUseCase,
+    private val getDeviceMediaUseCase: GetDeviceMediaUseCase,
     private val generateMissingLocalHashes: GenerateMissingLocalHashes,
     @ApplicationContext private val context: Context,
 ) {
 
     suspend operator fun invoke() = withContext(Dispatchers.IO) {
-        val photos = getDevicePhotosUseCase.invoke(context)
+        val photos = getDeviceMediaUseCase.invoke(context)
         updatePhotosUseCase.invoke(photos)
         generateMissingLocalHashes(context)
     }
