@@ -64,7 +64,7 @@ class MediaHelper @Inject constructor(private val uri: Uri) {
 
                 videoItems.add(
                     DeviceMedia(
-                        id = id.toString(),
+                        id = id,
                         fileName = filename,
                         fileSize = fileSize,
                         mediaType = mediaType,

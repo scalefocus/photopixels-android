@@ -11,7 +11,7 @@ import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.Thumbnail
 
 fun DeviceMediaEntity.toDomain() = DeviceMedia(
-    id = id.toString(),
+    id = id,
     fileName = fileName,
     fileSize = fileSize,
     mediaType = mediaType,
@@ -26,7 +26,7 @@ fun DeviceMediaEntity.toDomain() = DeviceMedia(
 )
 
 fun DeviceMedia.toEntity() = DeviceMediaEntity(
-    id = id.toLong(),
+    id = id,
     fileName = fileName,
     contentUri = contentUri,
     fileSize = fileSize,
