@@ -2,6 +2,7 @@ package io.photopixels.data.storage.database.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import io.photopixels.domain.model.MediaType
 
 @Entity(tableName = "device_media")
 data class DeviceMediaEntity(
@@ -10,6 +11,7 @@ data class DeviceMediaEntity(
     val fileName: String,
     val fileSize: Long,
     val mimeType: String,
+    val mediaType: MediaType,
     val contentUri: String,
     val dateCreated: String,
     val appleCloudId: String,

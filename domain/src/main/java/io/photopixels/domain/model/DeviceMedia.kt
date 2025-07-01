@@ -4,6 +4,7 @@ data class DeviceMedia(
     val id: String,
     val fileName: String,
     val fileSize: Long,
+    val mediaType: MediaType,
     val mimeType: String,
     val contentUri: String,
     val dateCreated: String,

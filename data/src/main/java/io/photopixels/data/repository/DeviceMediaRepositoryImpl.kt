@@ -28,7 +28,7 @@ internal class DeviceMediaRepositoryImpl @Inject constructor(
         deviceMediaDao.updateMediaData(deviceMediaList.map { it.toEntity() })
     }
 
-    override fun getDeviceMedia(context: Context): List<DeviceMedia> = mediaHelper.scanPhotos(context)
+    override fun getDeviceMedia(context: Context): List<DeviceMedia> = mediaHelper.scanDeviceMedia(context)
 
     override suspend fun getDeviceMediaByHashes(hashes: List<String>): List<DeviceMedia> =
         deviceMediaDao.getMediaByHashes(hashes).map { it.toDomain() }
