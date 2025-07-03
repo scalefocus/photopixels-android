@@ -2,7 +2,6 @@ package io.photopixels.domain.usecases
 
 import android.content.Context
 import androidx.core.net.toUri
-import io.photopixels.domain.extensions.readFileContent
 import io.photopixels.domain.repository.DeviceMediaRepository
 import io.photopixels.domain.repository.ServerMediaRepository
 import io.photopixels.domain.utils.Hasher
@@ -19,8 +18,7 @@ class GenerateMissingLocalHashes @Inject constructor(
 
         deviceMediaRepository.getMediaWithMissingHashes().map { photo ->
             runCatching {
-                contentResolver.readFileContent(photo.contentUri.toUri())?.let { photoBytes ->
-                    val hash = Hasher.sha1HashBase64(photoBytes)
+                Hasher.sha1HashBase64(contentResolver, photo.contentUri.toUri())?.let { hash ->
                     val photoUi = serverMediaRepository.getMediaByHash(hash)
 
                     val updatedPhoto = if (photoUi != null) {
