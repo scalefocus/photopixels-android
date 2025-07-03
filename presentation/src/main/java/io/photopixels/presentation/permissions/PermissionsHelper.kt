@@ -23,12 +23,13 @@ object PermissionsHelper {
                 requestPermissions.launch(
                     arrayOf(
                         READ_MEDIA_IMAGES,
+                        READ_MEDIA_VIDEO,
                         READ_MEDIA_VISUAL_USER_SELECTED,
                         POST_NOTIFICATIONS
                     )
                 )
             } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.TIRAMISU) { // Android 13
-                requestPermissions.launch(arrayOf(READ_MEDIA_IMAGES, POST_NOTIFICATIONS))
+                requestPermissions.launch(arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, POST_NOTIFICATIONS))
             } else {
                 requestPermissions.launch(arrayOf(READ_EXTERNAL_STORAGE)) // Android < 13
             }

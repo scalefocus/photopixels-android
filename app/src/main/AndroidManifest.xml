@@ -6,6 +6,7 @@
 
     <!-- Devices running Android 13 (API level 33) or higher -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <!-- Devices running Android 12L (API level 32) or lower  -->
     <uses-permission
@@ -34,7 +35,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.PhotoPixels">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
