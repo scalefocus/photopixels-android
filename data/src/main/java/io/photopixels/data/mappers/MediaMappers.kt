@@ -6,6 +6,7 @@ import io.photopixels.data.network.responses.ObjectUploadResponse
 import io.photopixels.data.storage.database.entities.DeviceMediaEntity
 import io.photopixels.data.storage.database.entities.ThumbnailsEntity
 import io.photopixels.domain.model.DeviceMedia
+import io.photopixels.domain.model.MediaType
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.ServerMedia
 import io.photopixels.domain.model.Thumbnail
@@ -44,6 +45,7 @@ fun DeviceMedia.toEntity() = DeviceMediaEntity(
 fun ObjectResponse.toDomain() = ServerMedia(
     id = id,
     hash = originalHash,
+    mediaType = if (contentType.startsWith("video")) MediaType.VIDEO else MediaType.IMAGE,
     thumbnailByteArray = Base64.decode(thumbnail, Base64.DEFAULT),
     androidCloudId = androidCloudId,
     appleCloudId = appleCloudId,
@@ -54,6 +56,7 @@ fun ThumbnailsEntity.toDomain() = ServerMedia(
     id = id,
     thumbnailByteArray = thumbnailBytes,
     hash = hash,
+    mediaType = mediaType,
     isNewlyUploaded = isNewlyUploaded,
     androidCloudId = androidCloudId,
     appleCloudId = appleCloudId,
@@ -67,9 +70,7 @@ fun ServerMedia.toEntity() = ThumbnailsEntity(
     isNewlyUploaded = isNewlyUploaded,
     androidCloudId = androidCloudId,
     appleCloudId = appleCloudId,
-    contentType = "",
-    height = 0,
-    width = 0,
+    mediaType = mediaType,
     dateCreated = dateCreated,
 )
 
@@ -80,6 +81,7 @@ fun DeviceMediaEntity.toThumbnail() = Thumbnail.LocalThumbnail(
     contentUri = contentUri,
     hash = hash.orEmpty(),
     dateCreated = dateCreated,
+    mediaType = mediaType,
 )
 
 fun ThumbnailsEntity.toThumbnail() = Thumbnail.RemoteThumbnail(
@@ -88,4 +90,5 @@ fun ThumbnailsEntity.toThumbnail() = Thumbnail.RemoteThumbnail(
     hash = hash,
     dateCreated = dateCreated,
     isNewlyUploaded = isNewlyUploaded,
+    mediaType = mediaType,
 )

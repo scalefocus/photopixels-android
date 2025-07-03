@@ -7,6 +7,7 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.network.ktor3.KtorNetworkFetcherFactory
+import coil3.video.VideoFrameDecoder
 import dagger.hilt.android.HiltAndroidApp
 import io.ktor.client.HttpClient
 import io.photopixels.data.di.NetworkModule.Companion.BACKEND_API_HTTP_CLIENT
@@ -32,6 +33,9 @@ class PhotoPixelsApp : Application(), Configuration.Provider, SingletonImageLoad
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader = ImageLoader.Builder(this)
-        .components { add(KtorNetworkFetcherFactory(httpClient)) }
+        .components {
+            add(KtorNetworkFetcherFactory(httpClient))
+            add(VideoFrameDecoder.Factory())
+        }
         .build()
 }

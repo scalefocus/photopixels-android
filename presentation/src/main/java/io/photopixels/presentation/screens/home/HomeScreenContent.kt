@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
+import io.photopixels.domain.model.MediaType
 import io.photopixels.domain.model.Thumbnail
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.SFButton
@@ -139,9 +140,23 @@ private fun ThumbnailImage(
             .clickable { onThumbnailClick(thumbnail.id) },
         shape = RectangleShape
     ) {
-        when (thumbnail) {
-            is Thumbnail.RemoteThumbnail -> RemoteThumbnailImage(thumbnail)
-            is Thumbnail.LocalThumbnail -> LocalThumbnailImage(thumbnail)
+        Box {
+            when (thumbnail) {
+                is Thumbnail.RemoteThumbnail -> RemoteThumbnailImage(thumbnail)
+                is Thumbnail.LocalThumbnail -> LocalThumbnailImage(thumbnail)
+            }
+
+            if (thumbnail.mediaType == MediaType.VIDEO) {
+                Icon(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(bottom = 4.dp, start = 4.dp)
+                        .size(20.dp),
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_play_button_24),
+                    tint = Color.White,
+                    contentDescription = null,
+                )
+            }
         }
     }
 }
