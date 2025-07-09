@@ -11,35 +11,28 @@ import io.photopixels.domain.model.MediaType
 import io.photopixels.domain.utils.DateHelper
 import javax.inject.Inject
 
-class MediaHelper @Inject constructor(private val uri: Uri) {
+class MediaHelper @Inject constructor() {
 
     fun scanDeviceMedia(appContext: Context): List<DeviceMedia> {
         val contentResolver = appContext.contentResolver
-        val images = contentResolver.scanMedia(
-            query = uri,
-            mediaType = MediaType.IMAGE,
-            externalContentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        )
 
-        val videos = contentResolver.scanMedia(
-            query = MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-            mediaType = MediaType.VIDEO,
-            externalContentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-        )
-
-        return images.plus(videos)
+        return MediaType.entries.map { mediaType ->
+            contentResolver.scanMedia(
+                externalContentUri = mediaType.mediaUri,
+                mediaType = mediaType,
+            )
+        }.flatten()
             .sortedByDescending { it.dateCreated }
     }
 
     private fun ContentResolver.scanMedia(
-        query: Uri,
+        externalContentUri: Uri,
         mediaType: MediaType,
-        externalContentUri: Uri
     ): List<DeviceMedia> {
         val videoItems = mutableListOf<DeviceMedia>()
 
         val cursor = query(
-            query,
+            externalContentUri,
             arrayOf(
                 MediaStore.MediaColumns._ID, // MediaStore ID
                 MediaStore.MediaColumns.DISPLAY_NAME, // Filename
