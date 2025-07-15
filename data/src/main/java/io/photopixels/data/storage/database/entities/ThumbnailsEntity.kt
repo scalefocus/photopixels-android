@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import io.photopixels.domain.model.MediaType
 
 @Entity(tableName = "thumbnails_photos", indices = [Index(value = ["id", "hash", "androidCloudId"])])
 data class ThumbnailsEntity(
@@ -11,13 +12,11 @@ data class ThumbnailsEntity(
     val id: String,
     @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
     val thumbnailBytes: ByteArray,
-    val contentType: String,
+    val mediaType: MediaType,
     val hash: String,
     val isNewlyUploaded: Boolean,
     val appleCloudId: String?,
     val androidCloudId: String?,
-    val width: Int,
-    val height: Int,
     val dateCreated: String,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -28,13 +27,11 @@ data class ThumbnailsEntity(
 
         if (id != other.id) return false
         if (!thumbnailBytes.contentEquals(other.thumbnailBytes)) return false
-        if (contentType != other.contentType) return false
+        if (mediaType != other.mediaType) return false
         if (hash != other.hash) return false
         if (isNewlyUploaded != other.isNewlyUploaded) return false
         if (appleCloudId != other.appleCloudId) return false
         if (androidCloudId != other.androidCloudId) return false
-        if (width != other.width) return false
-        if (height != other.height) return false
         if (dateCreated != other.dateCreated) return false
 
         return true
@@ -43,13 +40,11 @@ data class ThumbnailsEntity(
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + thumbnailBytes.contentHashCode()
-        result = 31 * result + contentType.hashCode()
+        result = 31 * result + mediaType.hashCode()
         result = 31 * result + hash.hashCode()
         result = 31 * result + isNewlyUploaded.hashCode()
         result = 31 * result + (appleCloudId?.hashCode() ?: 0)
         result = 31 * result + (androidCloudId?.hashCode() ?: 0)
-        result = 31 * result + width
-        result = 31 * result + height
         result = 31 * result + dateCreated.hashCode()
         return result
     }

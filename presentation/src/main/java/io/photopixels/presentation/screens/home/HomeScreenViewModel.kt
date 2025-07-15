@@ -1,6 +1,5 @@
 package io.photopixels.presentation.screens.home
 
-import android.database.ContentObserver
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.Response
@@ -42,7 +41,6 @@ class HomeScreenViewModel @Inject constructor(
 
     private var scanDevicePhotosJob: Job? = null
     private var hasLocalMediaChanges = false
-    private var contentObserver: ContentObserver? = null
 
     init {
         viewModelScope.launch {
@@ -75,7 +73,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        contentObserver?.let(mediaObserver::unregisterObserver)
+        mediaObserver.unregisterObserver()
     }
 
     override suspend fun handleActions(action: HomeScreenActions) {
@@ -108,8 +106,8 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     private fun registerContentObserver() {
-        if (contentObserver == null) {
-            contentObserver = mediaObserver.registerObserver {
+        if (!mediaObserver.isRegistered) {
+            mediaObserver.registerObserver {
                 scanDeviceMedia()
             }
 

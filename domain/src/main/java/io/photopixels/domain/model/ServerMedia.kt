@@ -4,6 +4,7 @@ data class ServerMedia(
     val id: String,
     val thumbnailByteArray: ByteArray,
     val hash: String,
+    val mediaType: MediaType,
     val isNewlyUploaded: Boolean = false,
     val appleCloudId: String?,
     val androidCloudId: String?,
@@ -17,6 +18,7 @@ data class ServerMedia(
 
         if (!thumbnailByteArray.contentEquals(other.thumbnailByteArray)) return false
         if (hash != other.hash) return false
+        if (mediaType != other.mediaType) return false
         if (isNewlyUploaded != other.isNewlyUploaded) return false
         if (dateCreated != other.dateCreated) return false
 
@@ -26,6 +28,7 @@ data class ServerMedia(
     override fun hashCode(): Int {
         var result = thumbnailByteArray.contentHashCode()
         result = 31 * result + hash.hashCode()
+        result = 31 * result + mediaType.hashCode()
         result = 31 * result + isNewlyUploaded.hashCode()
         result = 31 * result + dateCreated.hashCode()
         return result

@@ -13,6 +13,7 @@ import java.security.MessageDigest
 object Hasher {
     private const val SAMPLE_SIZE = 16 // Adjust based on desired sample coverage
     private const val SAMPLE_COUNT = 4 // Adjust based on desired number of samples
+    private const val BUFFER_SIZE = 8192 // 8K buffer
 
     // Generate fast hash
     fun generateFastHash(contentResolver: ContentResolver, contentUri: Uri): String? {
@@ -62,5 +63,26 @@ object Hasher {
         messageDigest.update(bytes)
         val hashBytes = messageDigest.digest()
         return Base64.encodeToString(hashBytes, Base64.NO_WRAP)
+    }
+
+    // Generate SHA-1 Hash for full file, which will be uploaded to BE
+    fun sha1HashBase64(
+        contentResolver: ContentResolver,
+        fileUri: Uri
+    ): String? = contentResolver.openInputStream(fileUri).use { inputStream ->
+        if (inputStream == null) {
+            return null
+        }
+
+        val messageDigest = MessageDigest.getInstance("SHA-1")
+        val buffer = ByteArray(BUFFER_SIZE)
+        var bytesRead: Int
+
+        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+            messageDigest.update(buffer, 0, bytesRead)
+        }
+
+        val hashBytes = messageDigest.digest()
+        Base64.encodeToString(hashBytes, Base64.NO_WRAP)
     }
 }

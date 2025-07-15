@@ -42,13 +42,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
+import io.photopixels.domain.model.MediaType
 import io.photopixels.domain.model.Thumbnail
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.SFButton
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
+import io.photopixels.presentation.base.composeviews.previewparams.HomeStatePreviewParameterProvider
 import io.photopixels.presentation.theme.PhotoPixelsTheme
 import io.photopixels.presentation.theme.SFSecondaryLightBlue
 import io.photopixels.presentation.utils.toThumbnailsGroupString
@@ -139,9 +142,23 @@ private fun ThumbnailImage(
             .clickable { onThumbnailClick(thumbnail.id) },
         shape = RectangleShape
     ) {
-        when (thumbnail) {
-            is Thumbnail.RemoteThumbnail -> RemoteThumbnailImage(thumbnail)
-            is Thumbnail.LocalThumbnail -> LocalThumbnailImage(thumbnail)
+        Box {
+            when (thumbnail) {
+                is Thumbnail.RemoteThumbnail -> RemoteThumbnailImage(thumbnail)
+                is Thumbnail.LocalThumbnail -> LocalThumbnailImage(thumbnail)
+            }
+
+            if (thumbnail.mediaType == MediaType.VIDEO) {
+                Icon(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(bottom = 4.dp, start = 4.dp)
+                        .size(20.dp),
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_play_button_24),
+                    tint = Color.White,
+                    contentDescription = null,
+                )
+            }
         }
     }
 }
@@ -252,27 +269,14 @@ private fun SmallGreenCircle(modifier: Modifier = Modifier) {
 }
 
 @Composable
-@Preview(name = "EmptyState", group = "SingleViews", showBackground = true)
-private fun PreviewEmptyState() {
+@Preview(showBackground = true, apiLevel = 33)
+private fun PreviewHomeScreen(
+    @PreviewParameter(HomeStatePreviewParameterProvider::class) state: HomeScreenState
+) {
     PhotoPixelsTheme {
-        EmptyState(isSyncStarted = false, onBtnClick = {})
+        HomeScreenContent(
+            state = state,
+            onSubmitActions = {}
+        )
     }
 }
-
-// @Composable
-// @Preview(name = "HomeScreen", showBackground = true, apiLevel = 33)
-// private fun PreviewHomeScreen(
-//    @PreviewParameter(PhotoUiDataPreviewParameter::class) photosUiList: ImmutableList<PhotoUiData>
-// ) {
-//    PhotoPixelsTheme {
-//        HomeScreenContent(
-//            state = HomeScreenState(
-//                photoThumbnails = mapOf(
-//                    YearMonth.now() to photosUiList,
-//                    YearMonth.now().minusYears(1) to photosUiList
-//                )
-//            ),
-//            onSubmitActions = {}
-//        )
-//    }
-// }

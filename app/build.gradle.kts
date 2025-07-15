@@ -46,6 +46,7 @@ dependencies {
 
     // Coil
     implementation(libs.coil)
+    implementation(libs.coil.video)
     implementation(libs.coil.network.ktor)
 
     // WorkManager
