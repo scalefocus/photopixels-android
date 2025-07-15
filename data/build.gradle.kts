@@ -67,4 +67,7 @@ dependencies {
     // TUS
     implementation(libs.tus.java.client)
     implementation(libs.tus.android.client)
+
+    implementation(libs.okhttp)
+    implementation(libs.media3.datasource.okhttp)
 }

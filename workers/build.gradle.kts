@@ -20,4 +20,8 @@ dependencies {
 
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
+
+    // Guava dependency needs to be added explicitly, because the Exoplayer dependency
+    // more info could be found here https://github.com/google/ExoPlayer/issues/7993
+    implementation(libs.guava)
 }

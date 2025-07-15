@@ -1,5 +1,6 @@
 package io.photopixels.data.di
 
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,6 +32,7 @@ import io.photopixels.data.network.BackendApi
 import io.photopixels.data.network.BackendApiImpl
 import io.photopixels.data.network.GooglePhotosApi
 import io.photopixels.data.network.GooglePhotosApiImpl
+import io.photopixels.data.network.okhttp.AuthInterceptor
 import io.photopixels.data.storage.datastore.AuthDataStore
 import io.photopixels.data.storage.datastore.UserPreferencesDataStore
 import io.photopixels.domain.base.GoogleAuth
@@ -38,6 +40,7 @@ import io.photopixels.domain.base.Response
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
 import timber.log.Timber
 import javax.inject.Named
 import javax.inject.Singleton
@@ -238,4 +241,14 @@ class NetworkModule {
     fun provideGooglePhotosApi(
         @Named(GOOGLE_PHOTOS_API_HTTP_CLIENT) httpClient: HttpClient
     ): GooglePhotosApi = GooglePhotosApiImpl(httpClient)
+
+    @Singleton
+    @Provides
+    fun provideOkHttpDataSourceFactory(
+        authInterceptor: AuthInterceptor
+    ): OkHttpDataSource.Factory = OkHttpClient.Builder()
+        .addInterceptor(authInterceptor)
+        .build().let { client ->
+            OkHttpDataSource.Factory(client)
+        }
 }

@@ -53,11 +53,12 @@ class PhotosPreviewViewModel @Inject constructor(
                 val thumbnails = getThumbnailsUseCase.invoke().first()
                 val photos = thumbnails.map {
                     when (it) {
-                        is Thumbnail.LocalThumbnail -> PhotoPreview.Local(it.id, it.contentUri)
+                        is Thumbnail.LocalThumbnail -> PhotoPreview.Local(it.id, it.mediaType, it.contentUri)
                         is Thumbnail.RemoteThumbnail -> {
                             PhotoPreview.Remote(
                                 id = it.id,
-                                photoUrl = formatRemoteUrl(it.id, serverAddress)
+                                mediaType = it.mediaType,
+                                photoUrl = formatRemoteUrl(it.id, serverAddress),
                             )
                         }
                     }
