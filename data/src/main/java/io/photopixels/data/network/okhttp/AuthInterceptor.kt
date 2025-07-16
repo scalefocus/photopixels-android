@@ -10,6 +10,9 @@ import java.net.HttpURLConnection
 import javax.inject.Inject
 import okhttp3.Response as OkHttpResponse
 
+/**
+ * An OkHttp [Interceptor] that handles authentication for API requests made by Exoplayer
+ */
 class AuthInterceptor @Inject constructor(
     private val authApi: AuthApi,
     private val authDataStore: AuthDataStore,
@@ -21,15 +24,21 @@ class AuthInterceptor @Inject constructor(
         val response = chain.proceed(request)
 
         return if (response.code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            // auth token expired, try to refresh it
             synchronized(this) {
                 runBlocking {
                     val refreshToken = authDataStore.getRefreshToken().orEmpty()
                     val authResponse = authApi.refreshToken(refreshToken)
                     if (authResponse is Response.Success) {
+                        // update the stored token
                         val newAuthToken = authResponse.result.accessToken
                         val newRefreshToken = authResponse.result.refreshToken
+                        authDataStore.storeAuthHeaders(
+                            authHeader = newAuthToken,
+                            refreshToken = newRefreshToken
+                        )
 
-                        authDataStore.storeAuthHeaders(authHeader = newAuthToken, refreshToken = newRefreshToken)
+                        // retry the request with the new token
                         val newRequest = newRequestWithAccessToken(request, newAuthToken)
                         chain.proceed(newRequest)
                     } else {
@@ -42,9 +51,13 @@ class AuthInterceptor @Inject constructor(
         }
     }
 
-    private fun newRequestWithAccessToken(request: Request, accessToken: String): Request {
-        return request.newBuilder()
-            .header("Authorization", "Bearer $accessToken")
-            .build()
-    }
+    /**
+     * Creates a new request with the given access token
+     */
+    private fun newRequestWithAccessToken(
+        request: Request,
+        accessToken: String
+    ): Request = request.newBuilder()
+        .header("Authorization", "Bearer $accessToken")
+        .build()
 }
