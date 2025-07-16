@@ -27,7 +27,7 @@ private const val BACKGROUND_SYNC_WORK_NAME = "backgroundSyncWork"
 class WorkerStarterImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : WorkerStarter {
-    private val uniquePhotosWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
+    private val uniquePhotosWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
     private val uniqueGooglePhotosWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
     private val workerManager = WorkManager.getInstance(context)
 
@@ -46,8 +46,8 @@ class WorkerStarterImpl @Inject constructor(
     }
 
     override fun startDeviceAndUploadWorkers() {
-        if (!isWorkerFinished(WorkerStarter.DEVICE_PHOTOS_WORKER_TAG) ||
-            !isWorkerFinished(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
+        if (!isWorkerFinished(WorkerStarter.SCAN_DEVICE_MEDIA_WORKER_TAG) ||
+            !isWorkerFinished(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
         ) {
             return
         }
@@ -140,18 +140,19 @@ class WorkerStarterImpl @Inject constructor(
     }
 
     override fun stopDevicePhotosWorkers() {
-        WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.DEVICE_PHOTOS_WORKER_TAG)
-        WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
+        WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.SCAN_DEVICE_MEDIA_WORKER_TAG)
+        WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
         WorkManager.getInstance(context).cancelUniqueWork(BACKGROUND_SYNC_WORK_NAME)
     }
 
-    private fun getDevicePhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<DevicePhotosWorker>()
-        .addTag(WorkerStarter.DEVICE_PHOTOS_WORKER_TAG)
+    private fun getDevicePhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<ScanDeviceMediaWorker>()
+        .addTag(WorkerStarter.SCAN_DEVICE_MEDIA_WORKER_TAG)
         .build()
 
-    private fun getUploadPhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<UploadPhotosWorker>()
-        .addTag(WorkerStarter.UPLOAD_PHOTOS_WORKER_TAG)
-        .build()
+    private fun getUploadPhotosWorkerRequest(): OneTimeWorkRequest =
+        OneTimeWorkRequestBuilder<UploadDeviceMediaWorker>()
+            .addTag(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
+            .build()
 
     private fun getWorkingIdByTag(workerTag: String): UUID? = workerManager.getWorkInfosByTag(workerTag).get()
         .let { workInfos ->

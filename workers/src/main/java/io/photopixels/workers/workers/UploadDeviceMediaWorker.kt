@@ -16,11 +16,11 @@ import io.photopixels.domain.base.PhotoPixelError
 import io.photopixels.domain.exceptions.ResumableUploadException
 import io.photopixels.domain.model.DeviceMedia
 import io.photopixels.domain.model.WorkerInfo
-import io.photopixels.domain.usecases.GetPhotosForUploadUseCase
-import io.photopixels.domain.usecases.RemovePhotoDataFromDbUseCase
+import io.photopixels.domain.usecases.GetMediaFilesForUploadUseCase
+import io.photopixels.domain.usecases.RemoveDeviceMediaDataFromDbUseCase
 import io.photopixels.domain.usecases.SyncServerThumbnailsUseCase
-import io.photopixels.domain.usecases.UpdatePhotoInDbUseCase
-import io.photopixels.domain.usecases.UploadPhotoUseCase
+import io.photopixels.domain.usecases.UpdateMediaInDbUseCase
+import io.photopixels.domain.usecases.UploadMediaFileUseCase
 import io.photopixels.workers.R
 import timber.log.Timber
 import java.io.FileNotFoundException
@@ -28,24 +28,24 @@ import java.io.IOException
 import kotlin.math.roundToInt
 
 /**
- * Upload photos worker. This worker is responsible for uploading new device photos to PhotoPixel backend
+ * A worker that is responsible for uploading new device media files to PhotoPixel backend
  */
 @HiltWorker
-class UploadPhotosWorker @AssistedInject constructor(
+class UploadDeviceMediaWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParams: WorkerParameters,
-    private val getPhotosForUploadUseCase: GetPhotosForUploadUseCase,
-    private val uploadPhotoUseCase: UploadPhotoUseCase,
-    private val updatePhotoInDbUseCase: UpdatePhotoInDbUseCase,
-    private val removePhotoDataFromDbUseCase: RemovePhotoDataFromDbUseCase,
+    private val getMediaFilesForUploadUseCase: GetMediaFilesForUploadUseCase,
+    private val uploadMediaFileUseCase: UploadMediaFileUseCase,
+    private val updateMediaInDbUseCase: UpdateMediaInDbUseCase,
+    private val removeDeviceMediaDataFromDbUseCase: RemoveDeviceMediaDataFromDbUseCase,
     private val syncServerThumbnailsUseCase: SyncServerThumbnailsUseCase,
 ) : CoroutineWorker(context, workerParams) {
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     override suspend fun doWork(): Result {
-        Timber.tag(LOG_TAG).e("UploadPhotosWorker STARTED!!!!")
-        var uploadedPhotosCount = 0
+        Timber.tag(LOG_TAG).e("UploadDeviceMediaWorker STARTED!!!!")
+        var uploadedFilesCount = 0
 
         createNotificationChannel()
 
@@ -53,59 +53,63 @@ class UploadPhotosWorker @AssistedInject constructor(
 
         setForegroundNotificationAsync(notification)
 
-        val photosDataList = getPhotosForUploadUseCase.invoke()
-        Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photos for Upload: $photosDataList")
-        photosDataList.forEachIndexed { index, photoData ->
-            processPhotoData(
-                deviceMedia = photoData,
+        val mediaFilesToUpload = getMediaFilesForUploadUseCase.invoke()
+        Timber.tag(LOG_TAG).e("UploadDeviceMediaWorker() Files for Upload: $mediaFilesToUpload")
+        mediaFilesToUpload.forEachIndexed { index, deviceMedia ->
+            processDeviceMediaData(
+                deviceMedia = deviceMedia,
                 currentFileIndex = index,
-                fileCount = photosDataList.size,
+                fileCount = mediaFilesToUpload.size,
                 onUploadSuccess = {
-                    uploadedPhotosCount++
+                    uploadedFilesCount++
                 }
             )
         }
 
         val output = Data
             .Builder()
-            .putInt(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY, uploadedPhotosCount)
+            .putInt(WorkerInfo.UPLOAD_PHOTOS_WORKER_RESULT_KEY, uploadedFilesCount)
             .build()
         Timber.tag(LOG_TAG).e(
-            "UploadPhotosWorker() COMPLETED , uploadedPhotosCount: $uploadedPhotosCount \n" +
+            "UploadDeviceMediaWorker() COMPLETED , uploadedFilesCount: $uploadedFilesCount \n" +
                 "outputData: ${output.keyValueMap}"
         )
         return Result.success(output)
     }
 
-    private suspend fun processPhotoData(
+    private suspend fun processDeviceMediaData(
         deviceMedia: DeviceMedia,
         onUploadSuccess: () -> Unit,
         currentFileIndex: Int,
         fileCount: Int
     ) {
         try {
-            // Uploading Photo
-            Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photo uploading: ${deviceMedia.hash}")
-            uploadPhotoUseCase.invoke(deviceMedia.contentUri.toUri(), deviceMedia.fileName, deviceMedia.hash.orEmpty())
+            // Uploading device media file
+            Timber.tag(LOG_TAG).e("UploadDeviceMediaWorker() Uploading file: ${deviceMedia.hash}")
+            uploadMediaFileUseCase.invoke(
+                deviceMedia.contentUri.toUri(),
+                deviceMedia.fileName,
+                deviceMedia.hash.orEmpty()
+            )
                 .collect { progress ->
                     setForegroundNotificationAsync(
                         createProgressNotification(progress.roundToInt(), currentFileIndex, fileCount)
                     )
                 }
 
-            Timber.tag(LOG_TAG).e("UploadPhotosWorker() Photo uploaded: ${deviceMedia.hash}")
+            Timber.tag(LOG_TAG).e("UploadDeviceMediaWorker() Files is uploaded: ${deviceMedia.hash}")
 
-            // photo uploaded successfully
+            // files uploaded successfully
             onUploadSuccess()
             syncServerThumbnailsUseCase(isUploadComplete = true)
         } catch (exception: FileNotFoundException) {
             Timber.tag(LOG_TAG).e("File not found while uploading: $exception")
-            removePhotoDataFromDbUseCase.invoke(deviceMedia.id.toInt())
+            removeDeviceMediaDataFromDbUseCase.invoke(deviceMedia.id.toInt())
         } catch (exception: ResumableUploadException) {
             if (exception.error is PhotoPixelError.DuplicatePhotoError) {
-                // Photo is already uploaded
-                val updatedPhotoData = deviceMedia.copy(isAlreadyUploaded = true)
-                updatePhotoInDbUseCase.invoke(updatedPhotoData)
+                // Files is already uploaded
+                val updatedDeviceMediaData = deviceMedia.copy(isAlreadyUploaded = true)
+                updateMediaInDbUseCase.invoke(updatedDeviceMediaData)
             } else {
                 Timber.tag(LOG_TAG).e(exception.cause, "Server error while uploading the file")
             }
@@ -120,7 +124,7 @@ class UploadPhotosWorker @AssistedInject constructor(
             context.getString(R.string.sync_and_hash),
             NotificationManager.IMPORTANCE_DEFAULT
         )
-        channel.description = context.getString(R.string.channel_for_upload_photos_worker_notifications)
+        channel.description = context.getString(R.string.channel_for_upload_media_worker_notifications)
         notificationManager.createNotificationChannel(channel)
     }
 
@@ -128,8 +132,8 @@ class UploadPhotosWorker @AssistedInject constructor(
         .Builder(
             applicationContext,
             UPLOAD_NOTIFICATION_CHANNEL_ID
-        ).setContentTitle(context.getString(R.string.upload_photos_title))
-        .setContentText(context.getString(R.string.upload_photos_description))
+        ).setContentTitle(context.getString(R.string.upload_device_media_title))
+        .setContentText(context.getString(R.string.upload_device_media_description))
         .setSmallIcon(android.R.drawable.ic_popup_sync)
         .setOngoing(true)
         .build()
@@ -139,7 +143,7 @@ class UploadPhotosWorker @AssistedInject constructor(
         currentFileIndex: Int,
         fileCount: Int,
     ): Notification = NotificationCompat.Builder(applicationContext, UPLOAD_NOTIFICATION_CHANNEL_ID)
-        .setContentTitle(context.getString(R.string.upload_photos_title))
+        .setContentTitle(context.getString(R.string.upload_device_media_title))
         .setContentText(context.getString(R.string.upload_file_progress_description, currentFileIndex + 1, fileCount))
         .setSmallIcon(android.R.drawable.ic_popup_sync)
         .setProgress(MAX_PROGRESS, uploadProgress, false)
@@ -147,8 +151,8 @@ class UploadPhotosWorker @AssistedInject constructor(
         .build()
 
     companion object {
-        private const val UPLOAD_NOTIFICATION_CHANNEL_ID = "upload_photos_channel"
-        private const val LOG_TAG = "UploadPhotosWorker"
+        private const val UPLOAD_NOTIFICATION_CHANNEL_ID = "upload_media_channel"
+        private const val LOG_TAG = "UploadDeviceMediaWorker"
         private const val MAX_PROGRESS = 100
     }
 }
