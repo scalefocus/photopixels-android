@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ScanDevicePhotosUseCase @Inject constructor(
-    private val updatePhotosUseCase: UpdatePhotosDataToDbUseCase,
+    private val updatePhotosUseCase: UpdateDeviceMediaDataToDbUseCase,
     private val getDeviceMediaUseCase: GetDeviceMediaUseCase,
     private val generateMissingLocalHashes: GenerateMissingLocalHashes,
     @ApplicationContext private val context: Context,

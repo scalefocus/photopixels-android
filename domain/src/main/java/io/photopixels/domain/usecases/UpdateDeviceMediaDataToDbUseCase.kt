@@ -4,7 +4,7 @@ import io.photopixels.domain.model.DeviceMedia
 import io.photopixels.domain.repository.DeviceMediaRepository
 import javax.inject.Inject
 
-class UpdatePhotosDataToDbUseCase @Inject constructor(private val deviceMediaRepository: DeviceMediaRepository) {
+class UpdateDeviceMediaDataToDbUseCase @Inject constructor(private val deviceMediaRepository: DeviceMediaRepository) {
     suspend fun invoke(photosDataList: List<DeviceMedia>) {
         removeDeletedDevicePhotos(photosDataList)
 
