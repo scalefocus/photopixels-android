@@ -31,21 +31,21 @@ class WorkerStarterImpl @Inject constructor(
     private val uniqueGooglePhotosWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
     private val workerManager = WorkManager.getInstance(context)
 
-    override fun startDevicePhotosWorker() {
+    override fun startScanMediaWorker() {
         getDevicePhotosWorkerRequest()
             .also {
                 WorkManager.getInstance(context).enqueue(it)
             }
     }
 
-    override fun startUploadPhotosWorker() {
+    override fun startUploadMediaWorker() {
         getUploadPhotosWorkerRequest()
             .also {
                 WorkManager.getInstance(context).enqueue(it)
             }
     }
 
-    override fun startDeviceAndUploadWorkers() {
+    override fun startScanAndUploadWorkers() {
         if (!isWorkerFinished(WorkerStarter.SCAN_DEVICE_MEDIA_WORKER_TAG) ||
             !isWorkerFinished(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
         ) {
@@ -81,7 +81,7 @@ class WorkerStarterImpl @Inject constructor(
             )
     }
 
-    override fun getUploadPhotosWorkerListener(): Flow<WorkerInfo> = uniquePhotosWorkId?.let { workId ->
+    override fun getUploadMediaWorkerListener(): Flow<WorkerInfo> = uniquePhotosWorkId?.let { workId ->
         workerManager.getWorkInfoByIdFlow(workId)
             .filterNotNull()
             .transform { workInfo ->
@@ -139,7 +139,7 @@ class WorkerStarterImpl @Inject constructor(
         WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
     }
 
-    override fun stopDevicePhotosWorkers() {
+    override fun stopDeviceMediaWorkers() {
         WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.SCAN_DEVICE_MEDIA_WORKER_TAG)
         WorkManager.getInstance(context).cancelAllWorkByTag(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
         WorkManager.getInstance(context).cancelUniqueWork(BACKGROUND_SYNC_WORK_NAME)

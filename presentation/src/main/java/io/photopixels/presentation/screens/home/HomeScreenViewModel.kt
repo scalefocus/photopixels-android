@@ -63,7 +63,7 @@ class HomeScreenViewModel @Inject constructor(
                     scanDeviceMedia()
                 } else {
                     // device media is synced, start upload worker
-                    workerStarter.startUploadPhotosWorker()
+                    workerStarter.startUploadMediaWorker()
                 }
             }
         } else {
@@ -138,13 +138,13 @@ class HomeScreenViewModel @Inject constructor(
 
     private fun startWorkersAndListeners() {
         updateState { copy(isSyncStarted = true) }
-        workerStarter.startDeviceAndUploadWorkers()
+        workerStarter.startScanAndUploadWorkers()
         initUploadPhotosWorkerListener()
     }
 
     private fun initUploadPhotosWorkerListener() {
         viewModelScope.launch {
-            workerStarter.getUploadPhotosWorkerListener().collect { workerInfo ->
+            workerStarter.getUploadMediaWorkerListener().collect { workerInfo ->
                 if (workerInfo.workerStatus == WorkerStatus.FINISHED) {
                     updateState { copy(isSyncStarted = false) }
 

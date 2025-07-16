@@ -10,17 +10,17 @@ interface WorkerStarter {
         const val GOOGLE_PHOTOS_WORKER_TAG = "google_photos_worker"
     }
 
-    fun startDevicePhotosWorker()
+    fun startScanMediaWorker()
 
-    fun startUploadPhotosWorker()
+    fun startUploadMediaWorker()
 
-    fun startDeviceAndUploadWorkers()
+    fun startScanAndUploadWorkers()
 
     fun schedulePeriodicSyncWorker()
 
-    fun getUploadPhotosWorkerListener(): Flow<WorkerInfo>
+    fun getUploadMediaWorkerListener(): Flow<WorkerInfo>
 
-    fun stopDevicePhotosWorkers()
+    fun stopDeviceMediaWorkers()
 
     fun startGooglePhotosWorker(sessionId: String, pollingInterval: String)
 
