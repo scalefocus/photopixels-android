@@ -133,13 +133,15 @@ private fun DeleteButton(visible: Boolean, onClick: () -> Unit, modifier: Modifi
     }
 }
 
+private const val SWITE_ARROWS_ALPHA = 0.5f
+
 @Suppress("UnusedPrivateMember")
 @Composable
 private fun BoxScope.SwipeArrows() {
     Icon(
         modifier = Modifier
             .size(60.dp, 60.dp)
-            .alpha(0.5f)
+            .alpha(SWITE_ARROWS_ALPHA)
             .align(Alignment.CenterStart)
             .padding(start = 20.dp),
         tint = SFSecondaryLightBlue,
@@ -150,7 +152,7 @@ private fun BoxScope.SwipeArrows() {
     Icon(
         modifier = Modifier
             .size(60.dp, 60.dp)
-            .alpha(0.5f)
+            .alpha(SWITE_ARROWS_ALPHA)
             .align(Alignment.CenterEnd)
             .padding(end = 20.dp),
         tint = SFSecondaryLightBlue,
