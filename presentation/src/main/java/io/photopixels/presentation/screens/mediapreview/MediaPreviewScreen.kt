@@ -28,11 +28,11 @@ fun MediaPreviewScreen(onBackPress: (Boolean) -> Unit, viewModel: MediaPreviewVi
         viewModel.events.collectLatest { events ->
             when (events) {
                 MediaPreviewEvents.OnMediaDeletedSuccessfully -> {
-                    showToast(messageId = R.string.photos_delete_success, context = context)
+                    showToast(messageId = R.string.media_delete_success, context = context)
                 }
 
                 MediaPreviewEvents.OnMediaDeleteFail -> {
-                    showToast(messageId = R.string.photos_delete_error, context = context)
+                    showToast(messageId = R.string.media_delete_error, context = context)
                 }
             }
         }

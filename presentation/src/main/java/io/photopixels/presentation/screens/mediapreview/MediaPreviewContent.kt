@@ -162,8 +162,8 @@ private fun BoxScope.SwipeArrows() {
 @Composable
 private fun ShowDeletePromptDialog(onPositiveClick: () -> Unit, onNegativeClick: () -> Unit) {
     ShowAlertDialog(
-        title = stringResource(R.string.photos_preview_delete_title),
-        description = stringResource(R.string.photos_preview_delete_msg),
+        title = stringResource(R.string.media_preview_delete_title),
+        description = stringResource(R.string.media_preview_delete_msg),
         positiveButtonText = stringResource(R.string.button_delete),
         negativeButtonText = stringResource(R.string.button_cancel),
         onPositiveClick = onPositiveClick,

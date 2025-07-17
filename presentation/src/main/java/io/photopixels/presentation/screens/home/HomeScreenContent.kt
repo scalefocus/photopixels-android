@@ -245,7 +245,7 @@ private fun EmptyState(isSyncStarted: Boolean, onBtnClick: () -> Unit) {
         Spacer(modifier = Modifier.height(30.dp))
 
         SFButton(
-            text = stringResource(R.string.button_sync_photos),
+            text = stringResource(R.string.button_sync_media),
             color = SFSecondaryLightBlue,
             enabled = !isSyncStarted,
             showLoader = isSyncStarted,
