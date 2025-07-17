@@ -30,9 +30,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
+import io.photopixels.domain.model.MediaType
 import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.CircularIndicator
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
+import io.photopixels.presentation.base.composeviews.mediaplayer.MediaPlayer
 import io.photopixels.presentation.screens.photos.PhotosPreviewScreenState.PhotoPreview
 import io.photopixels.presentation.theme.PhotoPixelsTheme
 import io.photopixels.presentation.theme.SFSecondaryLightBlue
@@ -71,15 +73,7 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
                     key = { index -> screenState.photos[index].id },
                     pageSize = PageSize.Fill
                 ) { index ->
-                    when (val photo = screenState.photos[index]) {
-                        is PhotoPreview.Remote -> ZoomableFullScreenImage(
-                            painter = rememberAsyncImagePainter(photo.photoUrl)
-                        )
-
-                        is PhotoPreview.Local -> ZoomableFullScreenImage(
-                            painter = rememberAsyncImagePainter(photo.contentUri)
-                        )
-                    }
+                    MediaPreview(screenState.photos[index], isSelected = index == pagerState.currentPage)
                 }
 
                 DeleteButton(
@@ -95,6 +89,19 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
                 // SwipeArrows() Arrows removed for now
             }
         }
+    }
+}
+
+@Composable
+private fun MediaPreview(photo: PhotoPreview, isSelected: Boolean) {
+    val uri = when (photo) {
+        is PhotoPreview.Remote -> photo.photoUrl
+        is PhotoPreview.Local -> photo.contentUri
+    }
+
+    when (photo.mediaType) {
+        MediaType.IMAGE -> ZoomableFullScreenImage(painter = rememberAsyncImagePainter(uri))
+        MediaType.VIDEO -> MediaPlayer(uri, isVisible = isSelected)
     }
 }
 
@@ -173,7 +180,8 @@ private fun PreviewPhotosContent() {
                 photos = listOf(
                     PhotoPreview.Remote(
                         id = "",
-                        photoUrl = "https://www.scalefocus.com/wp-content/uploads/2022/06/SF_brand_banner.png"
+                        mediaType = MediaType.IMAGE,
+                        photoUrl = "https://www.scalefocus.com/wp-content/uploads/2022/06/SF_brand_banner.png",
                     )
                 )
             ),

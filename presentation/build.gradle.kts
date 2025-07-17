@@ -49,4 +49,9 @@ dependencies {
 
     // JWT decoder
     implementation(libs.jwtdecode)
+
+    // Media 3 (Exoplayer)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.datasource.okhttp)
+    implementation(libs.media3.ui.compose)
 }
