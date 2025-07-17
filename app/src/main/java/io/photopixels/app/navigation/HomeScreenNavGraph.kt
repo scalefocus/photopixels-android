@@ -8,7 +8,7 @@ import io.photopixels.presentation.base.routes.HomeGraph
 import io.photopixels.presentation.base.routes.HomeScreens
 import io.photopixels.presentation.base.routes.Screen
 import io.photopixels.presentation.screens.home.HomeScreen
-import io.photopixels.presentation.screens.photos.PhotosPreviewScreen
+import io.photopixels.presentation.screens.mediapreview.MediaPreviewScreen
 import io.photopixels.presentation.screens.settings.SettingsScreen
 
 private const val HOME_SHOULD_REFRESH_BACK_RESULT = "shouldRefresh"
@@ -32,7 +32,7 @@ internal fun NavGraphBuilder.homeScreen(navHostController: NavHostController) {
             },
             onNavigateToPreviewPhotosScreen = { thumbnailServerItemId ->
                 navHostController.navigate(
-                    HomeScreens.PhotosPreview(thumbnailServerItemId)
+                    HomeScreens.MediaPreview(thumbnailServerItemId)
                 )
             }
         )
@@ -40,8 +40,8 @@ internal fun NavGraphBuilder.homeScreen(navHostController: NavHostController) {
 }
 
 internal fun NavGraphBuilder.photosPreviewScreen(navHostController: NavHostController) {
-    composable<HomeScreens.PhotosPreview> {
-        PhotosPreviewScreen(onBackPress = { shouldRefresh ->
+    composable<HomeScreens.MediaPreview> {
+        MediaPreviewScreen(onBackPress = { shouldRefresh ->
             navHostController.popBackStack()
             navHostController.currentBackStackEntry
                 ?.savedStateHandle

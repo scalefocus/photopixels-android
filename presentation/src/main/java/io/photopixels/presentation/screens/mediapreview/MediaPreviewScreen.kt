@@ -1,4 +1,4 @@
-package io.photopixels.presentation.screens.photos
+package io.photopixels.presentation.screens.mediapreview
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
@@ -11,13 +11,13 @@ import io.photopixels.presentation.base.composeviews.showToast
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun PhotosPreviewScreen(onBackPress: (Boolean) -> Unit, viewModel: PhotosPreviewViewModel = hiltViewModel()) {
+fun MediaPreviewScreen(onBackPress: (Boolean) -> Unit, viewModel: MediaPreviewViewModel = hiltViewModel()) {
     val screenState = viewModel.state.collectAsStateWithLifecycle().value
     val context = LocalContext.current
 
     // Determine if Home screen should be refreshed when user click back button
     BackHandler {
-        if (screenState.isThereDeletedPhoto) {
+        if (screenState.isThereDeletedMedia) {
             onBackPress(true)
         } else {
             onBackPress(false)
@@ -27,18 +27,18 @@ fun PhotosPreviewScreen(onBackPress: (Boolean) -> Unit, viewModel: PhotosPreview
     LaunchedEffect(Unit) {
         viewModel.events.collectLatest { events ->
             when (events) {
-                PhotosPreviewEvents.OnPhotoDeletedSuccessfully -> {
+                MediaPreviewEvents.OnMediaDeletedSuccessfully -> {
                     showToast(messageId = R.string.photos_delete_success, context = context)
                 }
 
-                PhotosPreviewEvents.OnPhotoDeleteFail -> {
+                MediaPreviewEvents.OnMediaDeleteFail -> {
                     showToast(messageId = R.string.photos_delete_error, context = context)
                 }
             }
         }
     }
 
-    PhotosPreviewContent(screenState, onSubmitActions = { action ->
+    MediaPreviewContent(screenState, onSubmitActions = { action ->
         viewModel.submitAction(action)
     })
 }

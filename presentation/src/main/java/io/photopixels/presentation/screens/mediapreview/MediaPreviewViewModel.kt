@@ -1,4 +1,4 @@
-package io.photopixels.presentation.screens.photos
+package io.photopixels.presentation.screens.mediapreview
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -6,46 +6,46 @@ import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.Thumbnail
-import io.photopixels.domain.usecases.DeletePhotoUseCase
+import io.photopixels.domain.usecases.DeleteMediaUseCase
 import io.photopixels.domain.usecases.GetServerInfoUseCase
 import io.photopixels.domain.usecases.GetThumbnailsFromDbUseCase
 import io.photopixels.presentation.base.BaseViewModel
 import io.photopixels.presentation.base.routes.HomeScreens
-import io.photopixels.presentation.screens.photos.PhotosPreviewScreenState.PhotoPreview
+import io.photopixels.presentation.screens.mediapreview.MediaPreviewScreenState.MediaPreview
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PhotosPreviewViewModel @Inject constructor(
+class MediaPreviewViewModel @Inject constructor(
     private val getThumbnailsUseCase: GetThumbnailsFromDbUseCase,
     private val getServerInfoUseCase: GetServerInfoUseCase,
-    private val deletePhotoUseCase: DeletePhotoUseCase,
+    private val deleteMediaUseCase: DeleteMediaUseCase,
     savedState: SavedStateHandle
-) : BaseViewModel<PhotosPreviewScreenState, PhotosPreviewActions, PhotosPreviewEvents>(PhotosPreviewScreenState()) {
+) : BaseViewModel<MediaPreviewScreenState, MediaPreviewActions, MediaPreviewEvents>(MediaPreviewScreenState()) {
 
     init {
-        val route = savedState.toRoute<HomeScreens.PhotosPreview>()
-        preparePhotoUrls(route.thumbnailServerItemId)
+        val route = savedState.toRoute<HomeScreens.MediaPreview>()
+        prepareMediaUrls(route.thumbnailServerItemId)
     }
 
-    override suspend fun handleActions(action: PhotosPreviewActions) {
+    override suspend fun handleActions(action: MediaPreviewActions) {
         when (action) {
-            PhotosPreviewActions.OnDeleteIconClicked -> {
+            MediaPreviewActions.OnDeleteIconClicked -> {
                 updateState { copy(isDeleteDialogVisible = true) }
             }
-            is PhotosPreviewActions.OnDeletePhotoClick -> {
+            is MediaPreviewActions.OnDeleteMediaClick -> {
                 updateState { copy(isDeleteDialogVisible = false) }
-                deletePhoto(action.photoIndex)
+                deleteMedia(action.mediaIndex)
             }
 
-            PhotosPreviewActions.OnDeleteDialogCancelClick -> {
+            MediaPreviewActions.OnDeleteDialogCancelClick -> {
                 updateState { copy(isDeleteDialogVisible = false) }
             }
         }
     }
 
-    private fun preparePhotoUrls(clickedThumbnailId: String) {
+    private fun prepareMediaUrls(clickedThumbnailId: String) {
         updateState { copy(isLoading = true) }
         viewModelScope.launch {
             val serverAddress = getServerInfoUseCase.getServerAddress()?.toString()
@@ -53,12 +53,12 @@ class PhotosPreviewViewModel @Inject constructor(
                 val thumbnails = getThumbnailsUseCase.invoke().first()
                 val photos = thumbnails.map {
                     when (it) {
-                        is Thumbnail.LocalThumbnail -> PhotoPreview.Local(it.id, it.mediaType, it.contentUri)
+                        is Thumbnail.LocalThumbnail -> MediaPreview.Local(it.id, it.mediaType, it.contentUri)
                         is Thumbnail.RemoteThumbnail -> {
-                            PhotoPreview.Remote(
+                            MediaPreview.Remote(
                                 id = it.id,
                                 mediaType = it.mediaType,
-                                photoUrl = formatRemoteUrl(it.id, serverAddress),
+                                mediaUrl = formatRemoteUrl(it.id, serverAddress),
                             )
                         }
                     }
@@ -66,8 +66,8 @@ class PhotosPreviewViewModel @Inject constructor(
                 val photoToLoadFirstIndex = thumbnails.indexOfFirst { it.id == clickedThumbnailId }
                 updateState {
                     copy(
-                        photos = photos,
-                        photoToLoadFirstIndex = photoToLoadFirstIndex,
+                        mediaItems = photos,
+                        mediaToLoadFirstIndex = photoToLoadFirstIndex,
                         isLoading = false
                     )
                 }
@@ -75,23 +75,23 @@ class PhotosPreviewViewModel @Inject constructor(
         }
     }
 
-    private suspend fun deletePhoto(imageIndex: Int) {
+    private suspend fun deleteMedia(imageIndex: Int) {
         updateState { copy(isLoading = true) }
-        val photoPreview = state.value.photos[imageIndex]
+        val mediaItem = state.value.mediaItems[imageIndex]
 
-        if (photoPreview is PhotoPreview.Remote) {
-            val result = deletePhotoUseCase.invoke(photoPreview.id)
+        if (mediaItem is MediaPreview.Remote) {
+            val result = deleteMediaUseCase.invoke(mediaItem.id)
 
             if (result is Response.Success) {
-                submitEvent(PhotosPreviewEvents.OnPhotoDeletedSuccessfully)
+                submitEvent(MediaPreviewEvents.OnMediaDeletedSuccessfully)
 
                 // Update UI after photo deletion
-                val newPhotos: List<PhotoPreview> = state.value.photos.toMutableList().apply {
+                val newPhotos: List<MediaPreview> = state.value.mediaItems.toMutableList().apply {
                     removeAt(imageIndex)
                 }
-                updateState { copy(photos = newPhotos, isThereDeletedPhoto = true) }
+                updateState { copy(mediaItems = newPhotos, isThereDeletedMedia = true) }
             } else {
-                submitEvent(PhotosPreviewEvents.OnPhotoDeleteFail)
+                submitEvent(MediaPreviewEvents.OnMediaDeleteFail)
             }
             updateState { copy(isLoading = false) }
         }
