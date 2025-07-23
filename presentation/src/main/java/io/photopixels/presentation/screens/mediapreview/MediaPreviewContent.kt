@@ -1,4 +1,4 @@
-package io.photopixels.presentation.screens.photos
+package io.photopixels.presentation.screens.mediapreview
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -35,7 +35,7 @@ import io.photopixels.presentation.R
 import io.photopixels.presentation.base.composeviews.CircularIndicator
 import io.photopixels.presentation.base.composeviews.ShowAlertDialog
 import io.photopixels.presentation.base.composeviews.mediaplayer.MediaPlayer
-import io.photopixels.presentation.screens.photos.PhotosPreviewScreenState.PhotoPreview
+import io.photopixels.presentation.screens.mediapreview.MediaPreviewScreenState.MediaPreview
 import io.photopixels.presentation.theme.PhotoPixelsTheme
 import io.photopixels.presentation.theme.SFSecondaryLightBlue
 import net.engawapg.lib.zoomable.rememberZoomState
@@ -44,7 +44,7 @@ import net.engawapg.lib.zoomable.zoomable
 private const val BEYOND_BOUNDS_PAGE_COUNT = 1
 
 @Composable
-fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions: (PhotosPreviewActions) -> Unit) {
+fun MediaPreviewContent(screenState: MediaPreviewScreenState, onSubmitActions: (MediaPreviewActions) -> Unit) {
     var currentImageIndex by remember { mutableIntStateOf(0) }
 
     if (screenState.isLoading) {
@@ -53,15 +53,15 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
 
     if (screenState.isDeleteDialogVisible) {
         ShowDeletePromptDialog(
-            onPositiveClick = { onSubmitActions(PhotosPreviewActions.OnDeletePhotoClick(currentImageIndex)) },
-            onNegativeClick = { onSubmitActions(PhotosPreviewActions.OnDeleteDialogCancelClick) }
+            onPositiveClick = { onSubmitActions(MediaPreviewActions.OnDeleteMediaClick(currentImageIndex)) },
+            onNegativeClick = { onSubmitActions(MediaPreviewActions.OnDeleteDialogCancelClick) }
         )
     }
 
-    if (screenState.photos.isNotEmpty()) {
+    if (screenState.mediaItems.isNotEmpty()) {
         val pagerState = rememberPagerState(
-            initialPage = screenState.photoToLoadFirstIndex,
-            pageCount = { screenState.photos.size }
+            initialPage = screenState.mediaToLoadFirstIndex,
+            pageCount = { screenState.mediaItems.size }
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -70,19 +70,19 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
                     beyondViewportPageCount = BEYOND_BOUNDS_PAGE_COUNT,
-                    key = { index -> screenState.photos[index].id },
+                    key = { index -> screenState.mediaItems[index].id },
                     pageSize = PageSize.Fill
                 ) { index ->
-                    MediaPreview(screenState.photos[index], isSelected = index == pagerState.currentPage)
+                    MediaPreview(screenState.mediaItems[index], isSelected = index == pagerState.currentPage)
                 }
 
                 DeleteButton(
-                    visible = screenState.photos.getOrNull(pagerState.currentPage) is PhotoPreview.Remote,
+                    visible = screenState.mediaItems.getOrNull(pagerState.currentPage) is MediaPreview.Remote,
                     modifier = Modifier
                         .padding(bottom = 100.dp)
                         .align(Alignment.BottomCenter),
                     onClick = {
-                        onSubmitActions(PhotosPreviewActions.OnDeleteIconClicked)
+                        onSubmitActions(MediaPreviewActions.OnDeleteIconClicked)
                         currentImageIndex = pagerState.currentPage
                     }
                 )
@@ -93,10 +93,10 @@ fun PhotosPreviewContent(screenState: PhotosPreviewScreenState, onSubmitActions:
 }
 
 @Composable
-private fun MediaPreview(photo: PhotoPreview, isSelected: Boolean) {
+private fun MediaPreview(photo: MediaPreview, isSelected: Boolean) {
     val uri = when (photo) {
-        is PhotoPreview.Remote -> photo.photoUrl
-        is PhotoPreview.Local -> photo.contentUri
+        is MediaPreview.Remote -> photo.mediaUrl
+        is MediaPreview.Local -> photo.contentUri
     }
 
     when (photo.mediaType) {
@@ -133,13 +133,15 @@ private fun DeleteButton(visible: Boolean, onClick: () -> Unit, modifier: Modifi
     }
 }
 
+private const val SWITE_ARROWS_ALPHA = 0.5f
+
 @Suppress("UnusedPrivateMember")
 @Composable
 private fun BoxScope.SwipeArrows() {
     Icon(
         modifier = Modifier
             .size(60.dp, 60.dp)
-            .alpha(0.5f)
+            .alpha(SWITE_ARROWS_ALPHA)
             .align(Alignment.CenterStart)
             .padding(start = 20.dp),
         tint = SFSecondaryLightBlue,
@@ -150,7 +152,7 @@ private fun BoxScope.SwipeArrows() {
     Icon(
         modifier = Modifier
             .size(60.dp, 60.dp)
-            .alpha(0.5f)
+            .alpha(SWITE_ARROWS_ALPHA)
             .align(Alignment.CenterEnd)
             .padding(end = 20.dp),
         tint = SFSecondaryLightBlue,
@@ -162,8 +164,8 @@ private fun BoxScope.SwipeArrows() {
 @Composable
 private fun ShowDeletePromptDialog(onPositiveClick: () -> Unit, onNegativeClick: () -> Unit) {
     ShowAlertDialog(
-        title = stringResource(R.string.photos_preview_delete_title),
-        description = stringResource(R.string.photos_preview_delete_msg),
+        title = stringResource(R.string.media_preview_delete_title),
+        description = stringResource(R.string.media_preview_delete_msg),
         positiveButtonText = stringResource(R.string.button_delete),
         negativeButtonText = stringResource(R.string.button_cancel),
         onPositiveClick = onPositiveClick,
@@ -175,13 +177,13 @@ private fun ShowDeletePromptDialog(onPositiveClick: () -> Unit, onNegativeClick:
 @Composable
 private fun PreviewPhotosContent() {
     PhotoPixelsTheme {
-        PhotosPreviewContent(
-            screenState = PhotosPreviewScreenState(
-                photos = listOf(
-                    PhotoPreview.Remote(
+        MediaPreviewContent(
+            screenState = MediaPreviewScreenState(
+                mediaItems = listOf(
+                    MediaPreview.Remote(
                         id = "",
                         mediaType = MediaType.IMAGE,
-                        photoUrl = "https://www.scalefocus.com/wp-content/uploads/2022/06/SF_brand_banner.png",
+                        mediaUrl = "https://www.scalefocus.com/wp-content/uploads/2022/06/SF_brand_banner.png",
                     )
                 )
             ),

@@ -47,9 +47,9 @@
     <string name="sync_screen_title">Sync</string>
     <string name="settings_screen_title">Settings</string>
     <string name="home_screen_empty_msg">Your Photo Pixels library is empty.</string>
-    <string name="button_sync_photos">Sync photos</string>
+    <string name="button_sync_media">Sync media</string>
     <string name="error_title">Error</string>
-    <string name="error_permission_denied">Photos permissions are denied. Please provide PhotoPixels storage permissions.</string>
+    <string name="error_permission_denied">Access to media files is denied. Please provide PhotoPixels storage permissions.</string>
     <string name="error_generic">Something went wrong. Please try again later</string>
     <string name="error_google_token_expire">Your Google session has expired. Please enable sync with Google again.</string>
 
@@ -87,10 +87,10 @@
     <string name="forgot_pass_error_incorrect_code">Verification code is incorrect. Please check the code from email carefully.</string>
     <string name="reset_password_title">Reset Password</string>
 
-    <!-- Photos Screen -->
-    <string name="photos_preview_delete_title">Delete Photo</string>
-    <string name="photos_preview_delete_msg">Are you sure you want to delete this photo?</string>
-    <string name="photos_delete_success">Photo deleted successfully</string>
-    <string name="photos_delete_error">Error while deleting photo. Please try again later.</string>
+    <!-- Media Preview Screen -->
+    <string name="media_preview_delete_title">Delete Media File</string>
+    <string name="media_preview_delete_msg">Are you sure you want to delete this?</string>
+    <string name="media_delete_success">File deleted successfully</string>
+    <string name="media_delete_error">Error while deleting file. Please try again later.</string>
 
 </resources>

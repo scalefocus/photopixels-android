@@ -1,15 +1,15 @@
-package io.photopixels.presentation.screens.photos
+package io.photopixels.presentation.screens.mediapreview
 
 import io.photopixels.domain.model.MediaType
 
-data class PhotosPreviewScreenState(
-    val photoToLoadFirstIndex: Int = 0,
-    val photos: List<PhotoPreview> = emptyList(),
+data class MediaPreviewScreenState(
+    val mediaToLoadFirstIndex: Int = 0,
+    val mediaItems: List<MediaPreview> = emptyList(),
     val isLoading: Boolean = false,
     val isDeleteDialogVisible: Boolean = false,
-    val isThereDeletedPhoto: Boolean = false
+    val isThereDeletedMedia: Boolean = false
 ) {
-    sealed class PhotoPreview {
+    sealed class MediaPreview {
         abstract val id: String
         abstract val mediaType: MediaType
 
@@ -17,12 +17,12 @@ data class PhotosPreviewScreenState(
             override val id: String,
             override val mediaType: MediaType,
             val contentUri: String,
-        ) : PhotoPreview()
+        ) : MediaPreview()
 
         data class Remote(
             override val id: String,
             override val mediaType: MediaType,
-            val photoUrl: String,
-        ) : PhotoPreview()
+            val mediaUrl: String,
+        ) : MediaPreview()
     }
 }

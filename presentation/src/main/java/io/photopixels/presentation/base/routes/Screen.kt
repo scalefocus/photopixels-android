@@ -43,7 +43,7 @@ sealed class HomeScreens {
     data object Settings : HomeScreens()
 
     @Serializable
-    data class PhotosPreview(val thumbnailServerItemId: String) : HomeScreens()
+    data class MediaPreview(val thumbnailServerItemId: String) : HomeScreens()
 }
 
 val SCREENS_WITH_PORTRAIT_MODE_ONLY = listOf(
