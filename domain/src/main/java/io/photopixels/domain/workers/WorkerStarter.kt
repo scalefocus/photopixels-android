@@ -12,11 +12,11 @@ interface WorkerStarter {
 
     fun startScanMediaWorker()
 
-    fun startUploadMediaWorker()
+    fun startUploadMediaWorker(requireWifi: Boolean)
 
-    fun startScanAndUploadWorkers()
+    fun startScanAndUploadWorkers(requireWifi: Boolean)
 
-    fun schedulePeriodicSyncWorker()
+    fun schedulePeriodicSyncWorker(requireWifi: Boolean, requirePower: Boolean)
 
     fun getUploadMediaWorkerListener(): Flow<WorkerInfo>
 
@@ -27,4 +27,6 @@ interface WorkerStarter {
     fun stopGooglePhotosWorker()
 
     fun getGooglePhotosWorkerListener(): Flow<WorkerInfo?>
+
+    fun updateRequireWifiConstrains(requireWifi: Boolean, requirePower: Boolean)
 }

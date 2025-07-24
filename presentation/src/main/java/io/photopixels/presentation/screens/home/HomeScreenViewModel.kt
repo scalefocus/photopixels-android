@@ -6,6 +6,7 @@ import io.photopixels.domain.base.Response
 import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.model.WorkerStatus
 import io.photopixels.domain.usecases.GetThumbnailsGroupedByMonthUseCase
+import io.photopixels.domain.usecases.GetUserSettingsUseCase
 import io.photopixels.domain.usecases.ScanDevicePhotosUseCase
 import io.photopixels.domain.usecases.SyncServerThumbnailsUseCase
 import io.photopixels.domain.workers.WorkerStarter
@@ -26,6 +27,7 @@ class HomeScreenViewModel @Inject constructor(
     private val getThumbnailsGroupedByMonthUseCase: GetThumbnailsGroupedByMonthUseCase,
     private val scanDevicePhotosUseCase: ScanDevicePhotosUseCase,
     private val mediaObserver: MediaObserverHelper,
+    private val getUserSettingsUseCase: GetUserSettingsUseCase,
 ) : BaseViewModel<HomeScreenState, HomeScreenActions, HomeScreenEvents>(HomeScreenState()) {
 
     // Used to prevent multiple starting at once of getServer thumbnails function
@@ -62,8 +64,11 @@ class HomeScreenViewModel @Inject constructor(
                     hasLocalMediaChanges = false
                     scanDeviceMedia()
                 } else {
-                    // device media is synced, start upload worker
-                    workerStarter.startUploadMediaWorker()
+                    viewModelScope.launch {
+                        val requireWifi = getUserSettingsUseCase.invoke().requireWifi
+                        // device media is synced, start upload worker
+                        workerStarter.startUploadMediaWorker(requireWifi)
+                    }
                 }
             }
         } else {
@@ -119,7 +124,10 @@ class HomeScreenViewModel @Inject constructor(
         if (storageAccess == StorageAccess.Denied) {
             updateState { copy(errorMsgId = R.string.error_permission_denied) }
         } else {
-            workerStarter.schedulePeriodicSyncWorker()
+            viewModelScope.launch {
+                val settings = getUserSettingsUseCase.invoke()
+                workerStarter.schedulePeriodicSyncWorker(settings.requireWifi, settings.requirePower)
+            }
             startWorkersAndListeners()
         }
     }
@@ -138,7 +146,10 @@ class HomeScreenViewModel @Inject constructor(
 
     private fun startWorkersAndListeners() {
         updateState { copy(isSyncStarted = true) }
-        workerStarter.startScanAndUploadWorkers()
+        viewModelScope.launch {
+            val requireWifi = getUserSettingsUseCase.invoke().requireWifi
+            workerStarter.startScanAndUploadWorkers(requireWifi)
+        }
         initUploadPhotosWorkerListener()
     }
 
