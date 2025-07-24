@@ -19,8 +19,8 @@ import io.photopixels.domain.model.GooglePhoto
 import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.model.WorkerInfo
 import io.photopixels.domain.usecases.DownloadPhotoUseCase
-import io.photopixels.domain.usecases.GetPhotosForUploadUseCase
-import io.photopixels.domain.usecases.UpdatePhotoInDbUseCase
+import io.photopixels.domain.usecases.GetMediaFilesForUploadUseCase
+import io.photopixels.domain.usecases.UpdateMediaInDbUseCase
 import io.photopixels.domain.usecases.UploadGooglePhotoUseCase
 import io.photopixels.domain.usecases.googlephotos.DeleteGooglePhotosPickingSessionUseCase
 import io.photopixels.domain.usecases.googlephotos.GetGooglePhotosUseCase
@@ -32,10 +32,10 @@ import timber.log.Timber
 class GooglePhotosWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val getPhotosForUploadUseCase: GetPhotosForUploadUseCase,
+    private val getMediaFilesForUploadUseCase: GetMediaFilesForUploadUseCase,
     private val downloadPhotoUseCase: DownloadPhotoUseCase,
     private val uploadGooglePhotoUseCase: UploadGooglePhotoUseCase,
-    private val updatePhotoInDbUseCase: UpdatePhotoInDbUseCase,
+    private val updateMediaInDbUseCase: UpdateMediaInDbUseCase,
     private val notificationsHelper: NotificationsHelper,
     private val getGooglePhotosUseCase: GetGooglePhotosUseCase,
     private val deleteGooglePhotosPickingSessionUseCase: DeleteGooglePhotosPickingSessionUseCase,
@@ -74,7 +74,7 @@ class GooglePhotosWorker @AssistedInject constructor(
         }
 
         Timber.tag(LOG_TAG).e("Google photos download completed")
-        val photosForUpload = getPhotosForUploadUseCase.getGooglePhotosFromDB()
+        val photosForUpload = getMediaFilesForUploadUseCase.getGooglePhotosFromDB()
         photosForUpload.forEach { googlePhoto ->
 
             val photoResult = downloadPhotoUseCase.downloadGooglePhoto(googlePhoto.baseUrl)
@@ -132,7 +132,7 @@ class GooglePhotosWorker @AssistedInject constructor(
                         serverItemHashId = photoUploadResult.result.id,
                         isAlreadyUploaded = true
                     )
-                updatePhotoInDbUseCase.updatedGooglePhotoData(updatedPhotoData)
+                updateMediaInDbUseCase.updatedGooglePhotoData(updatedPhotoData)
                 uploadedPhotosCounter++
             }
 
@@ -141,7 +141,7 @@ class GooglePhotosWorker @AssistedInject constructor(
                 if (photoUploadResult.error is PhotoPixelError.DuplicatePhotoError) {
                     // Photo is already uploaded
                     val updatedPhotoData = googlePhotoData.copy(isAlreadyUploaded = true)
-                    updatePhotoInDbUseCase.updatedGooglePhotoData(updatedPhotoData)
+                    updateMediaInDbUseCase.updatedGooglePhotoData(updatedPhotoData)
                 }
             }
         }
@@ -151,7 +151,7 @@ class GooglePhotosWorker @AssistedInject constructor(
         notificationsHelper.createNotificationChannel(
             GOOGLE_PHOTOS_NOTIFICATION_CHANNEL_ID,
             appContext.getString(R.string.upload_google_photos),
-            appContext.getString(R.string.channel_for_upload_photos_worker_notifications)
+            appContext.getString(R.string.channel_for_upload_media_worker_notifications)
         )
     }
 

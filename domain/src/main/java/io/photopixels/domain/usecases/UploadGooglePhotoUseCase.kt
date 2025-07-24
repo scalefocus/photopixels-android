@@ -7,12 +7,12 @@ import io.photopixels.domain.utils.Hasher
 import javax.inject.Inject
 
 class UploadGooglePhotoUseCase @Inject constructor(
-    private val uploadPhotoUseCase: UploadPhotoUseCase,
+    private val uploadMediaFileUseCase: UploadMediaFileUseCase,
     private val downloadThumbnailUseCase: DownloadThumbnailUseCase,
 ) {
 
     suspend fun invoke(googlePhotoData: GooglePhoto, googlePhotoBytes: ByteArray): Response<PhotoUploadData> {
-        val result = uploadPhotoUseCase.invoke(
+        val result = uploadMediaFileUseCase.invoke(
             fileBytes = googlePhotoBytes,
             fileName = googlePhotoData.fileName,
             mimeType = googlePhotoData.mimeType,

@@ -160,7 +160,7 @@ class SettingsScreenViewModel @Inject constructor(
     }
 
     private fun stopWorkers() {
-        workerStarter.stopDevicePhotosWorkers()
+        workerStarter.stopDeviceMediaWorkers()
         workerStarter.stopGooglePhotosWorker()
     }
 

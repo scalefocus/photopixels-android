@@ -25,7 +25,7 @@ class PeriodicSyncWorker @AssistedInject constructor(
         Timber.tag(LOG_TAG).d("doWork started")
 
         // enqueue Device and Upload photos workers
-        workerStarter.startDeviceAndUploadWorkers()
+        workerStarter.startScanAndUploadWorkers()
 
         Timber.tag(LOG_TAG).d("doWork finished")
 

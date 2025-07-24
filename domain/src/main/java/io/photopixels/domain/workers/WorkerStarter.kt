@@ -5,22 +5,22 @@ import kotlinx.coroutines.flow.Flow
 
 interface WorkerStarter {
     companion object {
-        const val DEVICE_PHOTOS_WORKER_TAG = "device_photos_worker"
-        const val UPLOAD_PHOTOS_WORKER_TAG = "upload_photos_worker"
+        const val SCAN_DEVICE_MEDIA_WORKER_TAG = "device_media_worker"
+        const val UPLOAD_DEVICE_MEDIA_WORKER_TAG = "upload_media_worker"
         const val GOOGLE_PHOTOS_WORKER_TAG = "google_photos_worker"
     }
 
-    fun startDevicePhotosWorker()
+    fun startScanMediaWorker()
 
-    fun startUploadPhotosWorker()
+    fun startUploadMediaWorker()
 
-    fun startDeviceAndUploadWorkers()
+    fun startScanAndUploadWorkers()
 
     fun schedulePeriodicSyncWorker()
 
-    fun getUploadPhotosWorkerListener(): Flow<WorkerInfo>
+    fun getUploadMediaWorkerListener(): Flow<WorkerInfo>
 
-    fun stopDevicePhotosWorkers()
+    fun stopDeviceMediaWorkers()
 
     fun startGooglePhotosWorker(sessionId: String, pollingInterval: String)
 

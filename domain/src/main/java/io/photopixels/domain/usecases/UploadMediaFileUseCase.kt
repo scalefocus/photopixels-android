@@ -6,7 +6,7 @@ import io.photopixels.domain.model.PhotoUploadData
 import io.photopixels.domain.repository.ServerMediaRepository
 import javax.inject.Inject
 
-class UploadPhotoUseCase @Inject constructor(private val serverMediaRepository: ServerMediaRepository) {
+class UploadMediaFileUseCase @Inject constructor(private val serverMediaRepository: ServerMediaRepository) {
 
     suspend fun invoke(
         fileBytes: ByteArray,
