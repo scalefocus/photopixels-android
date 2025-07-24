@@ -7,7 +7,6 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.photopixels.domain.model.WorkerInfo
@@ -28,15 +27,7 @@ class WorkerStarterImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : WorkerStarter {
     private val uniqueDeviceMediaWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
-    private val uniqueGooglePhotosWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
     private val workerManager = WorkManager.getInstance(context)
-
-    override fun startScanMediaWorker() {
-        getDevicePhotosWorkerRequest()
-            .also {
-                WorkManager.getInstance(context).enqueue(it)
-            }
-    }
 
     override fun startUploadMediaWorker(requireWifi: Boolean) {
         getUploadPhotosWorkerRequest(requireWifi = requireWifi)
@@ -97,30 +88,6 @@ class WorkerStarterImpl @Inject constructor(
                 }
             }
     } ?: flow { emit(WorkerInfo.DEFAULT_FINISHED) } // no work in progress, so emit default finished
-
-    override fun getGooglePhotosWorkerListener(): Flow<WorkerInfo?> {
-        uniqueGooglePhotosWorkId?.let {
-            return WorkManager
-                .getInstance(context)
-                .getWorkInfoByIdFlow(it)
-                .transform { workInfo ->
-                    if (workInfo?.state?.isFinished == true) {
-                        val workerResultData = workInfo.outputData.keyValueMap
-
-                        val workerStatus = if (workInfo.state == WorkInfo.State.FAILED) {
-                            WorkerStatus.FAILED
-                        } else {
-                            WorkerStatus.FINISHED
-                        }
-                        emit(
-                            WorkerInfo(workerTag = workInfo.tags.first(), workerStatus, resultData = workerResultData)
-                        )
-                    }
-                }
-        } ?: run {
-            return flow { emit(null) }
-        }
-    }
 
     override fun startGooglePhotosWorker(sessionId: String, pollingInterval: String) {
         if (!isWorkerFinished(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)) return
