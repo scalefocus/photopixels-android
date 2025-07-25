@@ -7,7 +7,6 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.photopixels.domain.model.WorkerInfo
@@ -27,25 +26,17 @@ private const val BACKGROUND_SYNC_WORK_NAME = "backgroundSyncWork"
 class WorkerStarterImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : WorkerStarter {
-    private val uniquePhotosWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
-    private val uniqueGooglePhotosWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)
+    private val uniqueDeviceMediaWorkId: UUID? get() = getWorkingIdByTag(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
     private val workerManager = WorkManager.getInstance(context)
 
-    override fun startScanMediaWorker() {
-        getDevicePhotosWorkerRequest()
+    override fun startUploadMediaWorker(requireWifi: Boolean) {
+        getUploadPhotosWorkerRequest(requireWifi = requireWifi)
             .also {
                 WorkManager.getInstance(context).enqueue(it)
             }
     }
 
-    override fun startUploadMediaWorker() {
-        getUploadPhotosWorkerRequest()
-            .also {
-                WorkManager.getInstance(context).enqueue(it)
-            }
-    }
-
-    override fun startScanAndUploadWorkers() {
+    override fun startScanAndUploadWorkers(requireWifi: Boolean) {
         if (!isWorkerFinished(WorkerStarter.SCAN_DEVICE_MEDIA_WORKER_TAG) ||
             !isWorkerFinished(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
         ) {
@@ -53,7 +44,7 @@ class WorkerStarterImpl @Inject constructor(
         }
 
         val devicePhotosWorkRequest = getDevicePhotosWorkerRequest()
-        val uploadPhotosWorkRequest = getUploadPhotosWorkerRequest()
+        val uploadPhotosWorkRequest = getUploadPhotosWorkerRequest(requireWifi = requireWifi)
 
         WorkManager
             .getInstance(context)
@@ -62,10 +53,10 @@ class WorkerStarterImpl @Inject constructor(
             .enqueue()
     }
 
-    override fun schedulePeriodicSyncWorker() {
+    override fun schedulePeriodicSyncWorker(requireWifi: Boolean, requirePower: Boolean) {
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .setRequiresBatteryNotLow(true)
+            .setRequiredNetworkType(if (requireWifi) NetworkType.UNMETERED else NetworkType.CONNECTED)
+            .setRequiresBatteryNotLow(requirePower)
             .build()
 
         val periodicSyncWorker =
@@ -76,12 +67,12 @@ class WorkerStarterImpl @Inject constructor(
         WorkManager.getInstance(context)
             .enqueueUniquePeriodicWork(
                 BACKGROUND_SYNC_WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 periodicSyncWorker,
             )
     }
 
-    override fun getUploadMediaWorkerListener(): Flow<WorkerInfo> = uniquePhotosWorkId?.let { workId ->
+    override fun getUploadMediaWorkerListener(): Flow<WorkerInfo> = uniqueDeviceMediaWorkId?.let { workId ->
         workerManager.getWorkInfoByIdFlow(workId)
             .filterNotNull()
             .transform { workInfo ->
@@ -97,30 +88,6 @@ class WorkerStarterImpl @Inject constructor(
                 }
             }
     } ?: flow { emit(WorkerInfo.DEFAULT_FINISHED) } // no work in progress, so emit default finished
-
-    override fun getGooglePhotosWorkerListener(): Flow<WorkerInfo?> {
-        uniqueGooglePhotosWorkId?.let {
-            return WorkManager
-                .getInstance(context)
-                .getWorkInfoByIdFlow(it)
-                .transform { workInfo ->
-                    if (workInfo?.state?.isFinished == true) {
-                        val workerResultData = workInfo.outputData.keyValueMap
-
-                        val workerStatus = if (workInfo.state == WorkInfo.State.FAILED) {
-                            WorkerStatus.FAILED
-                        } else {
-                            WorkerStatus.FINISHED
-                        }
-                        emit(
-                            WorkerInfo(workerTag = workInfo.tags.first(), workerStatus, resultData = workerResultData)
-                        )
-                    }
-                }
-        } ?: run {
-            return flow { emit(null) }
-        }
-    }
 
     override fun startGooglePhotosWorker(sessionId: String, pollingInterval: String) {
         if (!isWorkerFinished(WorkerStarter.GOOGLE_PHOTOS_WORKER_TAG)) return
@@ -145,14 +112,31 @@ class WorkerStarterImpl @Inject constructor(
         WorkManager.getInstance(context).cancelUniqueWork(BACKGROUND_SYNC_WORK_NAME)
     }
 
+    override fun updateRequireWifiConstrains(requireWifi: Boolean, requirePower: Boolean) {
+        updateUploadPhotosWorker(requireWifi)
+        // periodic sync worker is with update policy
+        schedulePeriodicSyncWorker(requireWifi, requirePower)
+    }
+
+    private fun updateUploadPhotosWorker(requireWifi: Boolean) {
+        val workId = uniqueDeviceMediaWorkId ?: return
+
+        val updatedWorkRequest = getUploadPhotosWorkerRequest(workId = workId, requireWifi = requireWifi)
+        workerManager.updateWork(updatedWorkRequest)
+    }
+
     private fun getDevicePhotosWorkerRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<ScanDeviceMediaWorker>()
         .addTag(WorkerStarter.SCAN_DEVICE_MEDIA_WORKER_TAG)
         .build()
 
-    private fun getUploadPhotosWorkerRequest(): OneTimeWorkRequest =
-        OneTimeWorkRequestBuilder<UploadDeviceMediaWorker>()
-            .addTag(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
-            .build()
+    private fun getUploadPhotosWorkerRequest(
+        workId: UUID = UUID.randomUUID(),
+        requireWifi: Boolean,
+    ): OneTimeWorkRequest = OneTimeWorkRequestBuilder<UploadDeviceMediaWorker>()
+        .setId(workId)
+        .addTag(WorkerStarter.UPLOAD_DEVICE_MEDIA_WORKER_TAG)
+        .setConstraints(getConstraints(requireWifi))
+        .build()
 
     private fun getWorkingIdByTag(workerTag: String): UUID? = workerManager.getWorkInfosByTag(workerTag).get()
         .let { workInfos ->
@@ -163,4 +147,8 @@ class WorkerStarterImpl @Inject constructor(
         val workInfos = workerManager.getWorkInfosByTag(workerTag).get()
         return workInfos.isEmpty() || workInfos.all { it.state.isFinished }
     }
+
+    private fun getConstraints(requireWifi: Boolean): Constraints = Constraints.Builder()
+        .setRequiredNetworkType(if (requireWifi) NetworkType.UNMETERED else NetworkType.CONNECTED)
+        .build()
 }

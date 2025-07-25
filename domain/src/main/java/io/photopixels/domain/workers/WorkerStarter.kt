@@ -10,13 +10,11 @@ interface WorkerStarter {
         const val GOOGLE_PHOTOS_WORKER_TAG = "google_photos_worker"
     }
 
-    fun startScanMediaWorker()
+    fun startUploadMediaWorker(requireWifi: Boolean)
 
-    fun startUploadMediaWorker()
+    fun startScanAndUploadWorkers(requireWifi: Boolean)
 
-    fun startScanAndUploadWorkers()
-
-    fun schedulePeriodicSyncWorker()
+    fun schedulePeriodicSyncWorker(requireWifi: Boolean, requirePower: Boolean)
 
     fun getUploadMediaWorkerListener(): Flow<WorkerInfo>
 
@@ -26,5 +24,5 @@ interface WorkerStarter {
 
     fun stopGooglePhotosWorker()
 
-    fun getGooglePhotosWorkerListener(): Flow<WorkerInfo?>
+    fun updateRequireWifiConstrains(requireWifi: Boolean, requirePower: Boolean)
 }

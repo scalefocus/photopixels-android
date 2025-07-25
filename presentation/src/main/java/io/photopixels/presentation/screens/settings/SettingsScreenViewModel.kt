@@ -31,7 +31,8 @@ class SettingsScreenViewModel @Inject constructor(
     private val workerStarter: WorkerStarter
 ) : BaseViewModel<SettingsScreenState, SettingsScreenActions, SettingsScreenEvents>(SettingsScreenState()) {
 
-    private var userSettings: UserSettings = UserSettings()
+    private val userSettings: UserSettings
+        get() = state.value.userSettings
 
     init {
         loadUserSettings()
@@ -69,15 +70,15 @@ class SettingsScreenViewModel @Inject constructor(
             }
 
             is SettingsScreenActions.OnRequirePowerClicked -> {
-                updateState { copy(userSettings = userSettings.copy(requirePower = action.isChecked)) }
-                userSettings = userSettings.copy(requirePower = action.isChecked)
-                setUserSettingsUseCase.invoke(userSettings)
+                val updatedSettings = userSettings.copy(requirePower = action.isChecked)
+                updateUserSettings(updatedSettings)
+                workerStarter.updateRequireWifiConstrains(userSettings.requireWifi, action.isChecked)
             }
 
             is SettingsScreenActions.OnRequireWifiClicked -> {
-                updateState { copy(userSettings = userSettings.copy(requireWifi = action.isChecked)) }
-                userSettings = userSettings.copy(requireWifi = action.isChecked)
-                setUserSettingsUseCase.invoke(userSettings)
+                val updatedSettings = userSettings.copy(requireWifi = action.isChecked)
+                updateUserSettings(updatedSettings)
+                workerStarter.updateRequireWifiConstrains(action.isChecked, userSettings.requirePower)
             }
 
             SettingsScreenActions.OnGoogleOauthIntentError -> {
@@ -86,6 +87,11 @@ class SettingsScreenViewModel @Inject constructor(
 
             SettingsScreenActions.OnPickPhotoClicked -> openPickingSession()
         }
+    }
+
+    private suspend fun updateUserSettings(userSettings: UserSettings) {
+        updateState { copy(userSettings = userSettings) }
+        setUserSettingsUseCase.invoke(userSettings)
     }
 
     private fun logOutUser() {
@@ -114,14 +120,8 @@ class SettingsScreenViewModel @Inject constructor(
     private fun onGoogleLoginSuccess(googleAuthToken: String) {
         viewModelScope.launch {
             saveGoogleAuthTokenUseCase.invoke(googleAuthToken)
-            updateState {
-                copy(
-                    userSettings = userSettings.copy(syncWithGoogle = true)
-                )
-            }
-
-            userSettings = userSettings.copy(syncWithGoogle = true)
-            setUserSettingsUseCase.invoke(userSettings)
+            val updatedSettings = userSettings.copy(syncWithGoogle = true)
+            updateUserSettings(updatedSettings)
             openPickingSession()
         }
     }
@@ -148,13 +148,8 @@ class SettingsScreenViewModel @Inject constructor(
 
     private fun stopGoogleSync() {
         viewModelScope.launch {
-            updateState {
-                copy(
-                    userSettings = userSettings.copy(syncWithGoogle = false)
-                )
-            }
-            userSettings = userSettings.copy(syncWithGoogle = false)
-            setUserSettingsUseCase.invoke(userSettings)
+            val updatedSettings = userSettings.copy(syncWithGoogle = false)
+            updateUserSettings(updatedSettings)
             workerStarter.stopGooglePhotosWorker()
         }
     }
@@ -167,12 +162,8 @@ class SettingsScreenViewModel @Inject constructor(
     private fun loadUserSettings() {
         viewModelScope.launch {
             val settings = getUserSettingsUseCase.invoke()
-            settings?.let {
-                userSettings = it
-
-                updateState {
-                    copy(userSettings = it)
-                }
+            updateState {
+                copy(userSettings = settings)
             }
         }
     }

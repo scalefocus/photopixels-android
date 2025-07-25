@@ -51,7 +51,7 @@ class SplashScreenViewModel @Inject constructor(
     }
 
     private suspend fun tryLoadGoogleAuthState() {
-        if (getUserSettingsUseCase.invoke()?.syncWithGoogle == true) {
+        if (getUserSettingsUseCase.invoke().syncWithGoogle) {
             googleAuthorization.loadAuthState()
         }
     }
