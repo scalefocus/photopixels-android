@@ -6,19 +6,18 @@ import java.net.URL
 data class ServerAddress(
     val protocol: String = HTTPS_PROTOCOL,
     val host: String = "",
-    val port: Int = DEFAULT_PORT,
-    val path: String = "",
+    val port: Int? = null,
+    val path: String? = null,
 ) {
     override fun toString(): String {
-        val pathWithDivider = if (path.isEmpty()) "" else "/$path"
-        val portWithDivider = if (port > 0) ":$port" else ""
-        return "$protocol://$host$portWithDivider$pathWithDivider"
+        val formattedPath = path?.let { "/$path" }.orEmpty()
+        val formattedPort = port?.let { ":$port" }.orEmpty()
+        return "$protocol://$host$formattedPort$formattedPath"
     }
 
     companion object {
         private const val HTTP_PROTOCOL = "http"
         private const val HTTPS_PROTOCOL = "https"
-        private const val DEFAULT_PORT = 0
 
         /**
          * Parses server address from a string
@@ -31,9 +30,12 @@ data class ServerAddress(
 
             return runCatching {
                 val url = URL(urlWithProtocol)
-                val port = url.port.takeIf { it > 0 } ?: DEFAULT_PORT
-                val path = url.path.trim('/')
-                val serverAddress = ServerAddress(url.protocol, url.host, port, path)
+                val serverAddress = ServerAddress(
+                    protocol = url.protocol,
+                    host = url.host,
+                    port = url.port.takeIf { it > 0 },
+                    path = url.path.trim('/').takeIf { it.isNotBlank() },
+                )
                 Timber.tag("TAG").d("ServerAddress:$serverAddress")
                 serverAddress
             }.getOrElse { ServerAddress() }

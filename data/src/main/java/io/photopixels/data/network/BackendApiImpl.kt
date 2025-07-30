@@ -41,9 +41,9 @@ class BackendApiImpl @Inject constructor(
                 .get {
                     url {
                         host = serverAddress.host
-                        encodedPathSegments = listOf(serverAddress.path, "api", "status")
+                        encodedPathSegments = listOfNotNull(serverAddress.path, "api", "status")
                         protocol = URLProtocol.createOrDefault(serverAddress.protocol)
-                        port = serverAddress.port
+                        serverAddress.port?.let { port = it }
                     }
                 }.body<ServerStatusResponse>()
 

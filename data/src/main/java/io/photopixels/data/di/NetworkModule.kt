@@ -145,8 +145,8 @@ class NetworkModule {
                     url {
                         host = serverAddress.host
                         protocol = URLProtocol.createOrDefault(serverAddress.protocol)
-                        port = serverAddress.port
-                        encodedPath = serverAddress.path
+                        serverAddress.port?.let { port = it }
+                        serverAddress.path?.let { encodedPath = it }
                     }
                 }
             }

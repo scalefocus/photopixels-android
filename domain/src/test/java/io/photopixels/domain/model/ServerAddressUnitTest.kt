@@ -33,61 +33,110 @@ class ServerAddressUnitTest(
     }
 
     companion object {
+
+        @Suppress("LongMethod")
         @JvmStatic
         @Parameterized.Parameters(name = "{index}: {0}")
         fun data(): Collection<TestData> = listOf(
             // short url host only
             TestData(
-                inputUrl = "example1.com",
-                serverAddress = ServerAddress(protocol = "https", host = "example1.com", port = 0),
-                outputUrl = "https://example1.com"
+                inputUrl = "example.com",
+                serverAddress = ServerAddress(protocol = "https", host = "example.com"),
+                outputUrl = "https://example.com"
             ),
             // short url host and path only
             TestData(
-                inputUrl = "example2.com/path",
-                serverAddress = ServerAddress(protocol = "https", host = "example2.com", port = 0, path = "path"),
-                outputUrl = "https://example2.com/path"
+                inputUrl = "example.com/path",
+                serverAddress = ServerAddress(protocol = "https", host = "example.com", path = "path"),
+                outputUrl = "https://example.com/path"
             ),
             // full url without path
             TestData(
-                inputUrl = "https://example3.com:8080",
-                serverAddress = ServerAddress(protocol = "https", host = "example3.com", port = 8080),
-                outputUrl = "https://example3.com:8080"
+                inputUrl = "https://example.com:8080",
+                serverAddress = ServerAddress(protocol = "https", host = "example.com", port = 8080),
+                outputUrl = "https://example.com:8080"
             ),
             // full url with empty path
             TestData(
-                inputUrl = "https://example4.com:8080/",
-                serverAddress = ServerAddress(protocol = "https", host = "example4.com", port = 8080),
-                outputUrl = "https://example4.com:8080"
+                inputUrl = "https://example.com:8080/",
+                serverAddress = ServerAddress(protocol = "https", host = "example.com", port = 8080),
+                outputUrl = "https://example.com:8080"
             ),
             // full url with longer path
             TestData(
-                inputUrl = "https://example5.com:8080//longer/path/",
+                inputUrl = "https://example.com:8080//longer/path/",
                 serverAddress = ServerAddress(
                     protocol = "https",
-                    host = "example5.com",
+                    host = "example.com",
                     port = 8080,
                     path = "longer/path"
                 ),
-                outputUrl = "https://example5.com:8080/longer/path"
+                outputUrl = "https://example.com:8080/longer/path"
             ),
             // default HTTP port
             TestData(
-                inputUrl = "http://example6.com",
-                serverAddress = ServerAddress(protocol = "http", host = "example6.com", port = 0),
-                outputUrl = "http://example6.com"
+                inputUrl = "http://example.com",
+                serverAddress = ServerAddress(protocol = "http", host = "example.com"),
+                outputUrl = "http://example.com"
             ),
             // default HTTPS port
             TestData(
-                inputUrl = "https://example7.com",
-                serverAddress = ServerAddress(protocol = "https", host = "example7.com", port = 0),
-                outputUrl = "https://example7.com"
+                inputUrl = "https://example.com",
+                serverAddress = ServerAddress(protocol = "https", host = "example.com"),
+                outputUrl = "https://example.com"
+            ),
+            // capitalized HTTP protocol
+            TestData(
+                inputUrl = "HTTP://example.com",
+                serverAddress = ServerAddress(protocol = "http", host = "example.com"),
+                outputUrl = "http://example.com"
+            ),
+            // capitalized HTTPS protocol
+            TestData(
+                inputUrl = "HTTPS://example.com",
+                serverAddress = ServerAddress(protocol = "https", host = "example.com"),
+                outputUrl = "https://example.com"
+            ),
+            // ip address only
+            TestData(
+                inputUrl = "192.168.0.1",
+                serverAddress = ServerAddress(protocol = "https", host = "192.168.0.1"),
+                outputUrl = "https://192.168.0.1"
+            ),
+            // ip address with protocol
+            TestData(
+                inputUrl = "http://192.168.0.1",
+                serverAddress = ServerAddress(protocol = "http", host = "192.168.0.1"),
+                outputUrl = "http://192.168.0.1"
+            ),
+            // ip address with port
+            TestData(
+                inputUrl = "http://192.168.0.1:8080",
+                serverAddress = ServerAddress(protocol = "http", host = "192.168.0.1", port = 8080),
+                outputUrl = "http://192.168.0.1:8080"
             ),
             // ip address with port and path
             TestData(
                 inputUrl = "http://192.168.0.1:8080/path",
                 serverAddress = ServerAddress(protocol = "http", host = "192.168.0.1", port = 8080, path = "path"),
                 outputUrl = "http://192.168.0.1:8080/path"
+            ),
+            // subdomains
+            TestData(
+                inputUrl = "sub.domain.example.co.uk",
+                serverAddress = ServerAddress(protocol = "https", host = "sub.domain.example.co.uk"),
+                outputUrl = "https://sub.domain.example.co.uk"
+            ),
+            // subdomains with protocol, port and path
+            TestData(
+                inputUrl = "http://sub.domain.example.co.uk:8080/path",
+                serverAddress = ServerAddress(
+                    protocol = "http",
+                    host = "sub.domain.example.co.uk",
+                    port = 8080,
+                    path = "path"
+                ),
+                outputUrl = "http://sub.domain.example.co.uk:8080/path"
             ),
         )
     }
