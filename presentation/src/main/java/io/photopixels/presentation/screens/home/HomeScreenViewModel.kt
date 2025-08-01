@@ -134,7 +134,7 @@ class HomeScreenViewModel @Inject constructor(
 
     private suspend fun getServerRevisionAndThumbnails(isUploadComplete: Boolean = false) {
         updateState { copy(isLoading = true) }
-        val syncResponse = syncServerThumbnailsUseCase(isUploadComplete = isUploadComplete)
+        val syncResponse = syncServerThumbnailsUseCase(hasNewlyUploadedMedia = isUploadComplete)
         if (syncResponse is Response.Failure) {
             // TODO handle with some error message later
             Timber.tag(TAG).e("Unable to Sync thumbnails from the server")
