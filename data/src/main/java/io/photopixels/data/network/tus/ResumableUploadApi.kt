@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 private const val TAG = "ResumableUploadApi"
 
-class ResumableUploadApi @Inject constructor(
+internal class ResumableUploadApi @Inject constructor(
     private val resumableUploadClient: ResumableUploadClient,
     @ApplicationContext private val context: Context,
 ) {

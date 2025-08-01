@@ -2,13 +2,10 @@ package io.photopixels.data.network.tus
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.photopixels.data.network.AuthApi
-import io.photopixels.data.storage.datastore.AuthDataStore
+import io.photopixels.data.network.Authenticator
 import io.photopixels.data.storage.datastore.UserPreferencesDataStore
 import io.photopixels.domain.base.PhotoPixelError
-import io.photopixels.domain.base.Response
 import io.photopixels.domain.exceptions.ResumableUploadException
 import io.photopixels.domain.model.ServerAddress
 import io.tus.android.client.TusPreferencesURLStore
@@ -30,10 +27,9 @@ private const val MAX_PROGRESS = 100
  * Tus client wrapper that handles tus client setup with correct URL,
  * file upload, token refresh and error handling.
  */
-class ResumableUploadClient @Inject constructor(
-    private val authDataStore: AuthDataStore,
+internal class ResumableUploadClient @Inject constructor(
+    private val authenticator: Authenticator,
     private val userDataStore: UserPreferencesDataStore,
-    private val authApi: AuthApi,
     @ApplicationContext private val context: Context,
 ) {
 
@@ -51,7 +47,7 @@ class ResumableUploadClient @Inject constructor(
             when (e.causingConnection?.responseCode) {
                 HttpStatusCode.Unauthorized.value -> {
                     // token is expired, refresh it and try again
-                    refreshToken()
+                    authenticator.refreshToken()
                     uploadFileInt(upload)
                 }
 
@@ -87,22 +83,13 @@ class ResumableUploadClient @Inject constructor(
         uploader.finish()
     }
 
-    private suspend fun refreshToken() {
-        authDataStore.getRefreshToken()?.let {
-            val response = authApi.refreshToken(it)
-            if (response is Response.Success) {
-                authDataStore.storeAuthHeaders(response.result.accessToken, response.result.refreshToken)
-            }
-        }
-    }
-
     private suspend fun getTusClient(): TusClient {
         with(tusClient) {
             // set upload creation URL
             uploadCreationURL = userDataStore.getServerAddress()?.toUploadCreationUrl()
 
             // set auth token
-            headers = authDataStore.getAuthToken()?.let { mapOf(HttpHeaders.Authorization to "Bearer $it") }
+            headers = authenticator.getAuthHeader()?.let { mapOf(it) }
         }
 
         return tusClient
