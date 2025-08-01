@@ -40,15 +40,13 @@ class LoginViewModel @Inject constructor(
     private fun loginUser(email: String, password: String) {
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
-
-            loginUserUseCase.invoke(email, password).collect { response ->
-                if (response is Response.Success) {
-                    updateState { copy(isLoading = false) }
-                    clearCurrentUserData(email)
-                    submitEvent(LoginScreenEvents.NavigateToHomeScreen)
-                } else if (response is Response.Failure) {
-                    updateState { copy(isLoading = false, errorMsgId = R.string.login_error_msg) }
-                }
+            val response = loginUserUseCase.invoke(email, password)
+            if (response is Response.Success) {
+                updateState { copy(isLoading = false) }
+                clearCurrentUserData(email)
+                submitEvent(LoginScreenEvents.NavigateToHomeScreen)
+            } else if (response is Response.Failure) {
+                updateState { copy(isLoading = false, errorMsgId = R.string.login_error_msg) }
             }
         }
     }

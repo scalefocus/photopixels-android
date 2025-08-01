@@ -59,23 +59,22 @@ class RegisterViewModel @Inject constructor(
     private fun registerUser(name: String, email: String, password: String) {
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
-            registerUserUseCase.invoke(name, email, password).collect { response ->
-                if (response is Response.Success) {
-                    updateState { copy(isLoading = false) }
-                    submitEvent(RegisterScreenEvents.NavigateToLoginScreen(email, password))
-                } else if (response is Response.Failure) {
-                    val errorMsgId: Int = if (response.error is PhotoPixelError.AccountAlreadyTaken) {
-                        R.string.register_account_taken_error
-                    } else {
-                        R.string.register_error_msg
-                    }
+            val response = registerUserUseCase.invoke(name, email, password)
+            if (response is Response.Success) {
+                updateState { copy(isLoading = false) }
+                submitEvent(RegisterScreenEvents.NavigateToLoginScreen(email, password))
+            } else if (response is Response.Failure) {
+                val errorMsgId: Int = if (response.error is PhotoPixelError.AccountAlreadyTaken) {
+                    R.string.register_account_taken_error
+                } else {
+                    R.string.register_error_msg
+                }
 
-                    updateState {
-                        copy(
-                            isLoading = false,
-                            errorMsgId = errorMsgId
-                        )
-                    }
+                updateState {
+                    copy(
+                        isLoading = false,
+                        errorMsgId = errorMsgId
+                    )
                 }
             }
         }
@@ -90,15 +89,13 @@ class RegisterViewModel @Inject constructor(
     }
 
     private suspend fun validatePassword(pass: String, confirmPass: String): Boolean {
-        var isPasswordValid = true
-
         // Check passwords match
         var errorMsgId: Int? = if (pass != confirmPass) R.string.register_error_pass_not_match else null
         updateState { copy(password = password.copy(errorMsgId = errorMsgId)) }
         if (errorMsgId != null) return false
 
         // Check password strength
-        isPasswordValid = validateFieldUseCase.invoke(pass, ValidationRules.PASSWORD)
+        val isPasswordValid = validateFieldUseCase.invoke(pass, ValidationRules.PASSWORD)
         errorMsgId = if (!isPasswordValid) R.string.register_pass_not_strong else null
         updateState { copy(password = password.copy(errorMsgId = errorMsgId)) }
 
