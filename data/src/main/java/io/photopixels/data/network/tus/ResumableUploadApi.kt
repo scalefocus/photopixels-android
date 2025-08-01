@@ -4,7 +4,9 @@ import android.content.Context
 import android.database.CursorIndexOutOfBoundsException
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.FileNotFoundException
 import javax.inject.Inject
@@ -20,7 +22,7 @@ internal class ResumableUploadApi @Inject constructor(
         uri: Uri,
         fileName: String,
         objectHash: String,
-    ): Flow<Double> {
+    ): Flow<Double> = withContext(Dispatchers.IO) {
         val upload = try {
             // create resumable upload from uri
             context.createResumableUpload(uri, fileName, objectHash)
@@ -31,6 +33,6 @@ internal class ResumableUploadApi @Inject constructor(
         }
 
         // start file upload
-        return resumableUploadClient.uploadFile(upload)
+        resumableUploadClient.uploadFile(upload)
     }
 }
