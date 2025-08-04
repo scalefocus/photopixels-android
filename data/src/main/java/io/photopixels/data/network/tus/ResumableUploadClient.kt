@@ -108,10 +108,8 @@ class ResumableUploadClient @Inject constructor(
         return tusClient
     }
 
-    private fun ServerAddress.toUploadCreationUrl() = URL(
-        protocol,
-        host,
-        port,
-        "api/create_upload"
-    )
+    private fun ServerAddress.toUploadCreationUrl(): URL {
+        val serverUrl = URL(toString())
+        return URL(serverUrl, "api/create_upload")
+    }
 }

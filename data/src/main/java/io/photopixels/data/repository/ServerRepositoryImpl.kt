@@ -7,19 +7,14 @@ import io.photopixels.domain.model.ServerAddress
 import io.photopixels.domain.model.ServerRevision
 import io.photopixels.domain.model.ServerStatus
 import io.photopixels.domain.repository.ServerRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class ServerRepositoryImpl @Inject constructor(
     private val backendApi: BackendApi,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ServerRepository {
-    override suspend fun getServerStatus(serverAddress: ServerAddress): Flow<Response<ServerStatus>> =
-        flow {
-            val result = backendApi.getServerStatus(serverAddress)
-            emit(result)
-        }
+    override suspend fun getServerStatus(serverAddress: ServerAddress): Response<ServerStatus> =
+        backendApi.getServerStatus(serverAddress)
 
     override suspend fun getServerRevision(specificRevision: Int): Response<ServerRevision> =
         backendApi.getServerRevision(specificRevision)

@@ -1,43 +1,44 @@
 package io.photopixels.domain.model
 
 import timber.log.Timber
+import java.net.URL
 
 data class ServerAddress(
     val protocol: String = HTTPS_PROTOCOL,
     val host: String = "",
-    val port: Int = HTTPS_PORT
+    val port: Int? = null,
+    val path: String? = null,
 ) {
-    override fun toString(): String = "$protocol://$host:$port"
+    override fun toString(): String {
+        val formattedPath = path?.let { "/$path" }.orEmpty()
+        val formattedPort = port?.let { ":$port" }.orEmpty()
+        return "$protocol://$host$formattedPort$formattedPath"
+    }
 
     companion object {
-        const val HTTP_PROTOCOL = "http"
-        const val HTTP_PORT = 80
-        const val HTTPS_PROTOCOL = "https"
-        const val HTTPS_PORT = 443
+        private const val HTTP_PROTOCOL = "http"
+        private const val HTTPS_PROTOCOL = "https"
 
+        /**
+         * Parses server address from a string
+         */
         fun fromString(urlString: String): ServerAddress {
-            val parts = urlString.split("://", limit = 2)
+            val isUrlStartsWithProtocol = listOf(HTTPS_PROTOCOL, HTTP_PROTOCOL)
+                .any { urlString.startsWith("$it://", ignoreCase = true) }
 
-            val protocol = if (parts.size == 2) parts[0].lowercase() else HTTPS_PROTOCOL // Protocol if present
-            val remaining = parts[parts.lastIndex] // Last part (host or protocol+host)
+            val urlWithProtocol = if (isUrlStartsWithProtocol) urlString else "$HTTPS_PROTOCOL://$urlString"
 
-            // Split remaining part by colon (separates host and potential port)
-            val hostAndPort = remaining.split(":")
-
-            // Extract host (must exist)
-            val host = hostAndPort[0]
-
-            // Check for port (optional)
-            val portString = if (hostAndPort.size > 1) hostAndPort[1] else null
-
-            // Convert port to integer (default 80/443 if invalid)
-            val port = portString?.toIntOrNull() ?: kotlin.run {
-                if (protocol == HTTP_PROTOCOL) HTTP_PORT else HTTPS_PORT
-            }
-
-            val serverAddress = ServerAddress(protocol, host, port)
-            Timber.tag("TAG").d("ServerAddress:$serverAddress")
-            return serverAddress
+            return runCatching {
+                val url = URL(urlWithProtocol)
+                val serverAddress = ServerAddress(
+                    protocol = url.protocol,
+                    host = url.host,
+                    port = url.port.takeIf { it > 0 },
+                    path = url.path.trim('/').takeIf { it.isNotBlank() },
+                )
+                Timber.tag("TAG").d("ServerAddress:$serverAddress")
+                serverAddress
+            }.getOrElse { ServerAddress() }
         }
     }
 }

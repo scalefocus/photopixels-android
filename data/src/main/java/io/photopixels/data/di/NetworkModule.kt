@@ -25,6 +25,7 @@ import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLProtocol
+import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import io.photopixels.data.network.AuthApi
 import io.photopixels.data.network.AuthApiImpl
@@ -144,7 +145,8 @@ class NetworkModule {
                     url {
                         host = serverAddress.host
                         protocol = URLProtocol.createOrDefault(serverAddress.protocol)
-                        port = serverAddress.port
+                        serverAddress.port?.let { port = it }
+                        serverAddress.path?.let { encodedPath = it }
                     }
                 }
             }

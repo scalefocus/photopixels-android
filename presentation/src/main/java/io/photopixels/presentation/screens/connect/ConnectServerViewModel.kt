@@ -54,33 +54,32 @@ class ConnectServerViewModel @Inject constructor(
     private fun getServerStatus() {
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
-            val serverAddressValue = state.value.serverAddress.value
-            val serverAddressData = ServerAddress.fromString(state.value.serverAddress.value)
+            val serverUrlString = state.value.serverAddress.value
+            val serverAddress = ServerAddress.fromString(serverUrlString)
 
-            getServerStatusUseCase.invoke(serverAddressData).collect { result ->
-                if (result is Response.Success) {
-                    updateState {
-                        copy(
-                            isLoading = false,
-                            serverAddress = serverAddress.copy(value = serverAddressValue, errorMsgId = null)
-                        )
-                    }
-                    submitEvent(ConnectServerEvents.NavigateToLoginScreen)
-                    setServerInfoUseCase.setServerAddress(serverAddressData)
-                    setServerInfoUseCase.setServerVersion(result.result.serverVersion)
-                } else if (result is Response.Failure) {
-                    var errorMsgId = R.string.connect_error_msg
-                    if (result.error is PhotoPixelError.HttpTrafficNotAllowed) {
-                        errorMsgId = R.string.connect_server_http_error
-                    }
+            val result = getServerStatusUseCase.invoke(serverAddress)
+            if (result is Response.Success) {
+                updateState {
+                    copy(
+                        isLoading = false,
+                        serverAddress = this.serverAddress.copy(value = serverUrlString, errorMsgId = null)
+                    )
+                }
+                submitEvent(ConnectServerEvents.NavigateToLoginScreen)
+                setServerInfoUseCase.setServerAddress(serverAddress)
+                setServerInfoUseCase.setServerVersion(result.result.serverVersion)
+            } else if (result is Response.Failure) {
+                var errorMsgId = R.string.connect_error_msg
+                if (result.error is PhotoPixelError.HttpTrafficNotAllowed) {
+                    errorMsgId = R.string.connect_server_http_error
+                }
 
-                    updateState {
-                        copy(
-                            isLoading = false,
-                            errorMsgId = errorMsgId,
-                            serverAddress = serverAddress.copy(value = serverAddressValue, errorMsgId = null)
-                        )
-                    }
+                updateState {
+                    copy(
+                        isLoading = false,
+                        errorMsgId = errorMsgId,
+                        serverAddress = this.serverAddress.copy(value = serverUrlString, errorMsgId = null)
+                    )
                 }
             }
         }
