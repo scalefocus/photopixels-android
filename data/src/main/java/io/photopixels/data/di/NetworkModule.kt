@@ -29,17 +29,15 @@ import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import io.photopixels.data.network.AuthApi
 import io.photopixels.data.network.AuthApiImpl
+import io.photopixels.data.network.Authenticator
 import io.photopixels.data.network.BackendApi
 import io.photopixels.data.network.BackendApiImpl
 import io.photopixels.data.network.GooglePhotosApi
 import io.photopixels.data.network.GooglePhotosApiImpl
 import io.photopixels.data.network.okhttp.AuthInterceptor
-import io.photopixels.data.storage.datastore.AuthDataStore
 import io.photopixels.data.storage.datastore.UserPreferencesDataStore
 import io.photopixels.domain.base.GoogleAuth
-import io.photopixels.domain.base.Response
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import timber.log.Timber
@@ -85,10 +83,9 @@ class NetworkModule {
     @Provides
     @Singleton
     @Named(BACKEND_API_HTTP_CLIENT)
-    fun provideHttpClient(
-        authDataStore: AuthDataStore,
+    internal fun provideHttpClient(
+        authenticator: Authenticator,
         userDataStore: UserPreferencesDataStore,
-        authApi: AuthApi,
     ): HttpClient = HttpClient(Android) {
         expectSuccess = true
 
@@ -100,25 +97,10 @@ class NetworkModule {
             bearer {
                 sendWithoutRequest { true } // Don't send token for token refresh request
                 loadTokens {
-                    BearerTokens(
-                        accessToken = authDataStore.getAuthToken().orEmpty(),
-                        refreshToken = authDataStore.getRefreshToken().orEmpty()
-                    )
+                    authenticator.getBearerTokens()
                 }
                 refreshTokens {
-                    val storedRefreshToken = authDataStore.getRefreshToken()
-
-                    storedRefreshToken?.let {
-                        val response = authApi.refreshToken(storedRefreshToken)
-                        if (response is Response.Success) {
-                            with(response.result) {
-                                authDataStore.storeAuthHeaders(accessToken, refreshToken)
-                                BearerTokens(accessToken, refreshToken)
-                            }
-                        } else {
-                            BearerTokens("", "")
-                        }
-                    }
+                    authenticator.refreshToken()
                 }
             }
         }
@@ -153,7 +135,6 @@ class NetworkModule {
         }
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     private fun HttpClientConfig<AndroidEngineConfig>.installContentNegotiation() {
         install(ContentNegotiation) {
             json(
@@ -246,7 +227,7 @@ class NetworkModule {
 
     @Singleton
     @Provides
-    fun provideOkHttpDataSourceFactory(
+    internal fun provideOkHttpDataSourceFactory(
         authInterceptor: AuthInterceptor
     ): OkHttpDataSource.Factory = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)

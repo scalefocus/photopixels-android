@@ -2,23 +2,19 @@ package io.photopixels.data.network.tus
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.photopixels.data.network.AuthApi
-import io.photopixels.data.storage.datastore.AuthDataStore
+import io.photopixels.data.network.Authenticator
 import io.photopixels.data.storage.datastore.UserPreferencesDataStore
 import io.photopixels.domain.base.PhotoPixelError
-import io.photopixels.domain.base.Response
 import io.photopixels.domain.exceptions.ResumableUploadException
 import io.photopixels.domain.model.ServerAddress
 import io.tus.android.client.TusPreferencesURLStore
 import io.tus.java.client.ProtocolException
 import io.tus.java.client.TusClient
 import io.tus.java.client.TusUpload
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.net.URL
 import javax.inject.Inject
 
@@ -30,10 +26,9 @@ private const val MAX_PROGRESS = 100
  * Tus client wrapper that handles tus client setup with correct URL,
  * file upload, token refresh and error handling.
  */
-class ResumableUploadClient @Inject constructor(
-    private val authDataStore: AuthDataStore,
+internal class ResumableUploadClient @Inject constructor(
+    private val authenticator: Authenticator,
     private val userDataStore: UserPreferencesDataStore,
-    private val authApi: AuthApi,
     @ApplicationContext private val context: Context,
 ) {
 
@@ -44,15 +39,16 @@ class ResumableUploadClient @Inject constructor(
         }
     }
 
-    suspend fun uploadFile(upload: TusUpload): Flow<Double> = withContext(Dispatchers.IO) {
+    fun uploadFile(upload: TusUpload): Flow<Double> = flow {
         try {
-            uploadFileInt(upload)
+            uploadFileInternal(upload, progressListener = ::emit)
         } catch (e: ProtocolException) {
             when (e.causingConnection?.responseCode) {
                 HttpStatusCode.Unauthorized.value -> {
                     // token is expired, refresh it and try again
-                    refreshToken()
-                    uploadFileInt(upload)
+                    authenticator.refreshToken()
+                    // retry the upload
+                    uploadFileInternal(upload, progressListener = ::emit)
                 }
 
                 HttpStatusCode.Conflict.value -> throw ResumableUploadException(PhotoPixelError.DuplicatePhotoError, e)
@@ -61,10 +57,15 @@ class ResumableUploadClient @Inject constructor(
 
                 else -> throw ResumableUploadException(PhotoPixelError.ServerError, e)
             }
+        } catch (e: IOException) {
+            throw ResumableUploadException(PhotoPixelError.NoInternetConnection, e)
         }
     }
 
-    private fun uploadFileInt(upload: TusUpload): Flow<Double> = flow {
+    private suspend fun uploadFileInternal(
+        upload: TusUpload,
+        progressListener: suspend (Double) -> Unit
+    ) {
         // First try to resume an upload. If that's not possible we will create a new
         // upload and get a TusUploader in return. This class is responsible for opening
         // a connection to the remote server and doing the uploading.
@@ -80,20 +81,11 @@ class ResumableUploadClient @Inject constructor(
             val totalBytes = upload.size
             val bytesUploaded = uploader.offset
             val progress = bytesUploaded.toDouble() / totalBytes * MAX_PROGRESS
-            emit(progress)
+            progressListener(progress)
         } while (uploader.uploadChunk() > -1)
 
         // Allow the HTTP connection to be closed and cleaned up
         uploader.finish()
-    }
-
-    private suspend fun refreshToken() {
-        authDataStore.getRefreshToken()?.let {
-            val response = authApi.refreshToken(it)
-            if (response is Response.Success) {
-                authDataStore.storeAuthHeaders(response.result.accessToken, response.result.refreshToken)
-            }
-        }
     }
 
     private suspend fun getTusClient(): TusClient {
@@ -102,7 +94,7 @@ class ResumableUploadClient @Inject constructor(
             uploadCreationURL = userDataStore.getServerAddress()?.toUploadCreationUrl()
 
             // set auth token
-            headers = authDataStore.getAuthToken()?.let { mapOf(HttpHeaders.Authorization to "Bearer $it") }
+            headers = authenticator.getAuthHeader()?.let { mapOf(it) }
         }
 
         return tusClient

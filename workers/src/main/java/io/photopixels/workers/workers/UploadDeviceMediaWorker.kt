@@ -101,7 +101,7 @@ class UploadDeviceMediaWorker @AssistedInject constructor(
 
             // files uploaded successfully
             onUploadSuccess()
-            syncServerThumbnailsUseCase(isUploadComplete = true)
+            syncServerThumbnailsUseCase(hasNewlyUploadedMedia = true)
         } catch (exception: FileNotFoundException) {
             Timber.tag(LOG_TAG).e("File not found while uploading: $exception")
             removeDeviceMediaDataFromDbUseCase.invoke(deviceMedia.id.toInt())

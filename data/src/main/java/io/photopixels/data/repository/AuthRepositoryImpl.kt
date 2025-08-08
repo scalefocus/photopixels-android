@@ -5,8 +5,6 @@ import io.photopixels.data.network.BackendApi
 import io.photopixels.data.storage.datastore.AuthDataStore
 import io.photopixels.domain.base.Response
 import io.photopixels.domain.repository.AuthRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -15,34 +13,32 @@ class AuthRepositoryImpl @Inject constructor(
     private val authDataStore: AuthDataStore
 ) : AuthRepository {
 
-    override suspend fun loginUser(email: String, password: String): Flow<Response<Unit>> =
-        flow {
-            clearBearerTokens() // Clear the old tokens, so the new ones can be loaded on the next request
-            val result = authApi.loginUser(email, password)
-            if (result is Response.Success) {
+    override suspend fun loginUser(email: String, password: String): Response<Unit> {
+        clearBearerTokens() // Clear the old tokens, so the new ones can be loaded on the next request
+        val result = authApi.loginUser(email, password)
+        return when (result) {
+            is Response.Success -> {
                 authDataStore.storeUsername(email)
                 authDataStore.storeAuthHeaders(result.result.accessToken, refreshToken = result.result.refreshToken)
-                emit(Response.Success(Unit))
-            } else if (result is Response.Failure) {
-                emit(result)
+                Response.Success(Unit)
             }
+            is Response.Failure -> result
         }
+    }
 
     override suspend fun clearBearerTokens() {
         backendApi.clearBearerTokens()
     }
 
-    override suspend fun registerUser(name: String, email: String, password: String): Flow<Response<Unit>> =
-        flow {
-            val result = backendApi.registerUser(name, email, password)
-            if (result is Response.Success) {
-                emit(Response.Success(Unit))
-            } else if (result is Response.Failure) {
-                emit(result)
+    override suspend fun registerUser(name: String, email: String, password: String): Response<Unit> {
+        val result = backendApi.registerUser(name, email, password)
+        return when (result) {
+            is Response.Success -> {
+                Response.Success(Unit)
             }
+            is Response.Failure -> result
         }
-
-    override suspend fun getAuthToken(): String? = authDataStore.getAuthToken()
+    }
 
     override suspend fun getUsername(): String? = authDataStore.getUsername()
 

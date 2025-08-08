@@ -10,14 +10,18 @@ import javax.inject.Inject
 
 private const val MAX_OBJECTS_TO_REQUEST = 90
 
+/**
+ * Syncs to latest revision and download recently added server thumbnails to the local DB
+ */
 class SyncServerThumbnailsUseCase @Inject constructor(
     private val serverRepository: ServerRepository,
     private val serverMediaRepository: ServerMediaRepository,
     private val deviceMediaRepository: DeviceMediaRepository,
 ) {
 
-    suspend operator fun invoke(isUploadComplete: Boolean): Response<Unit> {
-        serverMediaRepository.clearNewlyUploadedThumbnails()
+    suspend operator fun invoke(hasNewlyUploadedMedia: Boolean): Response<Unit> {
+        // Clear newly uploaded thumbnails if sync is executed manually or when app starts
+        if (!hasNewlyUploadedMedia) serverMediaRepository.clearNewlyUploadedThumbnails()
 
         val localRevision = serverRepository.getLocalRevision()
         val revisionToRequest = if (localRevision == 0) 0 else localRevision + 1
@@ -25,7 +29,7 @@ class SyncServerThumbnailsUseCase @Inject constructor(
         return when (val revisionResponse = serverRepository.getServerRevision(revisionToRequest)) {
             is Response.Success -> {
                 if (revisionResponse.result.version > localRevision) {
-                    updateThumbnails(revisionResponse.result, isUploadComplete)
+                    updateThumbnails(revisionResponse.result, hasNewlyUploadedMedia)
                 } else {
                     Response.Success(Unit)
                 }
@@ -37,7 +41,7 @@ class SyncServerThumbnailsUseCase @Inject constructor(
 
     private suspend fun updateThumbnails(
         serverRevision: ServerRevision,
-        isUploadComplete: Boolean
+        hasNewlyUploadedMedia: Boolean
     ): Response<Unit> {
         serverRevision.deleted
             ?.takeIf { it.isNotEmpty() }
@@ -45,7 +49,7 @@ class SyncServerThumbnailsUseCase @Inject constructor(
 
         val response = getServerThumbnailsChunked(
             added = serverRevision.added,
-            isUploadComplete = isUploadComplete
+            hasNewlyUploadedMedia = hasNewlyUploadedMedia
         )
         if (response is Response.Success) {
             serverRepository.setLocalRevision(serverRevision.version)
@@ -60,7 +64,7 @@ class SyncServerThumbnailsUseCase @Inject constructor(
      */
     private suspend fun getServerThumbnailsChunked(
         added: Map<String, Long>,
-        isUploadComplete: Boolean
+        hasNewlyUploadedMedia: Boolean
     ): Response<Unit> {
         added.entries.sortedByDescending { (_, date) -> date }
             .chunked(MAX_OBJECTS_TO_REQUEST)
@@ -71,7 +75,7 @@ class SyncServerThumbnailsUseCase @Inject constructor(
                     is Response.Success -> {
                         val thumbnails = thumbnailsResponse.result.map { photoUiData ->
                             photoUiData.copy(
-                                isNewlyUploaded = isUploadComplete,
+                                isNewlyUploaded = hasNewlyUploadedMedia,
                             )
                         }
                         serverMediaRepository.insertThumbnailsToDb(thumbnails)
